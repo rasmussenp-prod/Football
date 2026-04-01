@@ -576,7 +576,7 @@
             <div class="eyebrow">Recent Games</div>
             <h2>Last 3 Results + Highlights</h2>
           </div>
-          <div class="small muted">Broader YouTube fallback search</div>
+          <div class="small muted">Safe fallback when fixture history is unavailable</div>
         </div>
         <div id="resultsWrap"></div>
       </section>
@@ -715,13 +715,7 @@
         renderMatch(live || next);
         renderStandings(team, standings);
         renderPlayers(players);
-
-        try {
-          await renderResults(recent, team);
-        } catch (youtubeErr) {
-          console.error("Results/youtube failed", youtubeErr);
-          els.resultsWrap.innerHTML = `<div class="empty">Football data loaded, but highlights could not be shown.</div>`;
-        }
+        await renderResults(recent, team);
 
         els.updatedAt.textContent = new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -989,8 +983,27 @@
     }
 
     async function renderResults(fixtures, activeTeam) {
+      const teamSearch = activeTeam?.searchName || activeTeam?.label || "Football";
+      const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(teamSearch + " highlights")}`;
+      const skySearchUrl = `https://www.skysports.com/search?q=${encodeURIComponent(teamSearch + " highlights")}`;
+
       if (!fixtures || !fixtures.length) {
-        els.resultsWrap.innerHTML = `<div class="empty">No recent finished fixtures returned.</div>`;
+        els.resultsWrap.innerHTML = `
+          <div class="results-list">
+            <article class="result-card">
+              <div class="result-panel">
+                <div class="video-title">Recent fixture history is not available from the current football API setup.</div>
+                <div class="small muted" style="margin-top:8px;">
+                  League tables are loading, but this plan or endpoint is not returning completed fixture history for this team and season.
+                </div>
+                <div class="links-row" style="margin-top:16px;">
+                  <a class="link-btn" href="${youtubeSearchUrl}" target="_blank" rel="noreferrer">Search YouTube highlights</a>
+                  <a class="link-btn secondary" href="${skySearchUrl}" target="_blank" rel="noreferrer">Search Sky Sports</a>
+                </div>
+              </div>
+            </article>
+          </div>
+        `;
         return;
       }
 
@@ -1004,23 +1017,20 @@
         const venue = fixture?.fixture?.venue?.name || "Stadium TBC";
         const kickoff = new Date(getFixtureDate(fixture));
 
-        let video = null;
-        const teamSearch = activeTeam?.searchName || activeTeam?.label || "Football";
+        const fallbackYoutubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${home} ${away} highlights`)}`;
+        const reportUrl = `https://www.skysports.com/search?q=${encodeURIComponent(`${home} ${away} match report`)}`;
 
+        let video = null;
         const queries = [
           `${home} ${away} highlights`,
           `${home} vs ${away} highlights`,
-          `${teamSearch} highlights`,
-          `${teamSearch} Sky Sports`,
-          `${home} highlights`,
-          `${away} highlights`,
-          `${teamSearch} goals`
+          `${teamSearch} highlights`
         ];
 
         for (const query of queries) {
           try {
             const youtube = await fetchJson(`${API.youtube}/search?q=${encodeURIComponent(query)}`);
-            if (youtube && youtube.items && youtube.items.length > 0) {
+            if (youtube?.items?.length) {
               video = youtube.items[0];
               break;
             }
@@ -1030,19 +1040,14 @@
         }
 
         const videoId = video?.id?.videoId || null;
-        const videoTitle = video?.snippet?.title || "No matching highlight found";
+        const videoTitle = video?.snippet?.title || `${home} v ${away} highlights`;
         const thumb =
           video?.snippet?.thumbnails?.high?.url ||
           video?.snippet?.thumbnails?.medium?.url ||
           video?.snippet?.thumbnails?.default?.url ||
           "";
 
-        const reportQuery = encodeURIComponent(`${home} ${away} match report`);
-        const reportUrl = `https://www.skysports.com/search?q=${reportQuery}`;
-
-        const ytUrl = videoId
-          ? `https://www.youtube.com/watch?v=${videoId}`
-          : `https://www.youtube.com/results?search_query=${encodeURIComponent(teamSearch + " highlights")}`;
+        const ytUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : fallbackYoutubeUrl;
 
         cards.push(`
           <article class="result-card">
@@ -1074,19 +1079,21 @@
               </div>
 
               <div class="result-panel">
-                ${videoId
-                  ? `
-                    <a class="thumb-link" href="${ytUrl}" target="_blank" rel="noreferrer">
-                      <img class="video-thumb" src="${thumb}" alt="${videoTitle}">
-                      <div class="video-title">${videoTitle}</div>
-                    </a>
-                  `
-                  : `
-                    <div class="empty">
-                      No exact highlight match found for this fixture.<br><br>
-                      Team-based YouTube search is available via the button.
-                    </div>
-                  `}
+                ${
+                  thumb
+                    ? `
+                      <a class="thumb-link" href="${ytUrl}" target="_blank" rel="noreferrer">
+                        <img class="video-thumb" src="${thumb}" alt="${videoTitle}">
+                        <div class="video-title">${videoTitle}</div>
+                      </a>
+                    `
+                    : `
+                      <div class="empty">
+                        No exact highlight match found.<br><br>
+                        Use the YouTube search button for broader results.
+                      </div>
+                    `
+                }
               </div>
             </div>
           </article>
