@@ -376,71 +376,57 @@
 
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
     }
 
     .video-card {
       border: 1px solid rgba(83, 168, 255, 0.12);
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
       background: rgba(255,255,255,0.02);
     }
 
     .video-card a {
-      display: block;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
       color: inherit;
       text-decoration: none;
+      padding: 12px;
+      align-items: start;
     }
 
     .video-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
+      width: 140px;
+      height: 79px;
       object-fit: cover;
+      border-radius: 10px;
       display: block;
       background: #02070d;
     }
 
-    .video-copy {
-      padding: 14px;
-    }
-
     .video-copy h3 {
       margin: 0 0 8px;
-      font-size: 1rem;
-      line-height: 1.4;
+      font-size: .95rem;
+      line-height: 1.35;
     }
 
     .video-meta {
       color: var(--muted);
-      font-size: .85rem;
+      font-size: .82rem;
       line-height: 1.4;
     }
 
-    .video-actions {
-      margin-top: 12px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .video-search-link {
+      margin-top: 14px;
+      font-size: .85rem;
     }
 
-    .link-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      padding: 10px 12px;
-      text-decoration: none;
-      color: white;
-      background: linear-gradient(135deg, rgba(83,168,255,0.92), rgba(35,123,229,0.92));
-      font-weight: 700;
-      font-size: .9rem;
-    }
-
-    .link-btn.secondary {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(83, 168, 255, 0.12);
-      color: var(--text);
+    .video-search-link a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     .loader,
@@ -459,7 +445,7 @@
     @media (max-width: 1200px) {
       .grid { grid-template-columns: 1fr 1fr; }
       .span-3 { grid-column: span 2; }
-      .video-grid { grid-template-columns: 1fr 1fr; }
+      .video-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 860px) {
@@ -469,7 +455,8 @@
       .club-box.right { text-align: left; }
       .countdown { grid-template-columns: repeat(2, 1fr); }
       .mini-stats { grid-template-columns: 1fr; }
-      .video-grid { grid-template-columns: 1fr; }
+      .video-card a { grid-template-columns: 110px 1fr; }
+      .video-thumb { width: 110px; height: 62px; }
     }
   </style>
 </head>
@@ -480,7 +467,7 @@
         <div class="brand-mark">⚽</div>
         <div>
           <h1>Football Command Centre</h1>
-          <div class="sub">Live tables, squad stats and the latest team highlight videos.</div>
+          <div class="sub">Live tables, squad stats and the latest highlight videos from Sky Sports and TNT Sports.</div>
         </div>
       </div>
 
@@ -554,7 +541,7 @@
             <div class="eyebrow">Video Feed</div>
             <h2>Latest Team Highlights</h2>
           </div>
-          <div class="small muted" id="videoSubtitle">Latest YouTube results for the selected team</div>
+          <div class="small muted" id="videoSubtitle">Top 10 from Sky Sports and TNT Sports</div>
         </div>
         <div id="videosWrap"></div>
       </section>
@@ -587,6 +574,14 @@
         searchName: "AFC Wimbledon highlights"
       }
     };
+
+    const ALLOWED_CHANNELS = [
+      "Sky Sports Premier League",
+      "Sky Sports Football",
+      "Sky Sports News",
+      "Sky Sports",
+      "TNT Sports"
+    ];
 
     const FACTS = [
       "The penalty spot is 12 yards from the goal line.",
@@ -677,7 +672,7 @@
       const team = TEAMS[state.activeTeamKey];
       els.activeTeamName.textContent = team.label;
       els.updatedAt.textContent = "Loading...";
-      els.videoSubtitle.textContent = `Latest YouTube results for ${team.label}`;
+      els.videoSubtitle.textContent = `Top 10 latest videos for ${team.label} from Sky Sports and TNT Sports`;
 
       showLoading();
 
@@ -963,11 +958,16 @@
       `;
     }
 
+    function isAllowedChannel(channelTitle = "") {
+      const title = channelTitle.toLowerCase();
+      return ALLOWED_CHANNELS.some(name => title.includes(name.toLowerCase()));
+    }
+
     async function renderLatestVideos(team) {
       const queries = [
-        team.searchName,
-        `${team.label} Sky Sports`,
-        `${team.label} latest highlights`
+        `${team.searchName} Sky Sports`,
+        `${team.searchName} TNT Sports`,
+        `${team.label} highlights`
       ];
 
       let items = [];
@@ -975,8 +975,12 @@
       for (const query of queries) {
         try {
           const youtube = await fetchJson(`${API.youtube}/search?q=${encodeURIComponent(query)}`);
-          if (youtube?.items?.length) {
-            items = youtube.items.slice(0, 6);
+          const filtered = (youtube?.items || []).filter(item =>
+            isAllowedChannel(item?.snippet?.channelTitle || "")
+          );
+
+          if (filtered.length) {
+            items = filtered.slice(0, 10);
             break;
           }
         } catch (e) {
@@ -989,14 +993,16 @@
         return;
       }
 
+      const searchResultsUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(team.label + " highlights Sky Sports TNT Sports")}`;
+
       els.videosWrap.innerHTML = `
         <div class="video-grid">
           ${items.map(item => {
             const videoId = item?.id?.videoId || "";
             const title = item?.snippet?.title || "Video";
             const thumb =
-              item?.snippet?.thumbnails?.high?.url ||
               item?.snippet?.thumbnails?.medium?.url ||
+              item?.snippet?.thumbnails?.high?.url ||
               item?.snippet?.thumbnails?.default?.url ||
               "";
             const channel = item?.snippet?.channelTitle || "YouTube";
@@ -1012,27 +1018,27 @@
                   <div class="video-copy">
                     <h3>${title}</h3>
                     <div class="video-meta">${channel}${published ? ` • ${published}` : ""}</div>
-                    <div class="video-actions">
-                      <span class="link-btn">Open video</span>
-                    </div>
                   </div>
                 </a>
               </article>
             `;
           }).join("")}
         </div>
+        <div class="video-search-link">
+          <a href="${searchResultsUrl}" target="_blank" rel="noreferrer">See more results on YouTube</a>
+        </div>
       `;
     }
 
     function renderVideoFallback(team) {
-      const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(team.searchName)}`;
-      const skySearchUrl = `https://www.skysports.com/search?q=${encodeURIComponent(team.label + " highlights")}`;
+      const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(team.label + " highlights Sky Sports TNT Sports")}`;
 
       els.videosWrap.innerHTML = `
         <div class="empty">
-          No latest videos were returned for ${team.label}.<br><br>
-          <a class="link-btn" href="${youtubeSearchUrl}" target="_blank" rel="noreferrer">Search YouTube</a>
-          <a class="link-btn secondary" href="${skySearchUrl}" target="_blank" rel="noreferrer" style="margin-left:10px;">Search Sky Sports</a>
+          No Sky Sports or TNT Sports videos were returned for ${team.label}.
+        </div>
+        <div class="video-search-link">
+          <a href="${youtubeSearchUrl}" target="_blank" rel="noreferrer">See more results on YouTube</a>
         </div>
       `;
     }
