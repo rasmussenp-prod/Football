@@ -26,7 +26,7 @@
 
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, Arial, sans-serif;
       color: var(--text);
       background:
         radial-gradient(circle at top left, rgba(83, 168, 255, 0.15), transparent 28%),
@@ -35,20 +35,8 @@
       min-height: 100vh;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(83, 168, 255, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(83, 168, 255, 0.045) 1px, transparent 1px);
-      background-size: 26px 26px;
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,.7), transparent 92%);
-    }
-
     .app {
-      max-width: 1540px;
+      max-width: 1500px;
       margin: 0 auto;
       padding: 18px;
     }
@@ -158,16 +146,6 @@
       padding: 18px;
       overflow: hidden;
       position: relative;
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(83, 168, 255, 0.34), transparent 70%);
     }
 
     .span-2 { grid-column: span 2; }
@@ -326,7 +304,6 @@
 
     .box-grid {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 12px;
     }
 
@@ -375,11 +352,8 @@
       font-weight: 700;
     }
 
-    tbody tr:hover { background: rgba(255,255,255,0.03); }
-
     tbody tr.highlight {
       background: linear-gradient(90deg, rgba(83, 168, 255, 0.14), rgba(83, 168, 255, 0.03));
-      outline: 1px solid rgba(83, 168, 255, 0.14);
     }
 
     .form {
@@ -517,7 +491,7 @@
         <div class="brand-mark">⚽</div>
         <div>
           <h1>Football Command Centre</h1>
-          <div class="sub">Live tables, fixtures, results, squad output and highlight search for your teams.</div>
+          <div class="sub">Live tables, fixtures, results, squad stats and daily football content.</div>
         </div>
       </div>
 
@@ -548,7 +522,7 @@
             <div class="eyebrow">Daily Intelligence</div>
             <h2>Fact + Joke</h2>
           </div>
-          <div class="small muted">Refreshes at 08:00</div>
+          <div class="small muted">Updates at 08:00</div>
         </div>
 
         <div class="box-grid">
@@ -591,7 +565,7 @@
             <div class="eyebrow">Recent Games</div>
             <h2>Last 3 Results + Highlights</h2>
           </div>
-          <div class="small muted">YouTube search through your server endpoint</div>
+          <div class="small muted">Video search via your endpoint</div>
         </div>
         <div id="resultsWrap"></div>
       </section>
@@ -611,7 +585,7 @@
         short: "TOT",
         teamId: 47,
         leagueId: 39,
-        season: 2025
+        season: 2024
       },
       wimbledon: {
         key: "wimbledon",
@@ -619,7 +593,7 @@
         short: "WIM",
         teamId: 174,
         leagueId: 41,
-        season: 2025
+        season: 2024
       }
     };
 
@@ -631,9 +605,7 @@
       "A clean sheet means a team finished without conceding.",
       "The centre circle has a radius of 10 yards.",
       "A hat-trick means one player scores three goals in the same match.",
-      "Teams swap ends at half-time to balance conditions.",
-      "IFAB maintains the Laws of the Game.",
-      "Substitutions shape the game as much as the starting XI."
+      "Teams swap ends at half-time to balance conditions."
     ];
 
     const JOKES = [
@@ -642,9 +614,7 @@
       "Why do footballers do well at music? Because they know the score.",
       "Why did the striker bring string to the match? To tie the score.",
       "Why was the referee calm? He knew how to keep order.",
-      "Why did the defender carry a pencil? To draw the line.",
-      "Why was the ball invited everywhere? It got things rolling.",
-      "Why do football fans make good detectives? They always follow the leads."
+      "Why did the defender carry a pencil? To draw the line."
     ];
 
     const state = {
@@ -678,9 +648,6 @@
 
     function bindEvents() {
       els.refreshBtn.addEventListener("click", () => loadDashboard(true));
-      window.addEventListener("visibilitychange", () => {
-        if (!document.hidden) loadDashboard(false);
-      });
     }
 
     function renderTeamSwitcher() {
@@ -722,17 +689,17 @@
       showLoading();
 
       try {
-        const [standings, fixtureBundle, players] = await Promise.all([
+        const [standings, fixtures, players] = await Promise.all([
           fetchJson(`${API.football}/standings?league=${team.leagueId}&season=${team.season}`),
           fetchJson(`${API.football}/fixtures?team=${team.teamId}&season=${team.season}`),
           fetchJson(`${API.football}/players?team=${team.teamId}&season=${team.season}`)
         ]);
 
-        const live = (fixtureBundle.live || []).find(isLiveFixture) || null;
-        const next = (fixtureBundle.next || []).sort(byKickoffAsc)[0] || null;
-        const recent = (fixtureBundle.last || []).sort(byKickoffDesc).slice(0, 3);
+        const live = (fixtures.live || []).find(isLiveFixture) || null;
+        const next = (fixtures.next || []).sort(byKickoffAsc)[0] || null;
+        const recent = (fixtures.last || []).sort(byKickoffDesc).slice(0, 3);
 
-        renderMatch(team, live || next);
+        renderMatch(live || next);
         renderStandings(team, standings);
         renderPlayers(players);
         await renderResults(recent);
@@ -753,10 +720,7 @@
 
     function setupAutoRefresh(isLive) {
       if (state.refreshTimer) clearInterval(state.refreshTimer);
-      state.refreshTimer = setInterval(
-        () => loadDashboard(false),
-        isLive ? 30000 : 120000
-      );
+      state.refreshTimer = setInterval(() => loadDashboard(false), isLive ? 30000 : 120000);
     }
 
     function showLoading() {
@@ -789,10 +753,10 @@
     }
 
     function getFixtureDate(fixture) {
-      return fixture?.fixture?.date || fixture?.utcDate || new Date().toISOString();
+      return fixture?.fixture?.date || new Date().toISOString();
     }
 
-    function renderMatch(team, fixture) {
+    function renderMatch(fixture) {
       if (!fixture) {
         els.matchTitle.textContent = "Next Match";
         els.matchSubtitle.textContent = "No fixture currently available.";
@@ -903,9 +867,7 @@
     function renderStandings(team, raw) {
       const rows = raw?.response?.[0]?.league?.standings?.[0] || [];
 
-      els.tableMeta.textContent = rows.length
-        ? `${rows.length} teams tracked`
-        : "No standings returned";
+      els.tableMeta.textContent = rows.length ? `${rows.length} teams tracked` : "No standings returned";
 
       if (!rows.length) {
         els.leagueTableWrap.innerHTML = `<div class="empty">No standings returned from the API.</div>`;
