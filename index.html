@@ -8,7 +8,6 @@
     :root {
       --bg: #04101c;
       --panel: rgba(9, 22, 39, 0.92);
-      --panel-2: rgba(13, 31, 54, 0.92);
       --line: rgba(92, 171, 255, 0.18);
       --text: #ecf5ff;
       --muted: #93afcb;
@@ -714,7 +713,13 @@
         renderMatch(live || next);
         renderStandings(team, standings);
         renderPlayers(players);
-        await renderResults(recent);
+
+        try {
+          await renderResults(recent);
+        } catch (youtubeErr) {
+          console.error("Results/youtube failed", youtubeErr);
+          els.resultsWrap.innerHTML = `<div class="empty">Football data loaded, but highlights could not be shown.</div>`;
+        }
 
         els.updatedAt.textContent = new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -982,12 +987,14 @@
     }
 
     async function renderResults(fixtures) {
-      if (!fixtures.length) {
+      if (!fixtures || !fixtures.length) {
         els.resultsWrap.innerHTML = `<div class="empty">No recent finished fixtures returned.</div>`;
         return;
       }
 
-      const cards = await Promise.all(fixtures.map(async fixture => {
+      const cards = [];
+
+      for (const fixture of fixtures) {
         const home = fixture?.teams?.home?.name || "Home";
         const away = fixture?.teams?.away?.name || "Away";
         const homeGoals = fixture?.goals?.home ?? "-";
@@ -999,24 +1006,23 @@
         const queries = [
           `${home} ${away} highlights`,
           `${home} vs ${away} highlights`,
-          `${home} ${away} Sky Sports`,
           `${home} ${away} goals`
         ];
 
         for (const query of queries) {
           try {
             const youtube = await fetchJson(`${API.youtube}/search?q=${encodeURIComponent(query)}`);
-            if (youtube?.items?.length) {
+            if (youtube && youtube.items && youtube.items.length > 0) {
               video = youtube.items[0];
               break;
             }
           } catch (e) {
-            console.warn("YouTube search failed", e);
+            console.warn("YouTube query failed:", query, e);
           }
         }
 
         const videoId = video?.id?.videoId || null;
-        const videoTitle = video?.snippet?.title || "No video found";
+        const videoTitle = video?.snippet?.title || "No matching highlight found";
         const thumb =
           video?.snippet?.thumbnails?.high?.url ||
           video?.snippet?.thumbnails?.medium?.url ||
@@ -1027,7 +1033,7 @@
         const reportUrl = `https://www.skysports.com/search?q=${reportQuery}`;
         const ytUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
 
-        return `
+        cards.push(`
           <article class="result-card">
             <div class="result-top">
               <div class="result-side">
@@ -1049,27 +1055,27 @@
                 <div style="margin-top:8px; font-weight:800;">${venue}</div>
 
                 <div class="links-row">
-                  ${ytUrl ? `<a class="link-btn" href="${ytUrl}" target="_blank" rel="noreferrer">Open highlight</a>` : `<span class="chip">No video found</span>`}
+                  ${ytUrl
+                    ? `<a class="link-btn" href="${ytUrl}" target="_blank" rel="noreferrer">Open highlight</a>`
+                    : `<span class="chip">No video found</span>`}
                   <a class="link-btn secondary" href="${reportUrl}" target="_blank" rel="noreferrer">Search report</a>
                 </div>
               </div>
 
               <div class="result-panel">
-                ${
-                  videoId
-                    ? `
-                      <a class="thumb-link" href="${ytUrl}" target="_blank" rel="noreferrer">
-                        <img class="video-thumb" src="${thumb}" alt="${videoTitle}">
-                        <div class="video-title">${videoTitle}</div>
-                      </a>
-                    `
-                    : `<div class="empty">No matching YouTube result returned for this game.</div>`
-                }
+                ${ytUrl
+                  ? `
+                    <a class="thumb-link" href="${ytUrl}" target="_blank" rel="noreferrer">
+                      <img class="video-thumb" src="${thumb}" alt="${videoTitle}">
+                      <div class="video-title">${videoTitle}</div>
+                    </a>
+                  `
+                  : `<div class="empty">No matching YouTube result returned for this game.</div>`}
               </div>
             </div>
           </article>
-        `;
-      }));
+        `);
+      }
 
       els.resultsWrap.innerHTML = `<div class="results-list">${cards.join("")}</div>`;
     }
