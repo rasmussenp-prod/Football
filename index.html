@@ -576,7 +576,7 @@
             <div class="eyebrow">Recent Games</div>
             <h2>Last 3 Results + Highlights</h2>
           </div>
-          <div class="small muted">YouTube highlight search</div>
+          <div class="small muted">Broader YouTube fallback search</div>
         </div>
         <div id="resultsWrap"></div>
       </section>
@@ -596,7 +596,8 @@
         short: "TOT",
         teamId: 47,
         leagueId: 39,
-        season: 2024
+        season: 2024,
+        searchName: "Tottenham"
       },
       wimbledon: {
         key: "wimbledon",
@@ -604,7 +605,8 @@
         short: "WIM",
         teamId: 174,
         leagueId: 41,
-        season: 2024
+        season: 2024,
+        searchName: "AFC Wimbledon"
       }
     };
 
@@ -715,7 +717,7 @@
         renderPlayers(players);
 
         try {
-          await renderResults(recent);
+          await renderResults(recent, team);
         } catch (youtubeErr) {
           console.error("Results/youtube failed", youtubeErr);
           els.resultsWrap.innerHTML = `<div class="empty">Football data loaded, but highlights could not be shown.</div>`;
@@ -986,7 +988,7 @@
       `;
     }
 
-    async function renderResults(fixtures) {
+    async function renderResults(fixtures, activeTeam) {
       if (!fixtures || !fixtures.length) {
         els.resultsWrap.innerHTML = `<div class="empty">No recent finished fixtures returned.</div>`;
         return;
@@ -1003,10 +1005,16 @@
         const kickoff = new Date(getFixtureDate(fixture));
 
         let video = null;
+        const teamSearch = activeTeam?.searchName || activeTeam?.label || "Football";
+
         const queries = [
           `${home} ${away} highlights`,
           `${home} vs ${away} highlights`,
-          `${home} ${away} goals`
+          `${teamSearch} highlights`,
+          `${teamSearch} Sky Sports`,
+          `${home} highlights`,
+          `${away} highlights`,
+          `${teamSearch} goals`
         ];
 
         for (const query of queries) {
@@ -1031,7 +1039,10 @@
 
         const reportQuery = encodeURIComponent(`${home} ${away} match report`);
         const reportUrl = `https://www.skysports.com/search?q=${reportQuery}`;
-        const ytUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : null;
+
+        const ytUrl = videoId
+          ? `https://www.youtube.com/watch?v=${videoId}`
+          : `https://www.youtube.com/results?search_query=${encodeURIComponent(teamSearch + " highlights")}`;
 
         cards.push(`
           <article class="result-card">
@@ -1055,22 +1066,27 @@
                 <div style="margin-top:8px; font-weight:800;">${venue}</div>
 
                 <div class="links-row">
-                  ${ytUrl
-                    ? `<a class="link-btn" href="${ytUrl}" target="_blank" rel="noreferrer">Open highlight</a>`
-                    : `<span class="chip">No video found</span>`}
+                  <a class="link-btn" href="${ytUrl}" target="_blank" rel="noreferrer">
+                    ${videoId ? "Open highlight" : "Search YouTube"}
+                  </a>
                   <a class="link-btn secondary" href="${reportUrl}" target="_blank" rel="noreferrer">Search report</a>
                 </div>
               </div>
 
               <div class="result-panel">
-                ${ytUrl
+                ${videoId
                   ? `
                     <a class="thumb-link" href="${ytUrl}" target="_blank" rel="noreferrer">
                       <img class="video-thumb" src="${thumb}" alt="${videoTitle}">
                       <div class="video-title">${videoTitle}</div>
                     </a>
                   `
-                  : `<div class="empty">No matching YouTube result returned for this game.</div>`}
+                  : `
+                    <div class="empty">
+                      No exact highlight match found for this fixture.<br><br>
+                      Team-based YouTube search is available via the button.
+                    </div>
+                  `}
               </div>
             </div>
           </article>
