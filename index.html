@@ -7,6 +7,7 @@
   <style>
     :root {
       --bg: #04101c;
+      --panel: rgba(9, 22, 39, 0.92);
       --line: rgba(92, 171, 255, 0.18);
       --text: #ecf5ff;
       --muted: #93afcb;
@@ -303,24 +304,60 @@
       gap: 12px;
     }
 
-    .insight-box {
+    .insight-box,
+    .news-box {
       border-radius: 18px;
       padding: 16px;
       border: 1px solid rgba(83, 168, 255, 0.12);
       background: linear-gradient(180deg, rgba(14, 31, 54, 0.92), rgba(8, 21, 37, 0.86));
     }
 
-    .insight-box h3 {
+    .insight-box h3,
+    .news-box h3 {
       margin: 0 0 10px;
       font-size: .95rem;
       text-transform: uppercase;
       letter-spacing: .09em;
     }
 
-    .insight-box p {
+    .insight-box p,
+    .news-box p {
       margin: 0;
       line-height: 1.5;
       font-size: 1rem;
+    }
+
+    .news-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .news-item {
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .news-item:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .news-item a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .news-item a:hover {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .news-meta {
+      color: var(--muted);
+      font-size: .82rem;
+      margin-top: 4px;
     }
 
     .scroll-x {
@@ -467,7 +504,7 @@
         <div class="brand-mark">⚽</div>
         <div>
           <h1>Football Command Centre</h1>
-          <div class="sub">Live tables, squad stats and the latest highlight videos from Sky Sports and TNT Sports.</div>
+          <div class="sub">Live tables, squad stats, BBC-written news and the latest highlight videos.</div>
         </div>
       </div>
 
@@ -538,10 +575,21 @@
       <section class="card span-3">
         <div class="card-title">
           <div>
+            <div class="eyebrow">Written News</div>
+            <h2>Latest BBC Articles</h2>
+          </div>
+          <div class="small muted" id="newsSubtitle">Filtered from BBC football RSS</div>
+        </div>
+        <div id="newsWrap"></div>
+      </section>
+
+      <section class="card span-3">
+        <div class="card-title">
+          <div>
             <div class="eyebrow">Video Feed</div>
             <h2>Latest Team Highlights</h2>
           </div>
-          <div class="small muted" id="videoSubtitle">Top 10 from Sky Sports and TNT Sports</div>
+          <div class="small muted" id="videoSubtitle">Top 10 latest videos for the selected team</div>
         </div>
         <div id="videosWrap"></div>
       </section>
@@ -551,7 +599,8 @@
   <script>
     const API = {
       football: "/api/football",
-      youtube: "/api/youtube"
+      youtube: "/api/youtube",
+      news: "/api/news"
     };
 
     const TEAMS = {
@@ -562,7 +611,8 @@
         teamId: 47,
         leagueId: 39,
         season: 2024,
-        searchName: "Tottenham highlights"
+        videoSearch: "Tottenham highlights",
+        newsKeywords: ["tottenham", "spurs", "tottenham hotspur"]
       },
       wimbledon: {
         key: "wimbledon",
@@ -571,7 +621,8 @@
         teamId: 174,
         leagueId: 41,
         season: 2024,
-        searchName: "AFC Wimbledon highlights"
+        videoSearch: "AFC Wimbledon highlights",
+        newsKeywords: ["afc wimbledon", "wimbledon", "dons"]
       }
     };
 
@@ -620,9 +671,11 @@
       leagueTableWrap: document.getElementById("leagueTableWrap"),
       tableMeta: document.getElementById("tableMeta"),
       playerTableWrap: document.getElementById("playerTableWrap"),
+      newsWrap: document.getElementById("newsWrap"),
       videosWrap: document.getElementById("videosWrap"),
       factOfDay: document.getElementById("factOfDay"),
       jokeOfDay: document.getElementById("jokeOfDay"),
+      newsSubtitle: document.getElementById("newsSubtitle"),
       videoSubtitle: document.getElementById("videoSubtitle")
     };
 
@@ -672,7 +725,8 @@
       const team = TEAMS[state.activeTeamKey];
       els.activeTeamName.textContent = team.label;
       els.updatedAt.textContent = "Loading...";
-      els.videoSubtitle.textContent = `Top 10 latest videos for ${team.label} from Sky Sports and TNT Sports`;
+      els.videoSubtitle.textContent = `Top 10 latest videos for ${team.label}`;
+      els.newsSubtitle.textContent = `Filtered BBC football articles for ${team.label}`;
 
       showLoading();
 
@@ -690,12 +744,10 @@
         renderStandings(team, standings);
         renderPlayers(players);
 
-        try {
-          await renderLatestVideos(team);
-        } catch (videoErr) {
-          console.error("Video feed failed", videoErr);
-          renderVideoFallback(team);
-        }
+        await Promise.allSettled([
+          renderLatestVideos(team),
+          renderLatestNews(team)
+        ]);
 
         els.updatedAt.textContent = new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -720,6 +772,7 @@
       els.matchPanel.innerHTML = `<div class="loader">Pulling live and upcoming match data...</div>`;
       els.leagueTableWrap.innerHTML = `<div class="loader">Pulling standings...</div>`;
       els.playerTableWrap.innerHTML = `<div class="loader">Pulling player data...</div>`;
+      els.newsWrap.innerHTML = `<div class="loader">Pulling BBC articles...</div>`;
       els.videosWrap.innerHTML = `<div class="loader">Pulling latest team videos...</div>`;
     }
 
@@ -728,6 +781,7 @@
       els.matchPanel.innerHTML = `<div class="error">Could not load match data. ${msg}</div>`;
       els.leagueTableWrap.innerHTML = `<div class="error">Could not load standings. ${msg}</div>`;
       els.playerTableWrap.innerHTML = `<div class="error">Could not load player data. ${msg}</div>`;
+      els.newsWrap.innerHTML = `<div class="error">Could not load BBC articles. ${msg}</div>`;
       els.videosWrap.innerHTML = `<div class="error">Could not load video feed. ${msg}</div>`;
       els.updatedAt.textContent = "Error";
     }
@@ -965,8 +1019,8 @@
 
     async function renderLatestVideos(team) {
       const queries = [
-        `${team.searchName} Sky Sports`,
-        `${team.searchName} TNT Sports`,
+        `${team.videoSearch} Sky Sports`,
+        `${team.videoSearch} TNT Sports`,
         `${team.label} highlights`
       ];
 
@@ -1039,6 +1093,54 @@
         </div>
         <div class="video-search-link">
           <a href="${youtubeSearchUrl}" target="_blank" rel="noreferrer">See more results on YouTube</a>
+        </div>
+      `;
+    }
+
+    async function renderLatestNews(team) {
+      const feed = await fetchJson(`${API.news}/bbc-football`);
+      const keywords = team.newsKeywords || [];
+
+      const items = (feed?.items || [])
+        .filter(item => {
+          const hay = `${item.title || ""} ${item.description || ""}`.toLowerCase();
+          return keywords.some(k => hay.includes(k.toLowerCase()));
+        })
+        .slice(0, 6);
+
+      if (!items.length) {
+        const bbcSearchUrl = `https://www.bbc.co.uk/sport/search?q=${encodeURIComponent(team.label)}`;
+        els.newsWrap.innerHTML = `
+          <div class="empty">
+            No recent BBC football articles were matched for ${team.label}.
+          </div>
+          <div class="video-search-link">
+            <a href="${bbcSearchUrl}" target="_blank" rel="noreferrer">Search BBC Sport</a>
+          </div>
+        `;
+        return;
+      }
+
+      const bbcSearchUrl = `https://www.bbc.co.uk/sport/search?q=${encodeURIComponent(team.label)}`;
+
+      els.newsWrap.innerHTML = `
+        <div class="news-box">
+          <div class="news-list">
+            ${items.map(item => {
+              const published = item.pubDate
+                ? new Date(item.pubDate).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })
+                : "";
+              return `
+                <div class="news-item">
+                  <a href="${item.link}" target="_blank" rel="noreferrer">${item.title || "BBC Sport article"}</a>
+                  <div class="news-meta">BBC Sport${published ? ` • ${published}` : ""}</div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </div>
+        <div class="video-search-link">
+          <a href="${bbcSearchUrl}" target="_blank" rel="noreferrer">More on BBC Sport</a>
         </div>
       `;
     }
