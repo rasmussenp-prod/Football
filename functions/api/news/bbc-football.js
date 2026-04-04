@@ -2,22 +2,22 @@ export async function onRequestGet() {
   const feedUrl = "https://feeds.bbci.co.uk/sport/football/rss.xml";
 
   try {
-    const res = await fetch(feedUrl, {
+    const response = await fetch(feedUrl, {
       headers: {
         "user-agent": "FootballCommandCentre/1.0"
       }
     });
 
-    if (!res.ok) {
+    if (!response.ok) {
       return json(
-        { error: `BBC feed request failed with ${res.status}` },
+        { error: `BBC feed request failed with status ${response.status}` },
         502,
         300
       );
     }
 
-    const xml = await res.text();
-    const items = parseRssItems(xml).slice(0, 40);
+    const xml = await response.text();
+    const items = parseItems(xml).slice(0, 40);
 
     return json(
       {
@@ -32,8 +32,8 @@ export async function onRequestGet() {
   } catch (error) {
     return json(
       {
-        error: "Could not fetch or parse BBC football feed",
-        detail: error instanceof Error ? error.message : String(error)
+        error: "Could not fetch BBC football feed",
+        detail: String(error)
       },
       500,
       60
@@ -41,43 +41,39 @@ export async function onRequestGet() {
   }
 }
 
-function parseRssItems(xml) {
-  const itemBlocks = [...xml.matchAll(/<item\b[\s\S]*?<\/item>/gi)].map(m => m[0]);
+function parseItems(xml) {
+  const matches = xml.match(/<item[\s\S]*?<\/item>/g) || [];
 
-  return itemBlocks.map(block => {
-    const title = decodeXml(getTag(block, "title"));
-    const link = decodeXml(getTag(block, "link"));
-    const description = cleanDescription(decodeXml(getTag(block, "description")));
-    const pubDate = decodeXml(getTag(block, "pubDate"));
-    const guid = decodeXml(getTag(block, "guid"));
-
-    return {
-      title,
-      link,
-      description,
-      pubDate,
-      guid
-    };
-  }).filter(item => item.title && item.link);
+  return matches
+    .map((itemXml) => {
+      return {
+        title: decodeXml(getTagValue(itemXml, "title")),
+        link: decodeXml(getTagValue(itemXml, "link")),
+        description: stripHtml(decodeXml(getTagValue(itemXml, "description"))),
+        pubDate: decodeXml(getTagValue(itemXml, "pubDate")),
+        guid: decodeXml(getTagValue(itemXml, "guid"))
+      };
+    })
+    .filter((item) => item.title && item.link);
 }
 
-function getTag(block, tagName) {
-  const match = block.match(new RegExp(`<${tagName}\\b[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i"));
+function getTagValue(xml, tagName) {
+  const regex = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, "i");
+  const match = xml.match(regex);
   return match ? match[1].trim() : "";
 }
 
-function cleanDescription(input) {
-  if (!input) return "";
-  return input
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function stripHtml(text) {
+  if (!text) return "";
+  return text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function decodeXml(input) {
-  if (!input) return "";
-  return input
-    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1")
+function decodeXml(text) {
+  if (!text) return "";
+
+  return text
+    .replace(/^<!\\[CDATA\\[/, "")
+    .replace(/\\]\\]>$/, "")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
@@ -86,17 +82,18 @@ function decodeXml(input) {
     .replace(/&gt;/g, ">")
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/")
-    .replace(/&#(\\d+);/g, (_, n) => String.fromCharCode(Number(n)))
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&#(\\d+);/g, function (_, num) {
+      return String.fromCharCode(Number(num));
+    })
     .trim();
 }
 
-function json(data, status = 200, cacheSeconds = 0) {
+function json(data, status, cacheSeconds) {
   return new Response(JSON.stringify(data), {
-    status,
+    status: status || 200,
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": `public, max-age=${cacheSeconds}`
+      "cache-control": `public, max-age=${cacheSeconds || 0}`
     }
   });
 }
