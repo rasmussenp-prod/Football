@@ -7,34 +7,54 @@
   <style>
     :root {
       --bg: #04101c;
-      --panel: rgba(9, 22, 39, 0.92);
+      --bg-2: #08192b;
+      --panel: rgba(8, 20, 36, 0.92);
+      --panel-2: rgba(10, 26, 47, 0.95);
       --line: rgba(92, 171, 255, 0.18);
+      --line-strong: rgba(92, 171, 255, 0.35);
       --text: #ecf5ff;
       --muted: #93afcb;
+      --muted-2: #6f8ba8;
       --blue: #53a8ff;
       --blue-2: #237be5;
       --green: #34d399;
       --amber: #fbbf24;
       --red: #fb7185;
-      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
+      --shadow: 0 20px 48px rgba(0, 0, 0, 0.36);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --glow: 0 0 0 1px rgba(83,168,255,.08), 0 0 34px rgba(35,123,229,.12);
     }
 
     * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(83, 168, 255, 0.15), transparent 28%),
-        radial-gradient(circle at top right, rgba(83, 168, 255, 0.10), transparent 22%),
-        linear-gradient(180deg, #03101d 0%, #061626 50%, #04101c 100%);
+        radial-gradient(circle at top left, rgba(83, 168, 255, 0.14), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(83, 168, 255, 0.08), transparent 20%),
+        linear-gradient(180deg, #03101d 0%, #051523 42%, #04101c 100%);
       min-height: 100vh;
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(83,168,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(83,168,255,.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 90%);
+    }
+
     .app {
-      max-width: 1500px;
+      max-width: 1540px;
       margin: 0 auto;
       padding: 18px;
     }
@@ -55,26 +75,36 @@
     }
 
     .brand-mark {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
       display: grid;
       place-items: center;
-      font-size: 1.4rem;
-      background: linear-gradient(135deg, rgba(83, 168, 255, 0.24), rgba(35, 123, 229, 0.14));
-      border: 1px solid rgba(83, 168, 255, 0.18);
+      font-size: 1.45rem;
+      background: linear-gradient(135deg, rgba(83, 168, 255, 0.28), rgba(35, 123, 229, 0.14));
+      border: 1px solid rgba(83, 168, 255, 0.22);
       box-shadow: var(--shadow);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.7rem, 2vw, 2.4rem);
+      font-size: clamp(1.8rem, 2vw, 2.55rem);
+      letter-spacing: -.02em;
     }
 
     .sub {
       margin-top: 4px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.96rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex: 1;
     }
 
     .team-switcher {
@@ -85,7 +115,7 @@
 
     .team-btn {
       border: 1px solid rgba(83, 168, 255, 0.18);
-      background: rgba(8, 19, 34, 0.72);
+      background: rgba(8, 19, 34, 0.78);
       color: var(--text);
       border-radius: 999px;
       padding: 11px 16px;
@@ -97,8 +127,9 @@
     .team-btn:hover,
     .team-btn.active {
       transform: translateY(-1px);
-      border-color: rgba(83, 168, 255, 0.40);
-      background: linear-gradient(135deg, rgba(83, 168, 255, 0.22), rgba(35, 123, 229, 0.15));
+      border-color: rgba(83, 168, 255, 0.42);
+      background: linear-gradient(135deg, rgba(83, 168, 255, 0.24), rgba(35, 123, 229, 0.18));
+      box-shadow: var(--glow);
     }
 
     .meta {
@@ -112,12 +143,31 @@
       border: 1px solid rgba(83, 168, 255, 0.15);
       border-radius: 999px;
       padding: 10px 14px;
-      background: rgba(8, 19, 34, 0.72);
+      background: rgba(8, 19, 34, 0.78);
       color: var(--muted);
       font-size: .92rem;
     }
 
     .chip strong { color: var(--text); }
+
+    .chip.flash {
+      animation: flash .35s ease;
+    }
+
+    .live-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--red);
+      box-shadow: 0 0 0 0 rgba(251,113,133,.7);
+      animation: pulse 1.8s infinite;
+    }
 
     .refresh-btn {
       border: 0;
@@ -128,21 +178,35 @@
       font-weight: 800;
       cursor: pointer;
       box-shadow: var(--shadow);
+      transition: transform .2s ease;
     }
+
+    .refresh-btn:hover { transform: translateY(-1px); }
 
     .grid {
       display: grid;
-      grid-template-columns: 1.25fr 1fr 1fr;
+      grid-template-columns: 1.3fr 1fr 1fr;
       gap: 16px;
     }
 
     .card {
-      background: linear-gradient(180deg, rgba(11, 26, 46, 0.95), rgba(7, 18, 32, 0.94));
+      background: linear-gradient(180deg, rgba(10, 24, 43, 0.96), rgba(7, 17, 31, 0.95));
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 18px;
       overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(83,168,255,.34), transparent 72%);
     }
 
     .span-2 { grid-column: span 2; }
@@ -174,7 +238,7 @@
     .hero-match {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
-      gap: 12px;
+      gap: 14px;
       align-items: center;
     }
 
@@ -183,7 +247,7 @@
       border-radius: 18px;
       background: rgba(255,255,255,0.02);
       padding: 16px;
-      min-height: 110px;
+      min-height: 118px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -192,7 +256,7 @@
     .club-box.right { text-align: right; }
 
     .club-name {
-      font-size: clamp(1rem, 1.3vw, 1.25rem);
+      font-size: clamp(1rem, 1.3vw, 1.28rem);
       font-weight: 800;
       line-height: 1.15;
     }
@@ -204,18 +268,19 @@
     }
 
     .score-core {
-      min-width: 180px;
+      min-width: 220px;
       text-align: center;
     }
 
     .score-big {
-      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-size: clamp(2.4rem, 4vw, 3.35rem);
       font-weight: 900;
       letter-spacing: .06em;
+      line-height: 1;
     }
 
     .status-pill {
-      margin-top: 8px;
+      margin-top: 10px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -227,21 +292,6 @@
       font-size: .9rem;
     }
 
-    .live-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 0 0 rgba(251, 113, 133, .75);
-      animation: pulse 1.8s infinite;
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(251, 113, 133, .7); }
-      70% { box-shadow: 0 0 0 10px rgba(251, 113, 133, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(251, 113, 133, 0); }
-    }
-
     .countdown {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -251,7 +301,7 @@
 
     .time-box {
       text-align: center;
-      background: linear-gradient(180deg, rgba(17, 38, 64, 0.9), rgba(11, 24, 42, 0.96));
+      background: linear-gradient(180deg, rgba(17, 38, 64, 0.95), rgba(11, 24, 42, 0.96));
       border: 1px solid rgba(83, 168, 255, 0.14);
       border-radius: 16px;
       padding: 12px 8px;
@@ -327,6 +377,12 @@
       font-size: 1rem;
     }
 
+    .news-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
     .news-list {
       display: grid;
       gap: 10px;
@@ -360,9 +416,19 @@
       margin-top: 4px;
     }
 
-    .scroll-x {
-      overflow-x: auto;
+    .news-link {
+      margin-top: 12px;
+      font-size: .84rem;
     }
+
+    .news-link a,
+    .video-search-link a {
+      color: var(--muted);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .scroll-x { overflow-x: auto; }
 
     table {
       width: 100%;
@@ -422,11 +488,17 @@
       border-radius: 16px;
       overflow: hidden;
       background: rgba(255,255,255,0.02);
+      transition: transform .18s ease, border-color .18s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
     }
 
     .video-card a {
       display: grid;
-      grid-template-columns: 140px 1fr;
+      grid-template-columns: 136px 1fr;
       gap: 12px;
       color: inherit;
       text-decoration: none;
@@ -435,8 +507,8 @@
     }
 
     .video-thumb {
-      width: 140px;
-      height: 79px;
+      width: 136px;
+      height: 76px;
       object-fit: cover;
       border-radius: 10px;
       display: block;
@@ -460,12 +532,6 @@
       font-size: .85rem;
     }
 
-    .video-search-link a {
-      color: var(--muted);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
     .loader,
     .empty,
     .error {
@@ -479,10 +545,16 @@
     .small { font-size: .9rem; }
     .muted { color: var(--muted); }
 
+    @keyframes flash {
+      from { opacity: .35; }
+      to { opacity: 1; }
+    }
+
     @media (max-width: 1200px) {
       .grid { grid-template-columns: 1fr 1fr; }
       .span-3 { grid-column: span 2; }
-      .video-grid { grid-template-columns: 1fr; }
+      .video-grid,
+      .news-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 860px) {
@@ -504,16 +576,18 @@
         <div class="brand-mark">⚽</div>
         <div>
           <h1>Football Command Centre</h1>
-          <div class="sub">Live tables, squad stats, BBC-written news and the latest highlight videos.</div>
+          <div class="sub">Premium dashboard shell with live match, table, squad leaders, BBC news and approved video feed.</div>
         </div>
       </div>
 
-      <div class="team-switcher" id="teamSwitcher"></div>
-
-      <div class="meta">
-        <div class="chip">Team: <strong id="activeTeamName">-</strong></div>
-        <div class="chip">Updated: <strong id="updatedAt">--</strong></div>
-        <button class="refresh-btn" id="refreshBtn">Refresh</button>
+      <div class="toolbar">
+        <div class="team-switcher" id="teamSwitcher"></div>
+        <div class="meta">
+          <div class="chip">Team: <strong id="activeTeamName">-</strong></div>
+          <div class="chip live-chip"><span class="dot"></span> Live dashboard</div>
+          <div class="chip">Updated: <strong id="updatedAt">--</strong></div>
+          <button class="refresh-btn" id="refreshBtn">Refresh</button>
+        </div>
       </div>
     </header>
 
@@ -578,7 +652,7 @@
             <div class="eyebrow">Written News</div>
             <h2>Latest BBC Articles</h2>
           </div>
-          <div class="small muted" id="newsSubtitle">Filtered from BBC football RSS</div>
+          <div class="small muted" id="newsSubtitle">Filtered BBC football articles</div>
         </div>
         <div id="newsWrap"></div>
       </section>
@@ -589,7 +663,7 @@
             <div class="eyebrow">Video Feed</div>
             <h2>Latest Team Highlights</h2>
           </div>
-          <div class="small muted" id="videoSubtitle">Top 10 latest videos for the selected team</div>
+          <div class="small muted" id="videoSubtitle">Top 10 latest approved videos</div>
         </div>
         <div id="videosWrap"></div>
       </section>
@@ -612,7 +686,8 @@
         leagueId: 39,
         season: 2024,
         videoSearch: "Tottenham highlights",
-        newsKeywords: ["tottenham", "spurs", "tottenham hotspur"]
+        newsKeywords: ["tottenham", "spurs", "tottenham hotspur"],
+        fixtureUrl: "https://www.bbc.co.uk/sport/football/teams/tottenham-hotspur"
       },
       wimbledon: {
         key: "wimbledon",
@@ -622,7 +697,8 @@
         leagueId: 41,
         season: 2024,
         videoSearch: "AFC Wimbledon highlights",
-        newsKeywords: ["afc wimbledon", "wimbledon", "dons"]
+        newsKeywords: ["afc wimbledon", "wimbledon", "dons"],
+        fixtureUrl: "https://www.bbc.co.uk/sport/football/teams/afc-wimbledon"
       }
     };
 
@@ -725,7 +801,7 @@
       const team = TEAMS[state.activeTeamKey];
       els.activeTeamName.textContent = team.label;
       els.updatedAt.textContent = "Loading...";
-      els.videoSubtitle.textContent = `Top 10 latest videos for ${team.label}`;
+      els.videoSubtitle.textContent = `Top 10 latest approved videos for ${team.label}`;
       els.newsSubtitle.textContent = `Filtered BBC football articles for ${team.label}`;
 
       showLoading();
@@ -740,19 +816,25 @@
         const live = (fixtures.live || []).find(isLiveFixture) || null;
         const next = (fixtures.next || []).sort(byKickoffAsc)[0] || null;
 
-        renderMatch(live || next);
+        renderMatch(live || next, team);
         renderStandings(team, standings);
         renderPlayers(players);
 
-        await Promise.allSettled([
+        const [videosResult, newsResult] = await Promise.allSettled([
           renderLatestVideos(team),
           renderLatestNews(team)
         ]);
+
+        if (videosResult.status === "rejected") renderVideoFallback(team);
+        if (newsResult.status === "rejected") renderNewsFallback(team);
 
         els.updatedAt.textContent = new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit"
         });
+        els.updatedAt.classList.remove("flash");
+        void els.updatedAt.offsetWidth;
+        els.updatedAt.classList.add("flash");
 
         if (resetTimer) {
           setupAutoRefresh(Boolean(live));
@@ -799,11 +881,16 @@
       return fixture?.fixture?.date || new Date().toISOString();
     }
 
-    function renderMatch(fixture) {
+    function renderMatch(fixture, team) {
       if (!fixture) {
         els.matchTitle.textContent = "Next Match";
         els.matchSubtitle.textContent = "No fixture currently available.";
-        els.matchPanel.innerHTML = `<div class="empty">No live or upcoming fixture was returned.</div>`;
+        els.matchPanel.innerHTML = `
+          <div class="empty">
+            No upcoming fixture was returned from the current football feed.<br><br>
+            <a class="link-btn" href="${team.fixtureUrl}" target="_blank" rel="noreferrer">View fixtures on BBC Sport</a>
+          </div>
+        `;
         return;
       }
 
@@ -1027,18 +1114,14 @@
       let items = [];
 
       for (const query of queries) {
-        try {
-          const youtube = await fetchJson(`${API.youtube}/search?q=${encodeURIComponent(query)}`);
-          const filtered = (youtube?.items || []).filter(item =>
-            isAllowedChannel(item?.snippet?.channelTitle || "")
-          );
+        const youtube = await fetchJson(`${API.youtube}/search?q=${encodeURIComponent(query)}`);
+        const filtered = (youtube?.items || []).filter(item =>
+          isAllowedChannel(item?.snippet?.channelTitle || "")
+        );
 
-          if (filtered.length) {
-            items = filtered.slice(0, 10);
-            break;
-          }
-        } catch (e) {
-          console.warn("Video query failed:", query, e);
+        if (filtered.length) {
+          items = filtered.slice(0, 10);
+          break;
         }
       }
 
@@ -1102,45 +1185,67 @@
       const keywords = team.newsKeywords || [];
 
       const items = (feed?.items || [])
-        .filter(item => {
-          const hay = `${item.title || ""} ${item.description || ""}`.toLowerCase();
-          return keywords.some(k => hay.includes(k.toLowerCase()));
+        .map(item => {
+          const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
+          let score = 0;
+          keywords.forEach(k => {
+            if (text.includes(k.toLowerCase())) score += 1;
+          });
+          return { ...item, score };
         })
-        .slice(0, 6);
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8);
 
       if (!items.length) {
-        const bbcSearchUrl = `https://www.bbc.co.uk/sport/search?q=${encodeURIComponent(team.label)}`;
-        els.newsWrap.innerHTML = `
-          <div class="empty">
-            No recent BBC football articles were matched for ${team.label}.
-          </div>
-          <div class="video-search-link">
-            <a href="${bbcSearchUrl}" target="_blank" rel="noreferrer">Search BBC Sport</a>
-          </div>
-        `;
+        renderNewsFallback(team);
         return;
       }
 
+      const split = Math.ceil(items.length / 2);
+      const left = items.slice(0, split);
+      const right = items.slice(split);
       const bbcSearchUrl = `https://www.bbc.co.uk/sport/search?q=${encodeURIComponent(team.label)}`;
 
       els.newsWrap.innerHTML = `
-        <div class="news-box">
-          <div class="news-list">
-            ${items.map(item => {
-              const published = item.pubDate
-                ? new Date(item.pubDate).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })
-                : "";
-              return `
-                <div class="news-item">
-                  <a href="${item.link}" target="_blank" rel="noreferrer">${item.title || "BBC Sport article"}</a>
-                  <div class="news-meta">BBC Sport${published ? ` • ${published}` : ""}</div>
-                </div>
-              `;
-            }).join("")}
+        <div class="news-grid">
+          <div class="news-box">
+            <div class="news-list">
+              ${left.map(renderNewsItem).join("")}
+            </div>
+          </div>
+          <div class="news-box">
+            <div class="news-list">
+              ${right.map(renderNewsItem).join("")}
+            </div>
           </div>
         </div>
-        <div class="video-search-link">
+        <div class="news-link">
           <a href="${bbcSearchUrl}" target="_blank" rel="noreferrer">More on BBC Sport</a>
+        </div>
+      `;
+    }
+
+    function renderNewsItem(item) {
+      const published = item.pubDate
+        ? new Date(item.pubDate).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" })
+        : "";
+      return `
+        <div class="news-item">
+          <a href="${item.link}" target="_blank" rel="noreferrer">${item.title || "BBC Sport article"}</a>
+          <div class="news-meta">BBC Sport${published ? ` • ${published}` : ""}</div>
+        </div>
+      `;
+    }
+
+    function renderNewsFallback(team) {
+      const bbcSearchUrl = `https://www.bbc.co.uk/sport/search?q=${encodeURIComponent(team.label)}`;
+      els.newsWrap.innerHTML = `
+        <div class="empty">
+          No recent BBC football articles were matched for ${team.label}.
+        </div>
+        <div class="news-link">
+          <a href="${bbcSearchUrl}" target="_blank" rel="noreferrer">Search BBC Sport</a>
         </div>
       `;
     }
@@ -1158,4 +1263,3 @@
   </script>
 </body>
 </html>
- 
