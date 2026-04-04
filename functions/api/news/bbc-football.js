@@ -10,7 +10,7 @@ export async function onRequestGet() {
 
     if (!response.ok) {
       return json(
-        { error: `BBC feed request failed with status ${response.status}` },
+        { error: `The BBC feed request failed with status ${response.status}` },
         502,
         300
       );
@@ -72,8 +72,8 @@ function decodeXml(text) {
   if (!text) return "";
 
   return text
-    .replace(/^<!\\[CDATA\\[/, "")
-    .replace(/\\]\\]>$/, "")
+    .replace(/^<!\[CDATA\[/, "")
+    .replace(/\]\]>$/, "")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
@@ -82,7 +82,7 @@ function decodeXml(text) {
     .replace(/&gt;/g, ">")
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/")
-    .replace(/&#(\\d+);/g, function (_, num) {
+    .replace(/&#(\d+);/g, function (_, num) {
       return String.fromCharCode(Number(num));
     })
     .trim();
@@ -96,4 +96,4 @@ function json(data, status, cacheSeconds) {
       "cache-control": `public, max-age=${cacheSeconds || 0}`
     }
   });
-}
+} 
