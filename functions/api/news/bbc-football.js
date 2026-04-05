@@ -6,8 +6,19 @@ export async function onRequestGet(context) {
   const feedUrl = "https://feeds.bbci.co.uk/sport/football/rss.xml";
 
   const teamTerms = {
-    tottenham: ["tottenham", "spurs", "tottenham hotspur", "ange postecoglou"],
-    wimbledon: ["afc wimbledon", "wimbledon", "the dons", "plough lane"]
+    tottenham: [
+      "tottenham",
+      "spurs",
+      "tottenham hotspur",
+      "son heung-min",
+      "postecoglou"
+    ],
+    wimbledon: [
+      "afc wimbledon",
+      "wimbledon",
+      "the dons",
+      "plough lane"
+    ]
   };
 
   try {
@@ -29,6 +40,7 @@ export async function onRequestGet(context) {
     const allItems = parseItems(xml);
 
     let items = allItems;
+
     if (team && teamTerms[team]) {
       const terms = teamTerms[team];
       items = allItems.filter((item) => {
@@ -43,7 +55,7 @@ export async function onRequestGet(context) {
         feed: feedUrl,
         team: team || null,
         itemCount: items.length,
-        items: items.slice(0, 8)
+        items: items.slice(0, 10)
       },
       200,
       300
@@ -91,8 +103,8 @@ function decodeXml(text) {
   if (!text) return "";
 
   return text
-    .replace(/^<!\\[CDATA\\[/, "")
-    .replace(/\\]\\]>$/, "")
+    .replace(/^<!\[CDATA\[/, "")
+    .replace(/\]\]>$/, "")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
@@ -101,18 +113,18 @@ function decodeXml(text) {
     .replace(/&gt;/g, ">")
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/")
-    .replace(/&#(\\d+);/g, function (_, num) {
+    .replace(/&#(\d+);/g, function (_, num) {
       return String.fromCharCode(Number(num));
     })
     .trim();
 }
 
-function json(data, status, cacheSeconds) {
+function json(data, status = 200, cacheSeconds = 0) {
   return new Response(JSON.stringify(data), {
-    status: status || 200,
+    status,
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": `public, max-age=${cacheSeconds || 0}`
+      "cache-control": `public, max-age=${cacheSeconds}`
     }
   });
 }

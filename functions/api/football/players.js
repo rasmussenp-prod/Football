@@ -9,24 +9,35 @@ export async function onRequestGet(context) {
     return json({ error: "Missing team or season" }, 400);
   }
 
-  const firstPage = await fetchPlayersPage(env, team, season, 1);
-  const totalPages = firstPage?.paging?.total || 1;
+  try {
+    const firstPage = await fetchPlayersPage(env, team, season, 1);
+    const totalPages = firstPage?.paging?.total || 1;
 
-  let combined = [...(firstPage?.response || [])];
+    let combined = [...(firstPage?.response || [])];
 
-  if (totalPages > 1) {
-    const remainingPages = [];
-    for (let page = 2; page <= Math.min(totalPages, 4); page++) {
-      remainingPages.push(fetchPlayersPage(env, team, season, page));
+    if (totalPages > 1) {
+      const remainingPages = [];
+      for (let page = 2; page <= Math.min(totalPages, 4); page++) {
+        remainingPages.push(fetchPlayersPage(env, team, season, page));
+      }
+
+      const rest = await Promise.all(remainingPages);
+      for (const result of rest) {
+        combined.push(...(result?.response || []));
+      }
     }
 
-    const rest = await Promise.all(remainingPages);
-    for (const result of rest) {
-      combined.push(...(result?.response || []));
-    }
+    return json({ response: combined }, 200, 1800);
+  } catch (error) {
+    return json(
+      {
+        error: "Could not load players",
+        detail: String(error)
+      },
+      500,
+      60
+    );
   }
-
-  return json({ response: combined }, 200, 1800);
 }
 
 async function fetchPlayersPage(env, team, season, page) {
@@ -41,6 +52,10 @@ async function fetchPlayersPage(env, team, season, page) {
       "x-apisports-key": env.API_FOOTBALL_KEY
     }
   });
+
+  if (!res.ok) {
+    throw new Error(`API-Football players failed with status ${res.status}`);
+  }
 
   return res.json();
 }

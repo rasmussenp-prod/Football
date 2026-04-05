@@ -7,17 +7,28 @@ export async function onRequestGet(context) {
     return json({ error: "Missing q" }, 400);
   }
 
-  const upstream = new URL("https://www.googleapis.com/youtube/v3/search");
-  upstream.searchParams.set("part", "snippet");
-  upstream.searchParams.set("type", "video");
-  upstream.searchParams.set("maxResults", "3");
-  upstream.searchParams.set("q", q);
-  upstream.searchParams.set("key", env.YOUTUBE_API_KEY);
+  try {
+    const upstream = new URL("https://www.googleapis.com/youtube/v3/search");
+    upstream.searchParams.set("part", "snippet");
+    upstream.searchParams.set("type", "video");
+    upstream.searchParams.set("order", "date");
+    upstream.searchParams.set("maxResults", "4");
+    upstream.searchParams.set("q", q);
+    upstream.searchParams.set("key", env.YOUTUBE_API_KEY);
 
-  const res = await fetch(upstream.toString());
-  const data = await res.json();
+    const res = await fetch(upstream.toString());
+    const data = await res.json();
 
-  return json(data, res.status);
+    return json(data, res.status);
+  } catch (error) {
+    return json(
+      {
+        error: "Could not load YouTube search results",
+        detail: String(error)
+      },
+      500
+    );
+  }
 }
 
 function json(data, status = 200) {

@@ -9,21 +9,32 @@ export async function onRequestGet(context) {
     return json({ error: "Missing team or season" }, 400);
   }
 
-  const [live, next, last] = await Promise.all([
-    fetchFixtures({ env, team, season, live: "all" }),
-    fetchFixtures({ env, team, season, next: "3" }),
-    fetchFixtures({ env, team, season, last: "10" })
-  ]);
+  try {
+    const [live, next, last] = await Promise.all([
+      fetchFixtures({ env, team, season, live: "all" }),
+      fetchFixtures({ env, team, season, next: "4" }),
+      fetchFixtures({ env, team, season, last: "6" })
+    ]);
 
-  return json(
-    {
-      live: live?.response || [],
-      next: next?.response || [],
-      last: last?.response || []
-    },
-    200,
-    60
-  );
+    return json(
+      {
+        live: live?.response || [],
+        next: next?.response || [],
+        last: last?.response || []
+      },
+      200,
+      60
+    );
+  } catch (error) {
+    return json(
+      {
+        error: "Could not load fixtures",
+        detail: String(error)
+      },
+      500,
+      30
+    );
+  }
 }
 
 async function fetchFixtures({ env, team, season, live, next, last }) {
@@ -41,6 +52,10 @@ async function fetchFixtures({ env, team, season, live, next, last }) {
       "x-apisports-key": env.API_FOOTBALL_KEY
     }
   });
+
+  if (!res.ok) {
+    throw new Error(`API-Football fixtures failed with status ${res.status}`);
+  }
 
   return res.json();
 }

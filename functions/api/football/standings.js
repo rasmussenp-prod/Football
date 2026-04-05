@@ -9,19 +9,30 @@ export async function onRequestGet(context) {
     return json({ error: "Missing league or season" }, 400);
   }
 
-  const upstream = new URL("https://v3.football.api-sports.io/standings");
-  upstream.searchParams.set("league", league);
-  upstream.searchParams.set("season", season);
+  try {
+    const upstream = new URL("https://v3.football.api-sports.io/standings");
+    upstream.searchParams.set("league", league);
+    upstream.searchParams.set("season", season);
 
-  const res = await fetch(upstream.toString(), {
-    method: "GET",
-    headers: {
-      "x-apisports-key": env.API_FOOTBALL_KEY
-    }
-  });
+    const res = await fetch(upstream.toString(), {
+      method: "GET",
+      headers: {
+        "x-apisports-key": env.API_FOOTBALL_KEY
+      }
+    });
 
-  const data = await res.json();
-  return json(data, res.status, 300);
+    const data = await res.json();
+    return json(data, res.status, 300);
+  } catch (error) {
+    return json(
+      {
+        error: "Could not load standings",
+        detail: String(error)
+      },
+      500,
+      60
+    );
+  }
 }
 
 function json(data, status = 200, cacheSeconds = 0) {
