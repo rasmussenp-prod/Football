@@ -1185,48 +1185,54 @@
       els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-    async function loadDashboard() {
-      const team = TEAM_CONFIG[activeTeamKey];
-      setLoadingState();
+   
+async function loadDashboard() {
+  const team = TEAM_CONFIG[activeTeamKey];
+  setLoadingState();
 
-      try {
-        const [
-          fixturesData,
-          standingsData,
-          playersData,
-          newsData,
-          videosData,
-          liveData
-        ] = await Promise.all([
-          fetchJson(`/api/football/fixtures?team=${team.teamId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/football/standings?league=${team.leagueId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/football/players?team=${team.teamId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/news/bbc-football?team=${team.key}`),
-          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`),
-          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
-        ]);
+  const results = await Promise.allSettled([
+    fetchJson(`/api/football/fixtures?team=${team.teamId}&season=${CURRENT_SEASON}`),
+    fetchJson(`/api/football/standings?league=${team.leagueId}&season=${CURRENT_SEASON}`),
+    fetchJson(`/api/football/players?team=${team.teamId}&season=${CURRENT_SEASON}`),
+    fetchJson(`/api/news/bbc-football?team=${team.key}`),
+    fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`),
+    fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
+  ]);
 
-        const standings = extractStandings(standingsData);
-        const teamStanding = standings.find(row => String(row.team?.id) === String(team.teamId)) || null;
+  const fixturesData  = results[0].status === "fulfilled" ? results[0].value : { live: [], next: [], last: [] };
+  const standingsData = results[1].status === "fulfilled" ? results[1].value : { response: [] };
+  const playersData   = results[2].status === "fulfilled" ? results[2].value : { response: [] };
+  const newsData      = results[3].status === "fulfilled" ? results[3].value : { items: [] };
+  const videosData    = results[4].status === "fulfilled" ? results[4].value : { items: [] };
+  const liveData      = results[5].status === "fulfilled" ? results[5].value : { live: false, fixture: null, events: [] };
 
-        renderHero(team, fixturesData, teamStanding, liveData);
-        renderStats(teamStanding);
-        renderFixtures(fixturesData);
-        renderTable(standings, team.teamId, team.leagueName);
-        renderLive(liveData);
-        renderPlayers(playersData);
-        renderNews(newsData, team.newsTerms);
-        renderVideos(videosData);
+  const standings = extractStandings(standingsData);
+  const teamStanding = standings.find(row => String(row.team?.id) === String(team.teamId)) || null;
 
-        els.sidebarUpdated.textContent = new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-      } catch (error) {
-        console.error(error);
-        renderErrorState(error);
-      }
-    }
+  renderHero(team, fixturesData, teamStanding, liveData);
+  renderStats(teamStanding);
+  renderFixtures(fixturesData);
+  renderTable(standings, team.teamId, team.leagueName);
+  renderLive(liveData);
+  renderPlayers(playersData);
+  renderNews(newsData, team.newsTerms);
+  renderVideos(videosData);
+
+  const failed = results
+    .map((r, i) => ({ r, i }))
+    .filter(x => x.r.status === "rejected")
+    .map(x => ["fixtures", "standings", "players", "news", "videos", "live"][x.i]);
+
+  els.sidebarUpdated.textContent = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  if (failed.length) {
+    console.warn("Some dashboard feeds failed:", failed);
+  }
+}
+
 
     function renderHero(team, fixturesData, teamStanding, liveData) {
       const form = normaliseForm(teamStanding?.form || "");
