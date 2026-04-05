@@ -6,14 +6,14 @@
   <title>Football Command Centre</title>
   <style>
     :root {
-      --bg-1: #08111f;
-      --bg-2: #10233a;
-      --panel: rgba(10, 19, 33, 0.86);
-      --panel-2: rgba(15, 27, 46, 0.94);
+      --bg-1: #07111f;
+      --bg-2: #0f2238;
+      --panel: rgba(10, 20, 36, 0.86);
+      --panel-2: rgba(15, 29, 50, 0.95);
       --line: rgba(255, 255, 255, 0.08);
       --line-strong: rgba(255, 255, 255, 0.14);
       --text: #eef5ff;
-      --muted: #9db1c8;
+      --muted: #9cb1c8;
       --soft: #dce7f7;
       --good: #62d6a3;
       --warn: #ffd970;
@@ -23,15 +23,19 @@
       --radius-md: 16px;
       --shadow: 0 20px 50px rgba(0, 0, 0, 0.34);
 
-      --team-primary: #132257;
-      --team-secondary: #0d183c;
-      --team-accent: #dfe7f4;
-      --team-accent-2: #8fb0dc;
-      --team-glow: rgba(202, 216, 241, 0.18);
+      --team-primary: #111d45;
+      --team-secondary: #0a1430;
+      --team-accent: #ffffff;
+      --team-accent-2: #b9cae7;
+      --team-glow: rgba(210,220,240,0.20);
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -421,7 +425,7 @@
 
     .content-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+      grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.75fr);
       gap: 18px;
       min-width: 0;
     }
@@ -459,7 +463,9 @@
     .match-list,
     .news-list,
     .video-list,
-    .player-list {
+    .player-list,
+    .live-shell,
+    .live-events {
       display: grid;
       gap: 12px;
     }
@@ -467,7 +473,9 @@
     .match-item,
     .news-item,
     .video-item,
-    .player-item {
+    .player-item,
+    .live-score-card,
+    .live-event {
       padding: 14px;
       border-radius: 18px;
       background: rgba(255,255,255,0.035);
@@ -515,7 +523,8 @@
       gap: 5px;
     }
 
-    .team-line {
+    .team-line,
+    .live-team-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -523,7 +532,8 @@
       min-width: 0;
     }
 
-    .team-name {
+    .team-name,
+    .live-team-name {
       color: #fff;
       font-weight: 600;
       white-space: nowrap;
@@ -531,10 +541,15 @@
       text-overflow: ellipsis;
     }
 
-    .team-score {
+    .team-score,
+    .live-team-score {
       font-weight: 800;
       color: var(--team-accent);
       flex: 0 0 auto;
+    }
+
+    .live-team-score {
+      font-size: 1.2rem;
     }
 
     .match-side {
@@ -543,7 +558,8 @@
       font-size: 0.86rem;
     }
 
-    .status-pill {
+    .status-pill,
+    .live-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -557,14 +573,65 @@
       background: rgba(255,255,255,0.05);
     }
 
-    .status-live {
+    .status-live,
+    .live-badge {
       background: rgba(255, 90, 110, 0.16);
-      border-color: rgba(255, 90, 110, 0.22);
+      border-color: rgba(255, 90, 110, 0.24);
     }
 
     .status-upcoming {
       background: rgba(98, 214, 163, 0.12);
       border-color: rgba(98, 214, 163, 0.18);
+    }
+
+    .live-score-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .live-meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .live-event-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .live-minute {
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .live-event-type {
+      color: var(--team-accent);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .live-event-main {
+      color: #fff;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .live-event-sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
     }
 
     .table-wrap {
@@ -768,6 +835,14 @@
       .hero h3 {
         font-size: 1.8rem;
       }
+
+      .player-item {
+        grid-template-columns: 1fr;
+      }
+
+      .player-stats {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -817,7 +892,7 @@
         <div class="topbar">
           <div class="page-head">
             <h2 id="pageTitle">Football Dashboard</h2>
-            <p id="pageSubtitle">Fixtures, table, players, news and highlights in one place.</p>
+            <p id="pageSubtitle">Fixtures, table, players, live data, news and highlights in one place.</p>
           </div>
 
           <div class="top-actions">
@@ -919,6 +994,16 @@
           <div class="right-col">
             <section class="panel card">
               <div class="panel-head">
+                <h4>Live match centre</h4>
+                <div class="subtle" id="liveSubtle">Auto refresh every 30s</div>
+              </div>
+              <div id="livePanel">
+                <div class="loading">Checking for a live match…</div>
+              </div>
+            </section>
+
+            <section class="panel card">
+              <div class="panel-head">
                 <h4>Player spotlight</h4>
                 <div class="subtle">From your players endpoint</div>
               </div>
@@ -940,7 +1025,7 @@
         </section>
 
         <div class="footer-note">
-          Using your current Cloudflare setup for fixtures, standings, players, BBC football RSS and YouTube.
+          Using your current Cloudflare setup for fixtures, standings, players, live data, BBC football RSS and YouTube.
         </div>
       </main>
     </div>
@@ -987,6 +1072,7 @@
     };
 
     let activeTeamKey = "tottenham";
+    let autoRefreshTimer = null;
 
     const els = {
       teamToggle: document.getElementById("teamToggle"),
@@ -1022,6 +1108,8 @@
       newsPanel: document.getElementById("newsPanel"),
       playersPanel: document.getElementById("playersPanel"),
       videosPanel: document.getElementById("videosPanel"),
+      livePanel: document.getElementById("livePanel"),
+      liveSubtle: document.getElementById("liveSubtle"),
       refreshButton: document.getElementById("refreshButton")
     };
 
@@ -1055,7 +1143,7 @@
       document.documentElement.style.setProperty("--team-glow", team.colours.glow);
 
       els.pageTitle.textContent = `${team.name} Command Centre`;
-      els.pageSubtitle.textContent = `One-page dashboard for ${team.name}: fixtures, standings, players, club news and highlights.`;
+      els.pageSubtitle.textContent = `One-page dashboard for ${team.name}: fixtures, standings, live data, players, club news and highlights.`;
       els.sidebarSeason.textContent = CURRENT_SEASON;
       els.sidebarLeague.textContent = team.leagueName;
       els.leagueChip.textContent = `League: ${team.leagueName}`;
@@ -1063,7 +1151,7 @@
 
       els.sidebarPromo.innerHTML = `
         <h3>${escapeHtml(team.shortName)} matchday view</h3>
-        <p>Use the club toggle above to switch the entire dashboard between Tottenham and AFC Wimbledon.</p>
+        <p>Use the club toggle above to switch the full dashboard between Tottenham and AFC Wimbledon.</p>
         <div class="ghost">${team.key === "tottenham" ? "🐓" : "🟡"}</div>
       `;
     }
@@ -1074,13 +1162,15 @@
       els.newsPanel.innerHTML = `<div class="loading">Loading news…</div>`;
       els.playersPanel.innerHTML = `<div class="loading">Loading players…</div>`;
       els.videosPanel.innerHTML = `<div class="loading">Loading highlights…</div>`;
+      els.livePanel.innerHTML = `<div class="loading">Checking for a live match…</div>`;
+      els.liveSubtle.textContent = "Auto refresh every 30s";
 
       els.heroEyebrow.textContent = "Loading club dashboard";
       els.heroTitle.textContent = "Fetching latest football data";
-      els.heroSub.textContent = "Pulling fixtures, table, players, news and highlights.";
+      els.heroSub.textContent = "Pulling fixtures, table, live match data, players, news and highlights.";
       els.heroMetaOne.textContent = "Fixtures";
       els.heroMetaTwo.textContent = "Standings";
-      els.heroMetaThree.textContent = "Players";
+      els.heroMetaThree.textContent = "Live";
       els.heroKickoff.textContent = "–";
       els.heroKickoffSub.textContent = "–";
       els.heroForm.textContent = "–";
@@ -1092,6 +1182,7 @@
       els.statGD.textContent = "–";
       els.statGDSub.textContent = "–";
       els.statRecord.textContent = "–";
+      els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
     async function loadDashboard() {
@@ -1099,21 +1190,30 @@
       setLoadingState();
 
       try {
-        const [fixturesData, standingsData, playersData, newsData, videosData] = await Promise.all([
+        const [
+          fixturesData,
+          standingsData,
+          playersData,
+          newsData,
+          videosData,
+          liveData
+        ] = await Promise.all([
           fetchJson(`/api/football/fixtures?team=${team.teamId}&season=${CURRENT_SEASON}`),
           fetchJson(`/api/football/standings?league=${team.leagueId}&season=${CURRENT_SEASON}`),
           fetchJson(`/api/football/players?team=${team.teamId}&season=${CURRENT_SEASON}`),
           fetchJson(`/api/news/bbc-football?team=${team.key}`),
-          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
+          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`),
+          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
         ]);
 
         const standings = extractStandings(standingsData);
         const teamStanding = standings.find(row => String(row.team?.id) === String(team.teamId)) || null;
 
-        renderHero(team, fixturesData, teamStanding);
+        renderHero(team, fixturesData, teamStanding, liveData);
         renderStats(teamStanding);
         renderFixtures(fixturesData);
         renderTable(standings, team.teamId, team.leagueName);
+        renderLive(liveData);
         renderPlayers(playersData);
         renderNews(newsData, team.newsTerms);
         renderVideos(videosData);
@@ -1128,13 +1228,34 @@
       }
     }
 
-    function renderHero(team, fixturesData, teamStanding) {
+    function renderHero(team, fixturesData, teamStanding, liveData) {
+      const form = normaliseForm(teamStanding?.form || "");
+
+      if (liveData?.live && liveData?.fixture) {
+        const fixture = liveData.fixture;
+        const home = fixture.teams?.home?.name || "Home";
+        const away = fixture.teams?.away?.name || "Away";
+        const competition = fixture.league?.name || team.leagueName;
+        const venue = fixture.fixture?.venue?.name || "Venue TBC";
+        const elapsed = fixture.fixture?.status?.elapsed;
+        const statusLong = fixture.fixture?.status?.long || "Live";
+
+        els.heroEyebrow.textContent = `${team.shortName} · Live now`;
+        els.heroTitle.textContent = `${home} ${safeScore(fixture.goals?.home)}–${safeScore(fixture.goals?.away)} ${away}`;
+        els.heroSub.textContent = `${competition} · ${venue}`;
+        els.heroMetaOne.textContent = elapsed ? `${elapsed}'` : "Live";
+        els.heroMetaTwo.textContent = statusLong;
+        els.heroMetaThree.textContent = "Match centre active";
+        els.heroKickoff.textContent = elapsed ? `${elapsed}'` : "Live";
+        els.heroKickoffSub.textContent = "Real-time event feed";
+        els.heroForm.textContent = form || "–";
+        return;
+      }
+
       const live = Array.isArray(fixturesData?.live) ? fixturesData.live : [];
       const next = Array.isArray(fixturesData?.next) ? fixturesData.next : [];
       const last = Array.isArray(fixturesData?.last) ? fixturesData.last : [];
-
       const featured = live[0] || next[0] || last[0] || null;
-      const form = normaliseForm(teamStanding?.form || "");
 
       if (!featured) {
         els.heroEyebrow.textContent = `${team.shortName} overview`;
@@ -1300,6 +1421,81 @@
       `;
     }
 
+    function renderLive(liveData) {
+      if (!liveData?.live || !liveData?.fixture) {
+        els.liveSubtle.textContent = "No live match right now";
+        els.livePanel.innerHTML = `<div class="empty">No live match for this club at the moment.</div>`;
+        return;
+      }
+
+      const fixture = liveData.fixture;
+      const events = Array.isArray(liveData.events) ? liveData.events.slice(0, 8) : [];
+
+      const homeName = fixture?.teams?.home?.name || "Home";
+      const awayName = fixture?.teams?.away?.name || "Away";
+      const homeScore = safeScore(fixture?.goals?.home);
+      const awayScore = safeScore(fixture?.goals?.away);
+      const elapsed = fixture?.fixture?.status?.elapsed ?? "";
+      const statusLong = fixture?.fixture?.status?.long || "Live";
+      const competition = fixture?.league?.name || "Competition";
+      const venue = fixture?.fixture?.venue?.name || "Venue TBC";
+
+      els.liveSubtle.textContent = `${competition} · ${statusLong}`;
+
+      const scoreCard = `
+        <div class="live-score-card">
+          <div class="live-score-top">
+            <div class="live-badge">● Live ${elapsed ? `${elapsed}'` : ""}</div>
+          </div>
+
+          <div class="live-teams">
+            <div class="live-team-row">
+              <span class="live-team-name">${escapeHtml(homeName)}</span>
+              <span class="live-team-score">${homeScore}</span>
+            </div>
+            <div class="live-team-row">
+              <span class="live-team-name">${escapeHtml(awayName)}</span>
+              <span class="live-team-score">${awayScore}</span>
+            </div>
+          </div>
+
+          <div class="live-meta">
+            ${escapeHtml(competition)} · ${escapeHtml(venue)}
+          </div>
+        </div>
+      `;
+
+      const eventsHtml = events.length
+        ? `
+          <div class="live-events">
+            ${events.map(renderLiveEvent).join("")}
+          </div>
+        `
+        : `<div class="empty">Live match found, but no timeline events yet.</div>`;
+
+      els.livePanel.innerHTML = `<div class="live-shell">${scoreCard}${eventsHtml}</div>`;
+    }
+
+    function renderLiveEvent(event) {
+      const minute = event.extra ? `${event.time}+${event.extra}'` : `${event.time ?? "?"}'`;
+      const typeLabel = eventLabel(event.type, event.detail);
+
+      return `
+        <article class="live-event">
+          <div class="live-event-top">
+            <span class="live-minute">${escapeHtml(minute)}</span>
+            <span class="live-event-type">${escapeHtml(typeLabel)}</span>
+          </div>
+          <div class="live-event-main">
+            ${escapeHtml(event.player || event.team || "Match event")}
+          </div>
+          <div class="live-event-sub">
+            ${escapeHtml(buildEventSubline(event))}
+          </div>
+        </article>
+      `;
+    }
+
     function renderPlayers(playersData) {
       const players = Array.isArray(playersData?.response) ? playersData.response : [];
 
@@ -1408,8 +1604,10 @@
       els.newsPanel.innerHTML = html;
       els.playersPanel.innerHTML = html;
       els.videosPanel.innerHTML = html;
+      els.livePanel.innerHTML = html;
       els.heroTitle.textContent = "Dashboard error";
       els.heroSub.textContent = message;
+      els.liveSubtle.textContent = "Live feed unavailable";
     }
 
     function extractStandings(data) {
@@ -1443,6 +1641,24 @@
           ${chars.map(char => `<span class="form-chip ${char.toLowerCase()}">${char}</span>`).join("")}
         </div>
       `;
+    }
+
+    function eventLabel(type, detail) {
+      const text = `${type || ""} ${detail || ""}`.toLowerCase();
+      if (text.includes("goal")) return "Goal";
+      if (text.includes("card")) return "Card";
+      if (text.includes("subst")) return "Sub";
+      if (text.includes("var")) return "VAR";
+      return detail || type || "Event";
+    }
+
+    function buildEventSubline(event) {
+      const parts = [];
+      if (event.team) parts.push(event.team);
+      if (event.assist) parts.push(`Assist: ${event.assist}`);
+      if (event.detail) parts.push(event.detail);
+      if (event.comments) parts.push(event.comments);
+      return parts.join(" · ") || "Live update";
     }
 
     function isLiveStatus(status) {
@@ -1553,11 +1769,19 @@
       return escapeHtml(str);
     }
 
+    function startAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(() => {
+        loadDashboard();
+      }, 30000);
+    }
+
     els.refreshButton.addEventListener("click", loadDashboard);
 
     applyTheme();
     renderTeamButtons();
     loadDashboard();
+    startAutoRefresh();
   </script>
 </body>
 </html>
