@@ -5,49 +5,43 @@ export async function onRequestGet(context) {
     return json({ error: "Missing FOOTBALL_DATA_KEY secret" }, 500, 0);
   }
 
-  // Tottenham Hotspur in football-data.org
   const TEAM_ID = 73;
 
-  // Competition codes from football-data.org
-  const COMPETITIONS = {
-    PL: "Premier League",
-    CL: "Champions League",
-    FAC: "FA Cup"
-  };
-
   try {
+    const today = new Date();
+    const dateFrom = addDays(today, -120);
+    const dateTo = addDays(today, 180);
+
     const [teamData, plStandingsData, matchesData] = await Promise.all([
       fdFetch(env, `/teams/${TEAM_ID}`),
       fdFetch(env, `/competitions/PL/standings`),
-      fdFetch(env, `/teams/${TEAM_ID}/matches?status=SCHEDULED,FINISHED,IN_PLAY,PAUSED`)
+      fdFetch(
+        env,
+        `/teams/${TEAM_ID}/matches?competitions=PL,CL,FAC&dateFrom=${dateFrom}&dateTo=${dateTo}`
+      )
     ]);
 
     const team = normaliseTeam(teamData);
 
     const allMatches = Array.isArray(matchesData?.matches) ? matchesData.matches : [];
-    const spursMatches = allMatches.filter((match) => {
-      const code = match?.competition?.code;
-      return code === "PL" || code === "CL" || code === "FAC";
-    });
-
     const now = new Date();
 
-    const live = spursMatches
-      .filter((m) => isLiveStatus(m?.status))
+    const live = allMatches
+      .filter((match) => isLiveStatus(match?.status))
       .sort(sortByUtcAsc);
 
-    const next = spursMatches
-      .filter((m) => {
-        if (!m?.utcDate) return false;
-        return new Date(m.utcDate) >= now && !isLiveStatus(m?.status);
+    const next = allMatches
+      .filter((match) => {
+        if (!match?.utcDate) return false;
+        return new Date(match.utcDate) >= now && !isLiveStatus(match?.status);
       })
       .sort(sortByUtcAsc)
-      .slice(0, 6);
+      .slice(0, 8);
 
-    const last = spursMatches
-      .filter((m) => m?.status === "FINISHED")
+    const last = allMatches
+      .filter((match) => match?.status === "FINISHED")
       .sort(sortByUtcDesc)
-      .slice(0, 6);
+      .slice(0, 8);
 
     const table = extractStandings(plStandingsData, TEAM_ID);
 
@@ -55,7 +49,6 @@ export async function onRequestGet(context) {
       {
         source: "football-data.org",
         team,
-        competitions: COMPETITIONS,
         live: live.map(normaliseMatch),
         next: next.map(normaliseMatch),
         last: last.map(normaliseMatch),
@@ -92,6 +85,12 @@ async function fdFetch(env, path) {
   }
 
   return res.json();
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 function normaliseTeam(data) {
@@ -144,7 +143,6 @@ function normaliseMatch(match) {
     id: match?.id ?? null,
     utcDate: match?.utcDate ?? null,
     status: match?.status ?? "",
-    minute: match?.minute ?? null,
     competition: {
       code: match?.competition?.code ?? "",
       name: match?.competition?.name ?? ""
@@ -181,7 +179,7 @@ function normaliseMatch(match) {
 }
 
 function isLiveStatus(status) {
-  return ["IN_PLAY", "PAUSED"].includes(String(status || "").toUpperCase());
+  return ["IN_PLAY", "PAUSED", "LIVE"].includes(String(status || "").toUpperCase());
 }
 
 function sortByUtcAsc(a, b) {
