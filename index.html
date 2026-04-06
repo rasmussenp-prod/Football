@@ -1103,13 +1103,13 @@
       const liveData = snapshot.liveData || {};
       const newsData = snapshot.newsData || {};
       const videosData = snapshot.videosData || {};
-      const standings = extractStandings(teamData);
-      const teamStanding = teamData.standing || findTeamStanding(standings, teamData.team?.id || team.teamId) || null;
+      const standings = getStandingsFromTeamData(teamData);
+      const teamStanding = getTeamStanding(teamData, standings, teamData.team?.id || team.teamId, team.name);
 
       renderBrandLogo(teamData, standings, team);
       renderHero(team, teamData, teamStanding, liveData);
       renderStats(teamStanding);
-      renderFixtures(teamData, team.key);
+      renderFixtures(teamData);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
       renderNews(newsData, team.newsTerms);
       renderVideos(videosData);
@@ -1160,7 +1160,7 @@
     }
 
     function renderHero(team, teamData, teamStanding, liveData) {
-      const featured = selectFeaturedFixture(teamData, liveData, team.key);
+      const featured = selectFeaturedFixture(teamData, liveData);
       const form = normaliseForm(teamStanding?.form);
       const live = featured.isLive;
 
@@ -1170,7 +1170,7 @@
       const competition = featured.competition || team.leagueName;
       const venue = featured.venue || "Venue TBC";
       const status = featured.status || "";
-      const fixtureDate = getFixtureDate(featured, team.key);
+      const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
 
@@ -1202,7 +1202,99 @@
       renderLineups(featured, liveData, fixtureDate);
     }
 
-    function selectFeaturedFixture(teamData, liveData, teamKey = activeTeamKey) {
+    
+    function parseMatchDate(value) {
+      if (!value) return null;
+      if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+      if (typeof value === "number") {
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+      }
+      const raw = String(value).trim();
+      if (!raw) return null;
+
+      let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (m) {
+        const [, y, mo, d, h, mi, s] = m;
+        return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s || 0));
+      }
+
+      m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
+      if (m) {
+        const [, d, mo, y, h, mi] = m;
+        return new Date(Number(y), Number(mo) - 1, Number(d), Number(h || 0), Number(mi || 0), 0);
+      }
+
+      const d = new Date(raw);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function fixtureDateValue(item) {
+      const candidates = [
+        item?.utcDate,
+        item?.date,
+        item?.kickoff,
+        item?.kickOff,
+        item?.kickoffTime,
+        item?.startTime,
+        item?.fixture?.date,
+        item?.fixture?.utcDate,
+        item?.fixtureDate,
+        item?.datetime
+      ];
+      for (const candidate of candidates) {
+        const parsed = parseMatchDate(candidate);
+        if (parsed) return parsed;
+      }
+      return null;
+    }
+
+    function normaliseFixture(item) {
+      const date = fixtureDateValue(item);
+      const status = String(item?.status || item?.fixture?.status?.short || item?.fixture?.status?.long || "").toUpperCase();
+      return {
+        ...item,
+        _date: date,
+        _ts: date ? date.getTime() : Number.POSITIVE_INFINITY,
+        _status: status
+      };
+    }
+
+    function getAllFixtures(teamData) {
+      return [
+        ...(Array.isArray(teamData?.live) ? teamData.live : []),
+        ...(Array.isArray(teamData?.next) ? teamData.next : []),
+        ...(Array.isArray(teamData?.last) ? teamData.last : [])
+      ].map(normaliseFixture);
+    }
+
+    function getStandingsFromTeamData(teamData) {
+      const candidates = [
+        teamData?.standings,
+        teamData?.table,
+        teamData?.leagueTable,
+        teamData?.league?.standings,
+        teamData?.data?.standings,
+        teamData?.data?.table,
+        teamData?.competition?.standings
+      ];
+      for (const candidate of candidates) {
+        if (Array.isArray(candidate) && candidate.length) return candidate;
+        if (candidate && Array.isArray(candidate.table) && candidate.table.length) return candidate.table;
+        if (Array.isArray(candidate?.[0]?.table) && candidate[0].table.length) return candidate[0].table;
+      }
+      return [];
+    }
+
+    function getTeamStanding(teamData, standings, activeTeamId, teamName) {
+      if (teamData?.standing) return teamData.standing;
+      return (standings || []).find(row =>
+        String(row?.team?.id || "") === String(activeTeamId || "") ||
+        String(row?.team?.name || "").toLowerCase() === String(teamName || "").toLowerCase()
+      ) || null;
+    }
+
+function selectFeaturedFixture(teamData, liveData) {
       if (liveData?.live && liveData?.fixture) {
         return {
           isLive: true,
@@ -1220,51 +1312,56 @@
         };
       }
 
-      const liveFixtures = Array.isArray(teamData.live) ? teamData.live : [];
-      const nextFixtures = Array.isArray(teamData.next) ? teamData.next : [];
-      const lastFixtures = Array.isArray(teamData.last) ? teamData.last : [];
-
-      const allUpcoming = dedupeMatches([...liveFixtures, ...nextFixtures])
-        .map(item => ({ item, date: getFixtureDate(item, teamKey) }))
-        .filter(entry => entry.date && !Number.isNaN(entry.date.getTime()))
-        .sort((a, b) => a.date - b.date);
-
+      const allFixtures = getAllFixtures(teamData).filter(item => item && item._date);
       const now = Date.now();
-      const stillRelevant = allUpcoming.find(entry => isLiveStatus(entry.item.status) || entry.date.getTime() >= (now - 4 * 60 * 60 * 1000));
-      const featuredUpcoming = stillRelevant?.item || (nextFixtures.length ? nextFixtures[0] : null);
 
-      if (featuredUpcoming) {
+      const liveLike = allFixtures.find(item => isLiveStatus(item._status));
+      if (liveLike) return {
+        isLive: true,
+        homeName: liveLike.homeTeam?.name || "Home",
+        awayName: liveLike.awayTeam?.name || "Away",
+        homeScore: liveLike.score?.fullTime?.home ?? liveLike.score?.home,
+        awayScore: liveLike.score?.fullTime?.away ?? liveLike.score?.away,
+        utcDate: liveLike.utcDate || liveLike.date || liveLike.kickoff || null,
+        competition: liveLike.competition?.name || "Competition",
+        venue: liveLike.venue || "",
+        status: liveLike.status || "LIVE",
+        liveStatus: liveLike.status || "Live",
+        lineups: extractLineups(liveLike)
+      };
+
+      const upcoming = allFixtures
+        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000)
+        .sort((a, b) => a._ts - b._ts)[0];
+      if (upcoming) {
         return {
-          isLive: isLiveStatus(featuredUpcoming.status),
-          homeName: featuredUpcoming.homeTeam?.name || "Home",
-          awayName: featuredUpcoming.awayTeam?.name || "Away",
-          homeScore: featuredUpcoming.score?.fullTime?.home,
-          awayScore: featuredUpcoming.score?.fullTime?.away,
-          utcDate: featuredUpcoming.utcDate || featuredUpcoming.date || featuredUpcoming.localDate || featuredUpcoming.kickoff || null,
-          competition: featuredUpcoming.competition?.name || "Competition",
-          venue: featuredUpcoming.venue || "",
-          status: featuredUpcoming.status || "SCHEDULED",
+          isLive: false,
+          homeName: upcoming.homeTeam?.name || "Home",
+          awayName: upcoming.awayTeam?.name || "Away",
+          homeScore: upcoming.score?.fullTime?.home ?? upcoming.score?.home,
+          awayScore: upcoming.score?.fullTime?.away ?? upcoming.score?.away,
+          utcDate: upcoming.utcDate || upcoming.date || upcoming.kickoff || null,
+          competition: upcoming.competition?.name || "Competition",
+          venue: upcoming.venue || "",
+          status: upcoming.status || "SCHEDULED",
           liveStatus: "",
-          lineups: extractLineups(featuredUpcoming)
+          lineups: extractLineups(upcoming)
         };
       }
 
-      const last = dedupeMatches(lastFixtures)
-        .map(item => ({ item, date: getFixtureDate(item, teamKey) }))
-        .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item || null;
-
+      const mostRecent = allFixtures.sort((a, b) => b._ts - a._ts)[0] || (Array.isArray(teamData?.last) ? teamData.last[0] : null);
       return {
         isLive: false,
-        homeName: last?.homeTeam?.name || "Home",
-        awayName: last?.awayTeam?.name || "Away",
-        homeScore: last?.score?.fullTime?.home,
-        awayScore: last?.score?.fullTime?.away,
-        utcDate: last?.utcDate || last?.date || last?.localDate || last?.kickoff || null,
-        competition: last?.competition?.name || "Competition",
-        venue: last?.venue || "",
-        status: last?.status || "Latest result",
+        homeName: mostRecent?.homeTeam?.name || "Home",
+        awayName: mostRecent?.awayTeam?.name || "Away",
+        homeScore: mostRecent?.score?.fullTime?.home ?? mostRecent?.score?.home,
+        awayScore: mostRecent?.score?.fullTime?.away ?? mostRecent?.score?.away,
+        utcDate: mostRecent?.utcDate || mostRecent?.date || mostRecent?.kickoff || null,
+        competition: mostRecent?.competition?.name || "Competition",
+        venue: mostRecent?.venue || "",
+        status: mostRecent?.status || "Latest result",
         liveStatus: "",
-        lineups: extractLineups(last)
+        lineups: extractLineups(mostRecent)
       };
     }
 
@@ -1358,89 +1455,6 @@
       }).filter(Boolean).slice(0, 11);
     }
 
-    function extractStandings(teamData) {
-      const directCandidates = [
-        teamData?.standings,
-        teamData?.table,
-        teamData?.leagueTable,
-        teamData?.ladder,
-        teamData?.league?.standings,
-        teamData?.data?.standings,
-        teamData?.data?.table
-      ];
-
-      for (const candidate of directCandidates) {
-        if (Array.isArray(candidate) && candidate.length) return candidate;
-      }
-
-      const nestedCandidates = [
-        teamData?.standings?.table,
-        teamData?.table?.rows,
-        teamData?.leagueTable?.rows,
-        teamData?.data?.standings?.table,
-        teamData?.data?.table?.rows,
-        teamData?.response?.[0]?.league?.standings?.[0]
-      ];
-
-      for (const candidate of nestedCandidates) {
-        if (Array.isArray(candidate) && candidate.length) return candidate;
-      }
-
-      return [];
-    }
-
-    function findTeamStanding(standings, teamId) {
-      if (!Array.isArray(standings) || !standings.length) return null;
-      return standings.find(row => String(row.team?.id) === String(teamId)) || null;
-    }
-
-    function parseLocalDateString(value) {
-      if (typeof value !== "string") return null;
-      const v = value.trim();
-      let m = v.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?$/);
-      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || 0));
-      m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-      return null;
-    }
-
-    function getFixtureDate(item, teamKey = activeTeamKey) {
-      if (!item || typeof item !== "object") return null;
-
-      const localFirst = [
-        item.localDate,
-        item.local_date,
-        item.kickoffLocal,
-        item.startTimeLocal,
-        item.dateLocal,
-        item.date,
-        item.kickoff
-      ];
-
-      for (const value of localFirst) {
-        const parsed = parseLocalDateString(value);
-        if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
-      }
-
-      const zoned = [
-        item.utcDate,
-        item.startsAt,
-        item.startTime,
-        item.datetime,
-        item.matchDate,
-        item.fixture?.date,
-        item.fixture?.utcDate
-      ];
-
-      for (const value of zoned) {
-        if (!value) continue;
-        const parsed = value instanceof Date ? value : new Date(value);
-        if (!Number.isNaN(parsed.getTime())) return parsed;
-      }
-
-      return null;
-    }
-
     function renderStats(teamStanding) {
       if (!teamStanding) {
         els.statPosition.textContent = "–";
@@ -1473,12 +1487,14 @@
       els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-    function renderFixtures(teamData, teamKey = activeTeamKey) {
-      const combined = [
-        ...(Array.isArray(teamData.live) ? teamData.live : []),
-        ...(Array.isArray(teamData.next) ? teamData.next : []),
-        ...(Array.isArray(teamData.last) ? teamData.last : [])
-      ];
+    function renderFixtures(teamData) {
+      const combined = getAllFixtures(teamData)
+        .sort((a, b) => {
+          const aLive = isLiveStatus(a._status) ? 0 : 1;
+          const bLive = isLiveStatus(b._status) ? 0 : 1;
+          if (aLive !== bLive) return aLive - bLive;
+          return a._ts - b._ts;
+        });
 
       const unique = dedupeMatches(combined).slice(0, 8);
       els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming · ${(teamData.last || []).length} recent`;
@@ -1489,14 +1505,16 @@
       }
 
       els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = getFixtureDate(item, teamKey);
-        const status = item.status || "";
+        const date = item._date || fixtureDateValue(item);
+        const status = item.status || item._status || "";
         const competition = item.competition?.name || "Competition";
         const home = item.homeTeam?.name || "Home";
         const away = item.awayTeam?.name || "Away";
+        const homeScore = item.score?.fullTime?.home ?? item.score?.home;
+        const awayScore = item.score?.fullTime?.away ?? item.score?.away;
         let statusClass = "";
         if (isLiveStatus(status)) statusClass = "status-live";
-        else if (status === "SCHEDULED" || status === "TIMED") statusClass = "status-upcoming";
+        else if (["SCHEDULED", "TIMED"].includes(String(status).toUpperCase())) statusClass = "status-upcoming";
 
         return `
           <article class="match-item">
@@ -1509,11 +1527,11 @@
               <div class="teams">
                 <div class="team-line">
                   <span class="team-name">${escapeHtml(home)}</span>
-                  <span class="team-score">${safeScore(item.score?.fullTime?.home)}</span>
+                  <span class="team-score">${safeScore(homeScore)}</span>
                 </div>
                 <div class="team-line">
                   <span class="team-name">${escapeHtml(away)}</span>
-                  <span class="team-score">${safeScore(item.score?.fullTime?.away)}</span>
+                  <span class="team-score">${safeScore(awayScore)}</span>
                 </div>
               </div>
               <div class="match-side">
