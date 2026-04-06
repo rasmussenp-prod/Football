@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Football Progress & Status</title>
+  <title>Football Progress and Status</title>
   <style>
     :root {
       --bg: #07111f;
@@ -870,14 +870,20 @@
       </section>
 
       <div class="footer-note">
-        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
+        Silent background refresh is staggered to reduce API calls. Live data refreshes most often, while news and highlights refresh less often. Team selection and active section are preserved between refreshes.
       </div>
     </div>
   </div>
 
   <script>
     const CURRENT_SEASON = 2025;
-    const AUTO_REFRESH_MS = 30000;
+    const AUTO_REFRESH_TICK_MS = 15000;
+    const REFRESH_TTL_MS = {
+      teamData: 120000,
+      liveData: 30000,
+      newsData: 600000,
+      videosData: 900000
+    };
 
     const TEAM_CONFIG = {
       tottenham: {
@@ -941,6 +947,8 @@
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
+    let teamCaches = {};
+    let activeRefreshToken = 0;
 
     const els = {
       body: document.body,
@@ -981,6 +989,95 @@
       navRow: document.getElementById("navRow")
     };
 
+
+    function createEmptyTeamCache(teamKey) {
+      return {
+        teamKey,
+        teamData: null,
+        liveData: { live: false, fixture: null, events: [], lineups: null },
+        newsData: { items: [] },
+        videosData: { items: [] },
+        fetchedAt: {
+          teamData: 0,
+          liveData: 0,
+          newsData: 0,
+          videosData: 0
+        },
+        snapshot: null
+      };
+    }
+
+    function getTeamCache(teamKey) {
+      if (!teamCaches[teamKey]) {
+        teamCaches[teamKey] = createEmptyTeamCache(teamKey);
+      }
+      return teamCaches[teamKey];
+    }
+
+    function buildSnapshotFromCache(teamKey) {
+      const cache = getTeamCache(teamKey);
+      if (!cache.teamData) return null;
+      return {
+        teamKey,
+        teamData: cache.teamData,
+        liveData: cache.liveData || { live: false, fixture: null, events: [], lineups: null },
+        newsData: cache.newsData || { items: [] },
+        videosData: cache.videosData || { items: [] }
+      };
+    }
+
+    function getResourcesDue(cache, force = false, resources = null) {
+      const now = Date.now();
+      const requested = Array.isArray(resources) && resources.length
+        ? resources
+        : ["teamData", "liveData", "newsData", "videosData"];
+
+      return requested.filter((resource) => {
+        if (force) return true;
+        if (!cache[resource]) return true;
+        if (!cache.fetchedAt[resource]) return true;
+        return (now - cache.fetchedAt[resource]) >= REFRESH_TTL_MS[resource];
+      });
+    }
+
+    async function fetchResource(resource, team) {
+      if (resource === "teamData") {
+        return fetchJson(`/api/football/team?team=${team.key}`);
+      }
+      if (resource === "liveData") {
+        return fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`);
+      }
+      if (resource === "newsData") {
+        return fetchJson(`/api/news/bbc-football?team=${team.key}`);
+      }
+      if (resource === "videosData") {
+        return fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`);
+      }
+      throw new Error(`Unknown resource: ${resource}`);
+    }
+
+    function getLatestFetchTime(cache) {
+      return Math.max(
+        cache.fetchedAt.teamData || 0,
+        cache.fetchedAt.liveData || 0,
+        cache.fetchedAt.newsData || 0,
+        cache.fetchedAt.videosData || 0
+      );
+    }
+
+    function renderCachedSnapshotIfAvailable(teamKey) {
+      const cache = getTeamCache(teamKey);
+      const snapshot = cache.snapshot || buildSnapshotFromCache(teamKey);
+      if (snapshot) {
+        latestSnapshot = snapshot;
+        cache.snapshot = snapshot;
+        applySnapshot(snapshot);
+        updateRefreshLabel(`Updated ${formatTimestamp(getLatestFetchTime(cache))}`);
+        return true;
+      }
+      return false;
+    }
+
     function applyTheme() {
       const team = TEAM_CONFIG[activeTeamKey];
       document.documentElement.style.setProperty("--team-primary", team.colours.primary);
@@ -1012,7 +1109,13 @@
           applyTheme();
           renderTeamButtons();
           closeMenu();
-          await refreshDashboard({ silent: !latestSnapshot, resetIfEmpty: true });
+
+          const hadCachedSnapshot = renderCachedSnapshotIfAvailable(activeTeamKey);
+          if (!hadCachedSnapshot) {
+            renderBootstrapLoading();
+          }
+
+          await refreshDashboard({ silent: hadCachedSnapshot, resetIfEmpty: !hadCachedSnapshot });
         });
       });
     }
@@ -1057,40 +1160,80 @@
       }
     }
 
-    async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
+    async function refreshDashboard({ silent = true, resetIfEmpty = false, force = false, resources = null } = {}) {
+      if (isRefreshing) return;
+
+      const refreshToken = ++activeRefreshToken;
+      const teamKeyAtStart = activeTeamKey;
+      const team = TEAM_CONFIG[teamKeyAtStart];
+      const cache = getTeamCache(teamKeyAtStart);
+      const dueResources = getResourcesDue(cache, force, resources);
+
+      if (!dueResources.length) {
+        renderCachedSnapshotIfAvailable(teamKeyAtStart);
+        return;
+      }
+
       setRefreshing(true);
       updateRefreshLabel("Refreshing…");
 
-      if (!silent && resetIfEmpty && !latestSnapshot) {
+      if (!silent && resetIfEmpty && !cache.snapshot) {
         renderBootstrapLoading();
       }
 
       try {
-        const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
-          fetchJson(`/api/football/team?team=${team.key}`),
-          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/news/bbc-football?team=${team.key}`),
-          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
-        ]);
+        const results = await Promise.allSettled(
+          dueResources.map((resource) => fetchResource(resource, team))
+        );
 
-        const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
-        const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
-        const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
-        const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
+        let successfulUpdates = 0;
 
-        if (!teamData) {
-          throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
+        results.forEach((result, index) => {
+          const resource = dueResources[index];
+
+          if (result.status === "fulfilled") {
+            cache[resource] = result.value;
+            cache.fetchedAt[resource] = Date.now();
+            successfulUpdates += 1;
+            return;
+          }
+
+          console.error(`Refresh failed for ${resource}`, result.reason);
+        });
+
+        const snapshot = buildSnapshotFromCache(teamKeyAtStart);
+        if (!snapshot) {
+          throw new Error("Could not load team dashboard data.");
         }
 
-        latestSnapshot = { teamData, liveData, newsData, videosData, teamKey: activeTeamKey };
-        applySnapshot(latestSnapshot);
-        updateRefreshLabel(`Updated ${formatNow()}`);
+        cache.snapshot = snapshot;
+        latestSnapshot = snapshot;
+
+        if (activeTeamKey === teamKeyAtStart && refreshToken === activeRefreshToken) {
+          applySnapshot(snapshot);
+        }
+
+        const latestFetch = getLatestFetchTime(cache);
+        if (successfulUpdates > 0) {
+          updateRefreshLabel(`Updated ${formatTimestamp(latestFetch)}`);
+        } else if (latestFetch) {
+          updateRefreshLabel(`Using saved data · ${formatTimestamp(latestFetch)}`);
+        } else {
+          updateRefreshLabel("Refresh failed");
+        }
       } catch (error) {
-        if (!latestSnapshot) {
+        const fallbackSnapshot = cache.snapshot || buildSnapshotFromCache(teamKeyAtStart);
+        if (fallbackSnapshot) {
+          latestSnapshot = fallbackSnapshot;
+          if (activeTeamKey === teamKeyAtStart && refreshToken === activeRefreshToken) {
+            applySnapshot(fallbackSnapshot);
+          }
+          const latestFetch = getLatestFetchTime(cache);
+          updateRefreshLabel(latestFetch ? `Using saved data · ${formatTimestamp(latestFetch)}` : "Refresh failed");
+        } else {
           renderErrorState(error);
+          updateRefreshLabel("Refresh failed");
         }
-        updateRefreshLabel("Refresh failed");
         console.error(error);
       } finally {
         setRefreshing(false);
@@ -1638,6 +1781,14 @@
       });
     }
 
+    function formatTimestamp(timestamp) {
+      if (!timestamp) return formatNow();
+      return new Date(timestamp).toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
     function trimText(text, max) {
       if (!text || text.length <= max) return text;
       return `${text.slice(0, max).trim()}…`;
@@ -1673,10 +1824,10 @@
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
       autoRefreshTimer = setInterval(() => {
         refreshDashboard({ silent: true });
-      }, AUTO_REFRESH_MS);
+      }, AUTO_REFRESH_TICK_MS);
     }
 
-    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true }));
+    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true, force: true, resources: ["teamData", "liveData"] }));
     els.menuButton.addEventListener("click", () => {
       if (els.menuPanel.classList.contains("open")) closeMenu();
       else openMenu();
@@ -1697,7 +1848,7 @@
     renderTeamButtons();
     setupNav();
     renderBootstrapLoading();
-    refreshDashboard({ silent: false, resetIfEmpty: true });
+    refreshDashboard({ silent: false, resetIfEmpty: true, force: true });
     startAutoRefresh();
   </script>
 </body>
