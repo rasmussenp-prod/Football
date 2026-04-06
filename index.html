@@ -8,16 +8,17 @@
     :root {
       --bg-1: #07111f;
       --bg-2: #0f2238;
-      --panel: rgba(10, 20, 36, 0.86);
-      --panel-2: rgba(15, 29, 50, 0.95);
+      --panel: rgba(12, 21, 36, 0.9);
+      --panel-2: rgba(17, 30, 50, 0.96);
       --line: rgba(255, 255, 255, 0.08);
       --line-strong: rgba(255, 255, 255, 0.14);
       --text: #eef5ff;
-      --muted: #9cb1c8;
+      --muted: #9eb4cd;
       --soft: #dce7f7;
       --good: #62d6a3;
       --warn: #ffd970;
       --bad: #ff8b9a;
+      --live: #ff677d;
       --radius-xl: 28px;
       --radius-lg: 22px;
       --radius-md: 16px;
@@ -30,13 +31,9 @@
       --team-glow: rgba(210,220,240,0.20);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -51,7 +48,7 @@
     }
 
     .app {
-      max-width: 1540px;
+      max-width: 1560px;
       margin: 0 auto;
       background: linear-gradient(180deg, rgba(8, 16, 28, 0.92), rgba(10, 18, 30, 0.98));
       border: 1px solid var(--line);
@@ -62,7 +59,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 270px minmax(0, 1fr);
+      grid-template-columns: 280px minmax(0, 1fr);
       gap: 22px;
       padding: 22px;
     }
@@ -79,7 +76,7 @@
       display: flex;
       flex-direction: column;
       gap: 18px;
-      min-height: 880px;
+      min-height: 900px;
       background:
         radial-gradient(circle at 80% 10%, rgba(255,255,255,0.06), transparent 22%),
         linear-gradient(180deg, rgba(15, 25, 43, 0.96), rgba(8, 15, 26, 1));
@@ -191,7 +188,7 @@
 
     .sidebar-promo {
       margin-top: auto;
-      min-height: 220px;
+      min-height: 240px;
       border-radius: 24px;
       border: 1px solid var(--line);
       padding: 18px;
@@ -272,12 +269,73 @@
       font: inherit;
     }
 
-    .refresh-btn {
-      cursor: pointer;
+    .refresh-btn { cursor: pointer; }
+
+    .ticker {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      overflow: hidden;
+      padding: 0 16px;
+      min-height: 52px;
+      border-radius: 18px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border: 1px solid var(--line);
+    }
+
+    .ticker-label {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(255, 103, 125, 0.16);
+      border: 1px solid rgba(255, 103, 125, 0.26);
+    }
+
+    .ticker-track-wrap {
+      overflow: hidden;
+      width: 100%;
+      min-width: 0;
+      position: relative;
+    }
+
+    .ticker-track {
+      display: inline-flex;
+      gap: 26px;
+      white-space: nowrap;
+      min-width: max-content;
+      animation: ticker-scroll 28s linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-track.paused {
+      animation-play-state: paused;
+    }
+
+    .ticker-item {
+      color: var(--soft);
+      font-size: 0.92rem;
+    }
+
+    .ticker-item strong {
+      color: #fff;
+      font-weight: 800;
+    }
+
+    @keyframes ticker-scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     .hero {
-      min-height: 280px;
+      min-height: 292px;
       padding: 24px;
       position: relative;
       overflow: hidden;
@@ -303,7 +361,7 @@
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: 1.25fr 0.8fr;
+      grid-template-columns: 1.2fr 0.8fr;
       gap: 20px;
       align-items: stretch;
     }
@@ -321,6 +379,11 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: rgba(255,255,255,0.9);
+    }
+
+    .eyebrow.live {
+      background: rgba(255,103,125,0.18);
+      border-color: rgba(255,103,125,0.28);
     }
 
     .hero h3 {
@@ -463,8 +526,6 @@
     .match-list,
     .news-list,
     .video-list,
-    .player-list,
-    .live-shell,
     .live-events {
       display: grid;
       gap: 12px;
@@ -473,7 +534,7 @@
     .match-item,
     .news-item,
     .video-item,
-    .player-item,
+    .player-card,
     .live-score-card,
     .live-event {
       padding: 14px;
@@ -548,9 +609,7 @@
       flex: 0 0 auto;
     }
 
-    .live-team-score {
-      font-size: 1.2rem;
-    }
+    .live-team-score { font-size: 1.2rem; }
 
     .match-side {
       text-align: right;
@@ -634,9 +693,7 @@
       line-height: 1.45;
     }
 
-    .table-wrap {
-      overflow-x: auto;
-    }
+    .table-wrap { overflow-x: auto; }
 
     table {
       width: 100%;
@@ -703,39 +760,47 @@
     .form-chip.d { background: rgba(255, 217, 112, 0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255, 139, 154, 0.22); color: #ffd3da; }
 
-    .player-item {
+    .player-card h5 {
+      margin: 0 0 12px;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .player-grid {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
+      gap: 10px;
+    }
+
+    .player-row {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .player-row:first-child {
+      border-top: 0;
+      padding-top: 0;
     }
 
     .player-name {
       color: #fff;
       font-weight: 700;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .player-meta {
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.82rem;
     }
 
-    .player-stats {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .mini-pill {
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--line);
-      font-size: 0.8rem;
-      color: var(--soft);
-      white-space: nowrap;
+    .player-value {
+      flex: 0 0 auto;
+      color: var(--team-accent);
+      font-weight: 800;
+      font-size: 0.96rem;
     }
 
     .news-item a,
@@ -780,13 +845,8 @@
     }
 
     @media (max-width: 1280px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        min-height: auto;
-      }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { min-height: auto; }
     }
 
     @media (max-width: 1080px) {
@@ -807,42 +867,15 @@
     }
 
     @media (max-width: 720px) {
-      body {
-        padding: 10px;
-      }
-
-      .app {
-        border-radius: 24px;
-      }
-
-      .layout {
-        padding: 12px;
-        gap: 12px;
-      }
-
-      .topbar {
-        flex-direction: column;
-      }
-
-      .top-actions {
-        justify-content: flex-start;
-      }
-
-      .hero {
-        padding: 18px;
-      }
-
-      .hero h3 {
-        font-size: 1.8rem;
-      }
-
-      .player-item {
-        grid-template-columns: 1fr;
-      }
-
-      .player-stats {
-        justify-content: flex-start;
-      }
+      body { padding: 10px; }
+      .app { border-radius: 24px; }
+      .layout { padding: 12px; gap: 12px; }
+      .topbar { flex-direction: column; }
+      .top-actions { justify-content: flex-start; }
+      .hero { padding: 18px; }
+      .hero h3 { font-size: 1.8rem; }
+      .ticker { flex-direction: column; align-items: flex-start; padding: 12px; }
+      .ticker-track { animation-duration: 22s; }
     }
   </style>
 </head>
@@ -883,7 +916,7 @@
 
         <section class="sidebar-promo" id="sidebarPromo">
           <h3>Matchday focus</h3>
-          <p>Switch between Tottenham and AFC Wimbledon without changing your existing data feeds.</p>
+          <p>Switch between Tottenham and AFC Wimbledon with a single command-centre view.</p>
           <div class="ghost">⚽</div>
         </section>
       </aside>
@@ -892,7 +925,7 @@
         <div class="topbar">
           <div class="page-head">
             <h2 id="pageTitle">Football Dashboard</h2>
-            <p id="pageSubtitle">Fixtures, table, players, live data, news and highlights in one place.</p>
+            <p id="pageSubtitle">Fixtures, table, live data, news and highlights in one place.</p>
           </div>
 
           <div class="top-actions">
@@ -902,12 +935,21 @@
           </div>
         </div>
 
+        <section class="ticker card" id="ticker">
+          <div class="ticker-label">Live ticker</div>
+          <div class="ticker-track-wrap">
+            <div class="ticker-track" id="tickerTrack">
+              <span class="ticker-item">Checking for live updates…</span>
+            </div>
+          </div>
+        </section>
+
         <section class="hero card">
           <div class="hero-grid">
             <div>
               <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
               <h3 id="heroTitle">Loading…</h3>
-              <p class="hero-sub" id="heroSub">Fetching data from your current Cloudflare APIs.</p>
+              <p class="hero-sub" id="heroSub">Fetching data from your current endpoints.</p>
 
               <div class="hero-meta">
                 <div class="meta-pill" id="heroMetaOne">–</div>
@@ -918,7 +960,7 @@
 
             <div class="hero-side">
               <div class="hero-side-card">
-                <span class="label">Next kick-off</span>
+                <span class="label">Next kick-off / live</span>
                 <div class="value" id="heroKickoff">–</div>
                 <div class="sub" id="heroKickoffSub">–</div>
               </div>
@@ -1004,11 +1046,11 @@
 
             <section class="panel card">
               <div class="panel-head">
-                <h4>Player spotlight</h4>
-                <div class="subtle">From your players endpoint</div>
+                <h4>Squad spotlight</h4>
+                <div class="subtle">Top metrics</div>
               </div>
-              <div class="player-list" id="playersPanel">
-                <div class="loading">Loading players…</div>
+              <div id="playersPanel">
+                <div class="loading">Loading squad data…</div>
               </div>
             </section>
 
@@ -1025,7 +1067,7 @@
         </section>
 
         <div class="footer-note">
-          Using your current Cloudflare setup for fixtures, standings, players, live data, BBC football RSS and YouTube.
+          Tottenham uses your new football-data.org endpoint. Wimbledon uses your new Wimbledon endpoint. News and highlights stay layered on top.
         </div>
       </main>
     </div>
@@ -1040,7 +1082,6 @@
         name: "Tottenham Hotspur",
         shortName: "Spurs",
         teamId: 47,
-        leagueId: 39,
         leagueName: "Premier League",
         highlightQuery: "Tottenham Hotspur highlights",
         newsTerms: ["tottenham", "spurs", "tottenham hotspur", "ange", "postecoglou"],
@@ -1057,7 +1098,6 @@
         name: "AFC Wimbledon",
         shortName: "Wimbledon",
         teamId: 1044,
-        leagueId: 41,
         leagueName: "League One",
         highlightQuery: "AFC Wimbledon highlights",
         newsTerms: ["afc wimbledon", "wimbledon", "the dons", "plough lane", "johnnie jackson"],
@@ -1073,6 +1113,7 @@
 
     let activeTeamKey = "tottenham";
     let autoRefreshTimer = null;
+    let latestLiveEvents = [];
 
     const els = {
       teamToggle: document.getElementById("teamToggle"),
@@ -1110,6 +1151,7 @@
       videosPanel: document.getElementById("videosPanel"),
       livePanel: document.getElementById("livePanel"),
       liveSubtle: document.getElementById("liveSubtle"),
+      tickerTrack: document.getElementById("tickerTrack"),
       refreshButton: document.getElementById("refreshButton")
     };
 
@@ -1126,6 +1168,7 @@
           const nextTeam = button.dataset.team;
           if (!nextTeam || nextTeam === activeTeamKey) return;
           activeTeamKey = nextTeam;
+          latestLiveEvents = [];
           applyTheme();
           renderTeamButtons();
           loadDashboard();
@@ -1143,7 +1186,7 @@
       document.documentElement.style.setProperty("--team-glow", team.colours.glow);
 
       els.pageTitle.textContent = `${team.name} Command Centre`;
-      els.pageSubtitle.textContent = `One-page dashboard for ${team.name}: fixtures, standings, live data, players, club news and highlights.`;
+      els.pageSubtitle.textContent = `One-page dashboard for ${team.name}: fixtures, standings, live centre, news and highlights.`;
       els.sidebarSeason.textContent = CURRENT_SEASON;
       els.sidebarLeague.textContent = team.leagueName;
       els.leagueChip.textContent = `League: ${team.leagueName}`;
@@ -1160,14 +1203,16 @@
       els.fixturesPanel.innerHTML = `<div class="loading">Loading fixtures…</div>`;
       els.tablePanel.innerHTML = `<div class="loading">Loading table…</div>`;
       els.newsPanel.innerHTML = `<div class="loading">Loading news…</div>`;
-      els.playersPanel.innerHTML = `<div class="loading">Loading players…</div>`;
+      els.playersPanel.innerHTML = `<div class="loading">Loading squad data…</div>`;
       els.videosPanel.innerHTML = `<div class="loading">Loading highlights…</div>`;
       els.livePanel.innerHTML = `<div class="loading">Checking for a live match…</div>`;
       els.liveSubtle.textContent = "Auto refresh every 30s";
+      renderTicker([{ text: "Checking for live updates…" }]);
 
       els.heroEyebrow.textContent = "Loading club dashboard";
+      els.heroEyebrow.classList.remove("live");
       els.heroTitle.textContent = "Fetching latest football data";
-      els.heroSub.textContent = "Pulling fixtures, table, live match data, players, news and highlights.";
+      els.heroSub.textContent = "Pulling fixtures, table, live updates, news and highlights.";
       els.heroMetaOne.textContent = "Fixtures";
       els.heroMetaTwo.textContent = "Standings";
       els.heroMetaThree.textContent = "Live";
@@ -1185,56 +1230,51 @@
       els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-   
-async function loadDashboard() {
-  const team = TEAM_CONFIG[activeTeamKey];
-  setLoadingState();
+    async function loadDashboard() {
+      const team = TEAM_CONFIG[activeTeamKey];
+      setLoadingState();
 
-  const results = await Promise.allSettled([
-    fetchJson(`/api/football/fixtures?team=${team.teamId}&season=${CURRENT_SEASON}`),
-    fetchJson(`/api/football/standings?league=${team.leagueId}&season=${CURRENT_SEASON}`),
-    fetchJson(`/api/football/players?team=${team.teamId}&season=${CURRENT_SEASON}`),
-    fetchJson(`/api/news/bbc-football?team=${team.key}`),
-    fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`),
-    fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
-  ]);
+      const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
+        fetchJson(`/api/football/team?team=${team.key}`),
+        fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
+        fetchJson(`/api/news/bbc-football?team=${team.key}`),
+        fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
+      ]);
 
-  const fixturesData  = results[0].status === "fulfilled" ? results[0].value : { live: [], next: [], last: [] };
-  const standingsData = results[1].status === "fulfilled" ? results[1].value : { response: [] };
-  const playersData   = results[2].status === "fulfilled" ? results[2].value : { response: [] };
-  const newsData      = results[3].status === "fulfilled" ? results[3].value : { items: [] };
-  const videosData    = results[4].status === "fulfilled" ? results[4].value : { items: [] };
-  const liveData      = results[5].status === "fulfilled" ? results[5].value : { live: false, fixture: null, events: [] };
+      const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
+      const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [] };
+      const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
+      const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
 
-  const standings = extractStandings(standingsData);
-  const teamStanding = standings.find(row => String(row.team?.id) === String(team.teamId)) || null;
+      if (!teamData) {
+        renderErrorState(
+          teamDataResult.status === "rejected"
+            ? teamDataResult.reason
+            : new Error("Could not load team dashboard data.")
+        );
+        return;
+      }
 
-  renderHero(team, fixturesData, teamStanding, liveData);
-  renderStats(teamStanding);
-  renderFixtures(fixturesData);
-  renderTable(standings, team.teamId, team.leagueName);
-  renderLive(liveData);
-  renderPlayers(playersData);
-  renderNews(newsData, team.newsTerms);
-  renderVideos(videosData);
+      const standings = Array.isArray(teamData.standings) ? teamData.standings : [];
+      const teamStanding = teamData.standing || null;
 
-  const failed = results
-    .map((r, i) => ({ r, i }))
-    .filter(x => x.r.status === "rejected")
-    .map(x => ["fixtures", "standings", "players", "news", "videos", "live"][x.i]);
+      renderHero(team, teamData, teamStanding, liveData);
+      renderStats(teamStanding);
+      renderFixtures(teamData);
+      renderTable(standings, teamData.team?.id, team.leagueName);
+      renderLive(liveData, teamData.live || []);
+      renderPlayers(teamData, teamStanding);
+      renderNews(newsData, team.newsTerms);
+      renderVideos(videosData);
+      renderTickerFromLive(liveData, teamData);
 
-  els.sidebarUpdated.textContent = new Date().toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
+      els.sidebarUpdated.textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
 
-  if (failed.length) {
-    console.warn("Some dashboard feeds failed:", failed);
-  }
-}
-
-
-    function renderHero(team, fixturesData, teamStanding, liveData) {
+    function renderHero(team, teamData, teamStanding, liveData) {
       const form = normaliseForm(teamStanding?.form || "");
 
       if (liveData?.live && liveData?.fixture) {
@@ -1247,6 +1287,7 @@ async function loadDashboard() {
         const statusLong = fixture.fixture?.status?.long || "Live";
 
         els.heroEyebrow.textContent = `${team.shortName} · Live now`;
+        els.heroEyebrow.classList.add("live");
         els.heroTitle.textContent = `${home} ${safeScore(fixture.goals?.home)}–${safeScore(fixture.goals?.away)} ${away}`;
         els.heroSub.textContent = `${competition} · ${venue}`;
         els.heroMetaOne.textContent = elapsed ? `${elapsed}'` : "Live";
@@ -1258,15 +1299,14 @@ async function loadDashboard() {
         return;
       }
 
-      const live = Array.isArray(fixturesData?.live) ? fixturesData.live : [];
-      const next = Array.isArray(fixturesData?.next) ? fixturesData.next : [];
-      const last = Array.isArray(fixturesData?.last) ? fixturesData.last : [];
-      const featured = live[0] || next[0] || last[0] || null;
+      els.heroEyebrow.classList.remove("live");
+
+      const featured = (teamData.live || [])[0] || (teamData.next || [])[0] || (teamData.last || [])[0] || null;
 
       if (!featured) {
         els.heroEyebrow.textContent = `${team.shortName} overview`;
         els.heroTitle.textContent = team.name;
-        els.heroSub.textContent = "No featured fixture available right now, but the rest of the dashboard is using your live endpoints.";
+        els.heroSub.textContent = "No featured fixture available right now, but the rest of the dashboard is loaded.";
         els.heroMetaOne.textContent = team.leagueName;
         els.heroMetaTwo.textContent = `Season ${CURRENT_SEASON}`;
         els.heroMetaThree.textContent = "No match selected";
@@ -1276,28 +1316,27 @@ async function loadDashboard() {
         return;
       }
 
-      const home = featured.teams?.home?.name || "Home";
-      const away = featured.teams?.away?.name || "Away";
-      const competition = featured.league?.name || team.leagueName;
-      const venue = featured.fixture?.venue?.name || "Venue TBC";
-      const statusShort = featured.fixture?.status?.short || "";
-      const statusLong = featured.fixture?.status?.long || "";
-      const fixtureDate = featured.fixture?.date ? new Date(featured.fixture.date) : null;
-      const label = isLiveStatus(statusShort) ? "Live now" : live[0] ? "Live now" : next[0] ? "Next match" : "Latest result";
+      const home = featured.homeTeam?.name || "Home";
+      const away = featured.awayTeam?.name || "Away";
+      const competition = featured.competition?.name || team.leagueName;
+      const venue = featured.venue || "Venue TBC";
+      const status = featured.status || "";
+      const fixtureDate = featured.utcDate ? new Date(featured.utcDate) : null;
+      const label = isLiveStatus(status) ? "Live now" : status === "FINISHED" ? "Latest result" : "Next match";
 
       els.heroEyebrow.textContent = `${team.shortName} · ${label}`;
-      els.heroTitle.textContent = `${home} vs ${away}`;
+      els.heroTitle.textContent = status === "FINISHED"
+        ? `${home} ${safeScore(featured.score?.fullTime?.home)}–${safeScore(featured.score?.fullTime?.away)} ${away}`
+        : `${home} vs ${away}`;
+
       els.heroSub.textContent = `${competition} · ${venue}`;
       els.heroMetaOne.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
-      els.heroMetaTwo.textContent = statusLong || statusShort || "Status pending";
-      els.heroMetaThree.textContent =
-        featured.goals && (featured.goals.home !== null || featured.goals.away !== null)
-          ? `Score ${safeScore(featured.goals.home)}-${safeScore(featured.goals.away)}`
-          : "No score yet";
+      els.heroMetaTwo.textContent = status || "Status pending";
+      els.heroMetaThree.textContent = featured.stage || "Match centre";
 
       if (fixtureDate) {
         els.heroKickoff.textContent = formatShortDateTime(fixtureDate);
-        els.heroKickoffSub.textContent = `${relativeFromNow(fixtureDate)} · ${statusLong || "Kick-off timing"}`;
+        els.heroKickoffSub.textContent = `${relativeFromNow(fixtureDate)} · ${status || "Kick-off timing"}`;
       } else {
         els.heroKickoff.textContent = "–";
         els.heroKickoffSub.textContent = "Kick-off unavailable";
@@ -1318,26 +1357,36 @@ async function loadDashboard() {
         return;
       }
 
-      els.statPosition.textContent = ordinal(teamStanding.rank);
+      const position = teamStanding.position ?? teamStanding.rank ?? null;
+      const points = teamStanding.points ?? "–";
+      const gd = teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–";
+      const played = teamStanding.playedGames ?? teamStanding.all?.played ?? "–";
+      const won = teamStanding.won ?? teamStanding.all?.win ?? 0;
+      const draw = teamStanding.draw ?? teamStanding.all?.draw ?? 0;
+      const lost = teamStanding.lost ?? teamStanding.all?.lose ?? 0;
+      const gf = teamStanding.goalsFor ?? teamStanding.all?.goals?.for ?? 0;
+      const ga = teamStanding.goalsAgainst ?? teamStanding.all?.goals?.against ?? 0;
+
+      els.statPosition.textContent = ordinal(position);
       els.statPositionSub.textContent = teamStanding.description || "Current league position";
-      els.statPoints.textContent = teamStanding.points ?? "–";
-      els.statPointsSub.textContent = `${teamStanding.all?.played ?? "–"} played`;
-      els.statGD.textContent = signed(teamStanding.goalsDiff);
-      els.statGDSub.textContent = `${teamStanding.all?.goals?.for ?? 0} scored · ${teamStanding.all?.goals?.against ?? 0} conceded`;
-      els.statRecord.textContent = `${teamStanding.all?.win ?? 0}-${teamStanding.all?.draw ?? 0}-${teamStanding.all?.lose ?? 0}`;
+      els.statPoints.textContent = points;
+      els.statPointsSub.textContent = `${played} played`;
+      els.statGD.textContent = signed(gd);
+      els.statGDSub.textContent = `${gf} scored · ${ga} conceded`;
+      els.statRecord.textContent = `${won}-${draw}-${lost}`;
       els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-    function renderFixtures(fixturesData) {
+    function renderFixtures(teamData) {
       const combined = [
-        ...(Array.isArray(fixturesData?.live) ? fixturesData.live : []),
-        ...(Array.isArray(fixturesData?.next) ? fixturesData.next : []),
-        ...(Array.isArray(fixturesData?.last) ? fixturesData.last : [])
+        ...(Array.isArray(teamData.live) ? teamData.live : []),
+        ...(Array.isArray(teamData.next) ? teamData.next : []),
+        ...(Array.isArray(teamData.last) ? teamData.last : [])
       ];
 
-      const unique = dedupeFixtures(combined).slice(0, 8);
+      const unique = dedupeMatches(combined).slice(0, 8);
 
-      els.fixturesSubtle.textContent = `${(fixturesData?.live || []).length} live · ${(fixturesData?.next || []).length} upcoming · ${(fixturesData?.last || []).length} recent`;
+      els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming · ${(teamData.last || []).length} recent`;
 
       if (!unique.length) {
         els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
@@ -1345,16 +1394,15 @@ async function loadDashboard() {
       }
 
       els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = item.fixture?.date ? new Date(item.fixture.date) : null;
-        const statusShort = item.fixture?.status?.short || "";
-        const statusLong = item.fixture?.status?.long || "";
-        const competition = item.league?.name || "Competition";
-        const home = item.teams?.home?.name || "Home";
-        const away = item.teams?.away?.name || "Away";
+        const date = item.utcDate ? new Date(item.utcDate) : null;
+        const status = item.status || "";
+        const competition = item.competition?.name || "Competition";
+        const home = item.homeTeam?.name || "Home";
+        const away = item.awayTeam?.name || "Away";
 
         let statusClass = "";
-        if (isLiveStatus(statusShort)) statusClass = "status-live";
-        else if (isUpcomingStatus(statusShort)) statusClass = "status-upcoming";
+        if (isLiveStatus(status)) statusClass = "status-live";
+        else if (status === "SCHEDULED" || status === "TIMED") statusClass = "status-upcoming";
 
         return `
           <article class="match-item">
@@ -1368,17 +1416,17 @@ async function loadDashboard() {
               <div class="teams">
                 <div class="team-line">
                   <span class="team-name">${escapeHtml(home)}</span>
-                  <span class="team-score">${safeScore(item.goals?.home)}</span>
+                  <span class="team-score">${safeScore(item.score?.fullTime?.home)}</span>
                 </div>
                 <div class="team-line">
                   <span class="team-name">${escapeHtml(away)}</span>
-                  <span class="team-score">${safeScore(item.goals?.away)}</span>
+                  <span class="team-score">${safeScore(item.score?.fullTime?.away)}</span>
                 </div>
               </div>
             </div>
 
             <div class="match-side">
-              <div class="status-pill ${statusClass}">${escapeHtml(statusLong || statusShort || "Status")}</div>
+              <div class="status-pill ${statusClass}">${escapeHtml(status)}</div>
               <div>${date ? formatShortDateTime(date) : "Date TBC"}</div>
             </div>
           </article>
@@ -1394,21 +1442,29 @@ async function loadDashboard() {
         return;
       }
 
-      const rows = standings.slice(0, 12).map(row => `
-        <tr class="${String(row.team?.id) === String(activeTeamId) ? "active-row" : ""}">
-          <td>${row.rank ?? "–"}</td>
-          <td>
-            <div class="team-cell">
-              <img class="team-logo" src="${escapeAttribute(row.team?.logo || "")}" alt="" loading="lazy" />
-              <span>${escapeHtml(row.team?.name || "Team")}</span>
-            </div>
-          </td>
-          <td>${row.all?.played ?? "–"}</td>
-          <td>${row.points ?? "–"}</td>
-          <td>${signed(row.goalsDiff)}</td>
-          <td>${renderFormStrip(row.form)}</td>
-        </tr>
-      `).join("");
+      const rows = standings.slice(0, 12).map(row => {
+        const position = row.position ?? row.rank ?? "–";
+        const played = row.playedGames ?? row.all?.played ?? "–";
+        const points = row.points ?? "–";
+        const gd = row.goalDifference ?? row.goalsDiff ?? "–";
+        const crest = row.team?.crest || row.team?.logo || "";
+
+        return `
+          <tr class="${String(row.team?.id) === String(activeTeamId) ? "active-row" : ""}">
+            <td>${position}</td>
+            <td>
+              <div class="team-cell">
+                ${crest ? `<img class="team-logo" src="${escapeAttribute(crest)}" alt="" loading="lazy" />` : `<div class="team-logo"></div>`}
+                <span>${escapeHtml(row.team?.name || "Team")}</span>
+              </div>
+            </td>
+            <td>${played}</td>
+            <td>${points}</td>
+            <td>${signed(gd)}</td>
+            <td>${renderFormStrip(row.form)}</td>
+          </tr>
+        `;
+      }).join("");
 
       els.tablePanel.innerHTML = `
         <table>
@@ -1427,34 +1483,27 @@ async function loadDashboard() {
       `;
     }
 
-    function renderLive(liveData) {
-      if (!liveData?.live || !liveData?.fixture) {
-        els.liveSubtle.textContent = "No live match right now";
-        els.livePanel.innerHTML = `<div class="empty">No live match for this club at the moment.</div>`;
-        return;
-      }
+    function renderLive(liveData, teamLiveMatches) {
+      if (liveData?.live && liveData?.fixture) {
+        const fixture = liveData.fixture;
+        const events = Array.isArray(liveData.events) ? liveData.events.slice(0, 8) : [];
+        const homeName = fixture?.teams?.home?.name || "Home";
+        const awayName = fixture?.teams?.away?.name || "Away";
+        const homeScore = safeScore(fixture?.goals?.home);
+        const awayScore = safeScore(fixture?.goals?.away);
+        const elapsed = fixture?.fixture?.status?.elapsed ?? "";
+        const statusLong = fixture?.fixture?.status?.long || "Live";
+        const competition = fixture?.league?.name || "Competition";
+        const venue = fixture?.fixture?.venue?.name || "Venue TBC";
 
-      const fixture = liveData.fixture;
-      const events = Array.isArray(liveData.events) ? liveData.events.slice(0, 8) : [];
+        els.liveSubtle.textContent = `${competition} · ${statusLong}`;
 
-      const homeName = fixture?.teams?.home?.name || "Home";
-      const awayName = fixture?.teams?.away?.name || "Away";
-      const homeScore = safeScore(fixture?.goals?.home);
-      const awayScore = safeScore(fixture?.goals?.away);
-      const elapsed = fixture?.fixture?.status?.elapsed ?? "";
-      const statusLong = fixture?.fixture?.status?.long || "Live";
-      const competition = fixture?.league?.name || "Competition";
-      const venue = fixture?.fixture?.venue?.name || "Venue TBC";
+        const scoreCard = `
+          <div class="live-score-card">
+            <div class="live-score-top">
+              <div class="live-badge">● Live ${elapsed ? `${elapsed}'` : ""}</div>
+            </div>
 
-      els.liveSubtle.textContent = `${competition} · ${statusLong}`;
-
-      const scoreCard = `
-        <div class="live-score-card">
-          <div class="live-score-top">
-            <div class="live-badge">● Live ${elapsed ? `${elapsed}'` : ""}</div>
-          </div>
-
-          <div class="live-teams">
             <div class="live-team-row">
               <span class="live-team-name">${escapeHtml(homeName)}</span>
               <span class="live-team-score">${homeScore}</span>
@@ -1463,23 +1512,56 @@ async function loadDashboard() {
               <span class="live-team-name">${escapeHtml(awayName)}</span>
               <span class="live-team-score">${awayScore}</span>
             </div>
-          </div>
 
-          <div class="live-meta">
-            ${escapeHtml(competition)} · ${escapeHtml(venue)}
+            <div class="live-meta">
+              ${escapeHtml(competition)} · ${escapeHtml(venue)}
+            </div>
           </div>
-        </div>
-      `;
+        `;
 
-      const eventsHtml = events.length
-        ? `
-          <div class="live-events">
-            ${events.map(renderLiveEvent).join("")}
+        const eventsHtml = events.length
+          ? `<div class="live-events">${events.map(renderLiveEvent).join("")}</div>`
+          : `<div class="empty">Live match found, but no timeline events yet.</div>`;
+
+        els.livePanel.innerHTML = `${scoreCard}${eventsHtml}`;
+        latestLiveEvents = events;
+        return;
+      }
+
+      if ((teamLiveMatches || []).length) {
+        const item = teamLiveMatches[0];
+        const home = item.homeTeam?.name || "Home";
+        const away = item.awayTeam?.name || "Away";
+        const competition = item.competition?.name || "Competition";
+
+        els.liveSubtle.textContent = `${competition} · Live score`;
+        els.livePanel.innerHTML = `
+          <div class="live-score-card">
+            <div class="live-score-top">
+              <div class="live-badge">● Live</div>
+            </div>
+
+            <div class="live-team-row">
+              <span class="live-team-name">${escapeHtml(home)}</span>
+              <span class="live-team-score">${safeScore(item.score?.fullTime?.home)}</span>
+            </div>
+            <div class="live-team-row">
+              <span class="live-team-name">${escapeHtml(away)}</span>
+              <span class="live-team-score">${safeScore(item.score?.fullTime?.away)}</span>
+            </div>
+
+            <div class="live-meta">
+              ${escapeHtml(competition)} · Timeline events unavailable for this source
+            </div>
           </div>
-        `
-        : `<div class="empty">Live match found, but no timeline events yet.</div>`;
+        `;
+        latestLiveEvents = [];
+        return;
+      }
 
-      els.livePanel.innerHTML = `<div class="live-shell">${scoreCard}${eventsHtml}</div>`;
+      els.liveSubtle.textContent = "No live match right now";
+      els.livePanel.innerHTML = `<div class="empty">No live match for this club at the moment.</div>`;
+      latestLiveEvents = [];
     }
 
     function renderLiveEvent(event) {
@@ -1492,60 +1574,56 @@ async function loadDashboard() {
             <span class="live-minute">${escapeHtml(minute)}</span>
             <span class="live-event-type">${escapeHtml(typeLabel)}</span>
           </div>
-          <div class="live-event-main">
-            ${escapeHtml(event.player || event.team || "Match event")}
-          </div>
-          <div class="live-event-sub">
-            ${escapeHtml(buildEventSubline(event))}
-          </div>
+          <div class="live-event-main">${escapeHtml(event.player || event.team || "Match event")}</div>
+          <div class="live-event-sub">${escapeHtml(buildEventSubline(event))}</div>
         </article>
       `;
     }
 
-    function renderPlayers(playersData) {
-      const players = Array.isArray(playersData?.response) ? playersData.response : [];
+    function renderPlayers(teamData, teamStanding) {
+      const standing = teamStanding || {};
+      const played = standing.playedGames ?? standing.all?.played ?? 0;
+      const won = standing.won ?? standing.all?.win ?? 0;
+      const draw = standing.draw ?? standing.all?.draw ?? 0;
+      const lost = standing.lost ?? standing.all?.lose ?? 0;
+      const gf = standing.goalsFor ?? standing.all?.goals?.for ?? 0;
+      const ga = standing.goalsAgainst ?? standing.all?.goals?.against ?? 0;
 
-      if (!players.length) {
-        els.playersPanel.innerHTML = `<div class="empty">No player data returned.</div>`;
-        return;
-      }
-
-      const bestGoals = topPlayer(players, p => p.statistics?.[0]?.goals?.total || 0);
-      const bestAssists = topPlayer(players, p => p.statistics?.[0]?.goals?.assists || 0);
-      const bestApps = topPlayer(players, p => p.statistics?.[0]?.games?.appearences || 0);
-
-      const shortlist = [bestGoals, bestAssists, bestApps].filter(Boolean);
-      const unique = [];
-      const seen = new Set();
-
-      for (const item of shortlist) {
-        const id = item.player?.id || item.player?.name;
-        if (!seen.has(id)) {
-          seen.add(id);
-          unique.push(item);
+      const cards = [
+        {
+          title: "Season snapshot",
+          rows: [
+            { name: "Played", meta: "All league matches", value: String(played) },
+            { name: "Goals for", meta: "League goals scored", value: String(gf) },
+            { name: "Goals against", meta: "League goals conceded", value: String(ga) }
+          ]
+        },
+        {
+          title: "Record",
+          rows: [
+            { name: "Wins", meta: "League wins", value: String(won) },
+            { name: "Draws", meta: "League draws", value: String(draw) },
+            { name: "Losses", meta: "League losses", value: String(lost) }
+          ]
         }
-      }
+      ];
 
-      els.playersPanel.innerHTML = unique.map(item => {
-        const stats = item.statistics?.[0] || {};
-        return `
-          <article class="player-item">
-            <div>
-              <div class="player-name">${escapeHtml(item.player?.name || "Player")}</div>
-              <div class="player-meta">
-                ${escapeHtml(item.player?.age ? `${item.player.age} yrs` : "Age n/a")} ·
-                ${escapeHtml(item.player?.nationality || "Nationality n/a")} ·
-                ${escapeHtml(stats.games?.position || "Position n/a")}
+      els.playersPanel.innerHTML = cards.map(card => `
+        <div class="player-card">
+          <h5>${escapeHtml(card.title)}</h5>
+          <div class="player-grid">
+            ${card.rows.map(row => `
+              <div class="player-row">
+                <div>
+                  <div class="player-name">${escapeHtml(row.name)}</div>
+                  <div class="player-meta">${escapeHtml(row.meta)}</div>
+                </div>
+                <div class="player-value">${escapeHtml(row.value)}</div>
               </div>
-            </div>
-            <div class="player-stats">
-              <span class="mini-pill">Apps ${stats.games?.appearences ?? 0}</span>
-              <span class="mini-pill">Goals ${stats.goals?.total ?? 0}</span>
-              <span class="mini-pill">Assists ${stats.goals?.assists ?? 0}</span>
-            </div>
-          </article>
-        `;
-      }).join("");
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
     }
 
     function renderNews(newsData, terms) {
@@ -1583,7 +1661,7 @@ async function loadDashboard() {
         return;
       }
 
-      els.videosPanel.innerHTML = items.map(item => {
+      els.videosPanel.innerHTML = items.slice(0, 6).map(item => {
         const videoId = item.id?.videoId || "";
         const title = item.snippet?.title || "Video";
         const channel = item.snippet?.channelTitle || "YouTube";
@@ -1602,8 +1680,43 @@ async function loadDashboard() {
       }).join("");
     }
 
+    function renderTickerFromLive(liveData, teamData) {
+      if (liveData?.live && Array.isArray(liveData.events) && liveData.events.length) {
+        const items = liveData.events.slice(0, 8).map(event => ({
+          text: `${event.extra ? `${event.time}+${event.extra}` : event.time}' ${eventLabel(event.type, event.detail)} · ${event.player || event.team || "Update"} · ${buildEventSubline(event)}`
+        }));
+        renderTicker(items);
+        return;
+      }
+
+      const liveMatch = Array.isArray(teamData.live) && teamData.live.length ? teamData.live[0] : null;
+      if (liveMatch) {
+        renderTicker([{
+          text: `${liveMatch.homeTeam?.name || "Home"} ${safeScore(liveMatch.score?.fullTime?.home)}–${safeScore(liveMatch.score?.fullTime?.away)} ${liveMatch.awayTeam?.name || "Away"} · ${liveMatch.competition?.name || "Live"}`
+        }]);
+        return;
+      }
+
+      const nextMatch = Array.isArray(teamData.next) && teamData.next.length ? teamData.next[0] : null;
+      if (nextMatch) {
+        const dt = nextMatch.utcDate ? new Date(nextMatch.utcDate) : null;
+        renderTicker([{
+          text: `Next up: ${nextMatch.homeTeam?.name || "Home"} vs ${nextMatch.awayTeam?.name || "Away"} · ${dt ? formatLongDateTime(dt) : "Date TBC"} · ${nextMatch.competition?.name || ""}`
+        }]);
+        return;
+      }
+
+      renderTicker([{ text: "No live updates or upcoming fixture available right now." }]);
+    }
+
+    function renderTicker(items) {
+      const safeItems = items.length ? items : [{ text: "No live updates available." }];
+      const joined = safeItems.map(item => `<span class="ticker-item"><strong>●</strong> ${escapeHtml(item.text)}</span>`).join("");
+      els.tickerTrack.innerHTML = `${joined}${joined}`;
+    }
+
     function renderErrorState(error) {
-      const message = error?.message || "Could not load the dashboard.";
+      const message = error?.message || String(error) || "Could not load the dashboard.";
       const html = `<div class="empty">${escapeHtml(message)}</div>`;
       els.fixturesPanel.innerHTML = html;
       els.tablePanel.innerHTML = html;
@@ -1611,32 +1724,25 @@ async function loadDashboard() {
       els.playersPanel.innerHTML = html;
       els.videosPanel.innerHTML = html;
       els.livePanel.innerHTML = html;
+      renderTicker([{ text: message }]);
+      els.heroEyebrow.classList.remove("live");
       els.heroTitle.textContent = "Dashboard error";
       els.heroSub.textContent = message;
       els.liveSubtle.textContent = "Live feed unavailable";
     }
 
-    function extractStandings(data) {
-      return data?.response?.[0]?.league?.standings?.[0] || [];
-    }
-
-    function topPlayer(players, metricFn) {
-      return players.slice().sort((a, b) => (metricFn(b) || 0) - (metricFn(a) || 0))[0] || null;
-    }
-
-    function dedupeFixtures(fixtures) {
+    function dedupeMatches(matches) {
       const map = new Map();
-      for (const item of fixtures) {
-        const id = item?.fixture?.id;
-        if (!id || map.has(id)) continue;
-        map.set(id, item);
+      for (const item of matches) {
+        const id = item?.id || `${item?.homeTeam?.name}-${item?.awayTeam?.name}-${item?.utcDate}`;
+        if (!map.has(id)) map.set(id, item);
       }
       return [...map.values()];
     }
 
     function normaliseForm(form) {
       if (!form) return "";
-      return form.replace(/[^WDL]/gi, "").toUpperCase().slice(-5).split("").join(" ");
+      return String(form).replace(/[^WDL]/gi, "").toUpperCase().slice(-5).split("").join(" ");
     }
 
     function renderFormStrip(form) {
@@ -1668,11 +1774,7 @@ async function loadDashboard() {
     }
 
     function isLiveStatus(status) {
-      return ["1H", "HT", "2H", "ET", "BT", "P", "LIVE", "INT"].includes((status || "").toUpperCase());
-    }
-
-    function isUpcomingStatus(status) {
-      return ["NS", "TBD", "PST"].includes((status || "").toUpperCase());
+      return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(String(status || "").toUpperCase());
     }
 
     function safeScore(value) {
@@ -1783,6 +1885,8 @@ async function loadDashboard() {
     }
 
     els.refreshButton.addEventListener("click", loadDashboard);
+    els.tickerTrack?.addEventListener("mouseenter", () => els.tickerTrack.classList.add("paused"));
+    els.tickerTrack?.addEventListener("mouseleave", () => els.tickerTrack.classList.remove("paused"));
 
     applyTheme();
     renderTeamButtons();
