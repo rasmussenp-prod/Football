@@ -923,8 +923,21 @@
       panel: "football-dashboard-panel"
     };
 
-    let activeTeamKey = localStorage.getItem(STORAGE_KEYS.team) || "tottenham";
-    let activePanelId = localStorage.getItem(STORAGE_KEYS.panel) || "fixturesPanelCard";
+    function normaliseStoredTeam(value) {
+      if (!value) return "tottenham";
+      const v = String(value).toLowerCase().trim();
+      if (v === "spurs" || v === "tottenham hotspur") return "tottenham";
+      if (v === "afc wimbledon" || v === "dons") return "wimbledon";
+      return TEAM_CONFIG[v] ? v : "tottenham";
+    }
+
+    function normaliseStoredPanel(value) {
+      const validPanels = new Set(["fixturesPanelCard", "tablePanelCard", "newsPanelCard", "videosPanelCard"]);
+      return validPanels.has(value) ? value : "fixturesPanelCard";
+    }
+
+    let activeTeamKey = normaliseStoredTeam(localStorage.getItem(STORAGE_KEYS.team));
+    let activePanelId = normaliseStoredPanel(localStorage.getItem(STORAGE_KEYS.panel));
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
@@ -1032,7 +1045,7 @@
     }
 
     function setActivePanel(panelId, options = {}) {
-      activePanelId = panelId || "fixturesPanelCard";
+      activePanelId = normaliseStoredPanel(panelId || "fixturesPanelCard");
       document.querySelectorAll(".nav-btn").forEach(btn => {
         btn.classList.toggle("active", btn.dataset.panel === activePanelId);
       });
@@ -1678,6 +1691,8 @@
       if (event.key === "Escape") closeMenu();
     });
 
+    localStorage.setItem(STORAGE_KEYS.team, activeTeamKey);
+    localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
     applyTheme();
     renderTeamButtons();
     setupNav();
