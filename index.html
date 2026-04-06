@@ -870,20 +870,14 @@
       </section>
 
       <div class="footer-note">
-        Silent background refresh is staggered to reduce API calls. Live data refreshes most often, while news and highlights refresh less often. Team selection and active section are preserved between refreshes.
+        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
       </div>
     </div>
   </div>
 
   <script>
     const CURRENT_SEASON = 2025;
-    const AUTO_REFRESH_TICK_MS = 15000;
-    const REFRESH_TTL_MS = {
-      teamData: 120000,
-      liveData: 30000,
-      newsData: 600000,
-      videosData: 900000
-    };
+    const AUTO_REFRESH_MS = 30000;
 
     const TEAM_CONFIG = {
       tottenham: {
@@ -947,8 +941,6 @@
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
-    let teamCaches = {};
-    let activeRefreshToken = 0;
 
     const els = {
       body: document.body,
@@ -989,95 +981,6 @@
       navRow: document.getElementById("navRow")
     };
 
-
-    function createEmptyTeamCache(teamKey) {
-      return {
-        teamKey,
-        teamData: null,
-        liveData: { live: false, fixture: null, events: [], lineups: null },
-        newsData: { items: [] },
-        videosData: { items: [] },
-        fetchedAt: {
-          teamData: 0,
-          liveData: 0,
-          newsData: 0,
-          videosData: 0
-        },
-        snapshot: null
-      };
-    }
-
-    function getTeamCache(teamKey) {
-      if (!teamCaches[teamKey]) {
-        teamCaches[teamKey] = createEmptyTeamCache(teamKey);
-      }
-      return teamCaches[teamKey];
-    }
-
-    function buildSnapshotFromCache(teamKey) {
-      const cache = getTeamCache(teamKey);
-      if (!cache.teamData) return null;
-      return {
-        teamKey,
-        teamData: cache.teamData,
-        liveData: cache.liveData || { live: false, fixture: null, events: [], lineups: null },
-        newsData: cache.newsData || { items: [] },
-        videosData: cache.videosData || { items: [] }
-      };
-    }
-
-    function getResourcesDue(cache, force = false, resources = null) {
-      const now = Date.now();
-      const requested = Array.isArray(resources) && resources.length
-        ? resources
-        : ["teamData", "liveData", "newsData", "videosData"];
-
-      return requested.filter((resource) => {
-        if (force) return true;
-        if (!cache[resource]) return true;
-        if (!cache.fetchedAt[resource]) return true;
-        return (now - cache.fetchedAt[resource]) >= REFRESH_TTL_MS[resource];
-      });
-    }
-
-    async function fetchResource(resource, team) {
-      if (resource === "teamData") {
-        return fetchJson(`/api/football/team?team=${team.key}`);
-      }
-      if (resource === "liveData") {
-        return fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`);
-      }
-      if (resource === "newsData") {
-        return fetchJson(`/api/news/bbc-football?team=${team.key}`);
-      }
-      if (resource === "videosData") {
-        return fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`);
-      }
-      throw new Error(`Unknown resource: ${resource}`);
-    }
-
-    function getLatestFetchTime(cache) {
-      return Math.max(
-        cache.fetchedAt.teamData || 0,
-        cache.fetchedAt.liveData || 0,
-        cache.fetchedAt.newsData || 0,
-        cache.fetchedAt.videosData || 0
-      );
-    }
-
-    function renderCachedSnapshotIfAvailable(teamKey) {
-      const cache = getTeamCache(teamKey);
-      const snapshot = cache.snapshot || buildSnapshotFromCache(teamKey);
-      if (snapshot) {
-        latestSnapshot = snapshot;
-        cache.snapshot = snapshot;
-        applySnapshot(snapshot);
-        updateRefreshLabel(`Updated ${formatTimestamp(getLatestFetchTime(cache))}`);
-        return true;
-      }
-      return false;
-    }
-
     function applyTheme() {
       const team = TEAM_CONFIG[activeTeamKey];
       document.documentElement.style.setProperty("--team-primary", team.colours.primary);
@@ -1109,13 +1012,7 @@
           applyTheme();
           renderTeamButtons();
           closeMenu();
-
-          const hadCachedSnapshot = renderCachedSnapshotIfAvailable(activeTeamKey);
-          if (!hadCachedSnapshot) {
-            renderBootstrapLoading();
-          }
-
-          await refreshDashboard({ silent: hadCachedSnapshot, resetIfEmpty: !hadCachedSnapshot });
+          await refreshDashboard({ silent: !latestSnapshot, resetIfEmpty: true });
         });
       });
     }
@@ -1160,80 +1057,40 @@
       }
     }
 
-    async function refreshDashboard({ silent = true, resetIfEmpty = false, force = false, resources = null } = {}) {
-      if (isRefreshing) return;
-
-      const refreshToken = ++activeRefreshToken;
-      const teamKeyAtStart = activeTeamKey;
-      const team = TEAM_CONFIG[teamKeyAtStart];
-      const cache = getTeamCache(teamKeyAtStart);
-      const dueResources = getResourcesDue(cache, force, resources);
-
-      if (!dueResources.length) {
-        renderCachedSnapshotIfAvailable(teamKeyAtStart);
-        return;
-      }
-
+    async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
+      const team = TEAM_CONFIG[activeTeamKey];
       setRefreshing(true);
       updateRefreshLabel("Refreshing…");
 
-      if (!silent && resetIfEmpty && !cache.snapshot) {
+      if (!silent && resetIfEmpty && !latestSnapshot) {
         renderBootstrapLoading();
       }
 
       try {
-        const results = await Promise.allSettled(
-          dueResources.map((resource) => fetchResource(resource, team))
-        );
+        const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
+          fetchJson(`/api/football/team?team=${team.key}`),
+          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
+          fetchJson(`/api/news/bbc-football?team=${team.key}`),
+          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
+        ]);
 
-        let successfulUpdates = 0;
+        const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
+        const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
+        const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
+        const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
 
-        results.forEach((result, index) => {
-          const resource = dueResources[index];
-
-          if (result.status === "fulfilled") {
-            cache[resource] = result.value;
-            cache.fetchedAt[resource] = Date.now();
-            successfulUpdates += 1;
-            return;
-          }
-
-          console.error(`Refresh failed for ${resource}`, result.reason);
-        });
-
-        const snapshot = buildSnapshotFromCache(teamKeyAtStart);
-        if (!snapshot) {
-          throw new Error("Could not load team dashboard data.");
+        if (!teamData) {
+          throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
         }
 
-        cache.snapshot = snapshot;
-        latestSnapshot = snapshot;
-
-        if (activeTeamKey === teamKeyAtStart && refreshToken === activeRefreshToken) {
-          applySnapshot(snapshot);
-        }
-
-        const latestFetch = getLatestFetchTime(cache);
-        if (successfulUpdates > 0) {
-          updateRefreshLabel(`Updated ${formatTimestamp(latestFetch)}`);
-        } else if (latestFetch) {
-          updateRefreshLabel(`Using saved data · ${formatTimestamp(latestFetch)}`);
-        } else {
-          updateRefreshLabel("Refresh failed");
-        }
+        latestSnapshot = { teamData, liveData, newsData, videosData, teamKey: activeTeamKey };
+        applySnapshot(latestSnapshot);
+        updateRefreshLabel(`Updated ${formatNow()}`);
       } catch (error) {
-        const fallbackSnapshot = cache.snapshot || buildSnapshotFromCache(teamKeyAtStart);
-        if (fallbackSnapshot) {
-          latestSnapshot = fallbackSnapshot;
-          if (activeTeamKey === teamKeyAtStart && refreshToken === activeRefreshToken) {
-            applySnapshot(fallbackSnapshot);
-          }
-          const latestFetch = getLatestFetchTime(cache);
-          updateRefreshLabel(latestFetch ? `Using saved data · ${formatTimestamp(latestFetch)}` : "Refresh failed");
-        } else {
+        if (!latestSnapshot) {
           renderErrorState(error);
-          updateRefreshLabel("Refresh failed");
         }
+        updateRefreshLabel("Refresh failed");
         console.error(error);
       } finally {
         setRefreshing(false);
@@ -1246,14 +1103,14 @@
       const liveData = snapshot.liveData || {};
       const newsData = snapshot.newsData || {};
       const videosData = snapshot.videosData || {};
-      const standings = Array.isArray(teamData.standings) ? teamData.standings : [];
-      const teamStanding = teamData.standing || null;
+      const standings = extractStandings(teamData);
+      const teamStanding = teamData.standing || findTeamStanding(standings, teamData.team?.id || team.teamId) || null;
 
       renderBrandLogo(teamData, standings, team);
       renderHero(team, teamData, teamStanding, liveData);
       renderStats(teamStanding);
-      renderFixtures(teamData);
-      renderTable(standings, teamData.team?.id, team.leagueName);
+      renderFixtures(teamData, team.key);
+      renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
       renderNews(newsData, team.newsTerms);
       renderVideos(videosData);
       setActivePanel(activePanelId, { skipStore: true });
@@ -1303,7 +1160,7 @@
     }
 
     function renderHero(team, teamData, teamStanding, liveData) {
-      const featured = selectFeaturedFixture(teamData, liveData);
+      const featured = selectFeaturedFixture(teamData, liveData, team.key);
       const form = normaliseForm(teamStanding?.form);
       const live = featured.isLive;
 
@@ -1313,7 +1170,7 @@
       const competition = featured.competition || team.leagueName;
       const venue = featured.venue || "Venue TBC";
       const status = featured.status || "";
-      const fixtureDate = featured.utcDate ? new Date(featured.utcDate) : null;
+      const fixtureDate = getFixtureDate(featured, team.key);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
 
@@ -1345,7 +1202,7 @@
       renderLineups(featured, liveData, fixtureDate);
     }
 
-    function selectFeaturedFixture(teamData, liveData) {
+    function selectFeaturedFixture(teamData, liveData, teamKey = activeTeamKey) {
       if (liveData?.live && liveData?.fixture) {
         return {
           isLive: true,
@@ -1363,31 +1220,46 @@
         };
       }
 
-      const next = Array.isArray(teamData.next) && teamData.next.length ? teamData.next[0] : null;
-      if (next) {
+      const liveFixtures = Array.isArray(teamData.live) ? teamData.live : [];
+      const nextFixtures = Array.isArray(teamData.next) ? teamData.next : [];
+      const lastFixtures = Array.isArray(teamData.last) ? teamData.last : [];
+
+      const allUpcoming = dedupeMatches([...liveFixtures, ...nextFixtures])
+        .map(item => ({ item, date: getFixtureDate(item, teamKey) }))
+        .filter(entry => entry.date && !Number.isNaN(entry.date.getTime()))
+        .sort((a, b) => a.date - b.date);
+
+      const now = Date.now();
+      const stillRelevant = allUpcoming.find(entry => isLiveStatus(entry.item.status) || entry.date.getTime() >= (now - 4 * 60 * 60 * 1000));
+      const featuredUpcoming = stillRelevant?.item || (nextFixtures.length ? nextFixtures[0] : null);
+
+      if (featuredUpcoming) {
         return {
-          isLive: isLiveStatus(next.status),
-          homeName: next.homeTeam?.name || "Home",
-          awayName: next.awayTeam?.name || "Away",
-          homeScore: next.score?.fullTime?.home,
-          awayScore: next.score?.fullTime?.away,
-          utcDate: next.utcDate || null,
-          competition: next.competition?.name || "Competition",
-          venue: next.venue || "",
-          status: next.status || "SCHEDULED",
+          isLive: isLiveStatus(featuredUpcoming.status),
+          homeName: featuredUpcoming.homeTeam?.name || "Home",
+          awayName: featuredUpcoming.awayTeam?.name || "Away",
+          homeScore: featuredUpcoming.score?.fullTime?.home,
+          awayScore: featuredUpcoming.score?.fullTime?.away,
+          utcDate: featuredUpcoming.utcDate || featuredUpcoming.date || featuredUpcoming.localDate || featuredUpcoming.kickoff || null,
+          competition: featuredUpcoming.competition?.name || "Competition",
+          venue: featuredUpcoming.venue || "",
+          status: featuredUpcoming.status || "SCHEDULED",
           liveStatus: "",
-          lineups: extractLineups(next)
+          lineups: extractLineups(featuredUpcoming)
         };
       }
 
-      const last = Array.isArray(teamData.last) && teamData.last.length ? teamData.last[0] : null;
+      const last = dedupeMatches(lastFixtures)
+        .map(item => ({ item, date: getFixtureDate(item, teamKey) }))
+        .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0))[0]?.item || null;
+
       return {
         isLive: false,
         homeName: last?.homeTeam?.name || "Home",
         awayName: last?.awayTeam?.name || "Away",
         homeScore: last?.score?.fullTime?.home,
         awayScore: last?.score?.fullTime?.away,
-        utcDate: last?.utcDate || null,
+        utcDate: last?.utcDate || last?.date || last?.localDate || last?.kickoff || null,
         competition: last?.competition?.name || "Competition",
         venue: last?.venue || "",
         status: last?.status || "Latest result",
@@ -1486,6 +1358,89 @@
       }).filter(Boolean).slice(0, 11);
     }
 
+    function extractStandings(teamData) {
+      const directCandidates = [
+        teamData?.standings,
+        teamData?.table,
+        teamData?.leagueTable,
+        teamData?.ladder,
+        teamData?.league?.standings,
+        teamData?.data?.standings,
+        teamData?.data?.table
+      ];
+
+      for (const candidate of directCandidates) {
+        if (Array.isArray(candidate) && candidate.length) return candidate;
+      }
+
+      const nestedCandidates = [
+        teamData?.standings?.table,
+        teamData?.table?.rows,
+        teamData?.leagueTable?.rows,
+        teamData?.data?.standings?.table,
+        teamData?.data?.table?.rows,
+        teamData?.response?.[0]?.league?.standings?.[0]
+      ];
+
+      for (const candidate of nestedCandidates) {
+        if (Array.isArray(candidate) && candidate.length) return candidate;
+      }
+
+      return [];
+    }
+
+    function findTeamStanding(standings, teamId) {
+      if (!Array.isArray(standings) || !standings.length) return null;
+      return standings.find(row => String(row.team?.id) === String(teamId)) || null;
+    }
+
+    function parseLocalDateString(value) {
+      if (typeof value !== "string") return null;
+      const v = value.trim();
+      let m = v.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || 0));
+      m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      return null;
+    }
+
+    function getFixtureDate(item, teamKey = activeTeamKey) {
+      if (!item || typeof item !== "object") return null;
+
+      const localFirst = [
+        item.localDate,
+        item.local_date,
+        item.kickoffLocal,
+        item.startTimeLocal,
+        item.dateLocal,
+        item.date,
+        item.kickoff
+      ];
+
+      for (const value of localFirst) {
+        const parsed = parseLocalDateString(value);
+        if (parsed && !Number.isNaN(parsed.getTime())) return parsed;
+      }
+
+      const zoned = [
+        item.utcDate,
+        item.startsAt,
+        item.startTime,
+        item.datetime,
+        item.matchDate,
+        item.fixture?.date,
+        item.fixture?.utcDate
+      ];
+
+      for (const value of zoned) {
+        if (!value) continue;
+        const parsed = value instanceof Date ? value : new Date(value);
+        if (!Number.isNaN(parsed.getTime())) return parsed;
+      }
+
+      return null;
+    }
+
     function renderStats(teamStanding) {
       if (!teamStanding) {
         els.statPosition.textContent = "–";
@@ -1518,7 +1473,7 @@
       els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-    function renderFixtures(teamData) {
+    function renderFixtures(teamData, teamKey = activeTeamKey) {
       const combined = [
         ...(Array.isArray(teamData.live) ? teamData.live : []),
         ...(Array.isArray(teamData.next) ? teamData.next : []),
@@ -1534,7 +1489,7 @@
       }
 
       els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = item.utcDate ? new Date(item.utcDate) : null;
+        const date = getFixtureDate(item, teamKey);
         const status = item.status || "";
         const competition = item.competition?.name || "Competition";
         const home = item.homeTeam?.name || "Home";
@@ -1781,14 +1736,6 @@
       });
     }
 
-    function formatTimestamp(timestamp) {
-      if (!timestamp) return formatNow();
-      return new Date(timestamp).toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    }
-
     function trimText(text, max) {
       if (!text || text.length <= max) return text;
       return `${text.slice(0, max).trim()}…`;
@@ -1824,10 +1771,10 @@
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
       autoRefreshTimer = setInterval(() => {
         refreshDashboard({ silent: true });
-      }, AUTO_REFRESH_TICK_MS);
+      }, AUTO_REFRESH_MS);
     }
 
-    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true, force: true, resources: ["teamData", "liveData"] }));
+    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true }));
     els.menuButton.addEventListener("click", () => {
       if (els.menuPanel.classList.contains("open")) closeMenu();
       else openMenu();
@@ -1848,7 +1795,7 @@
     renderTeamButtons();
     setupNav();
     renderBootstrapLoading();
-    refreshDashboard({ silent: false, resetIfEmpty: true, force: true });
+    refreshDashboard({ silent: false, resetIfEmpty: true });
     startAutoRefresh();
   </script>
 </body>
