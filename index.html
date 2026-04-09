@@ -307,27 +307,19 @@
       max-width: 820px;
     }
 
-    .hero-context {
-      margin-top: 14px;
+    .hero-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      align-items: center;
+      margin-top: 14px;
     }
 
-    .hero-context-line {
-      color: rgba(255,255,255,0.86);
-      font-size: 0.92rem;
-      line-height: 1.45;
-    }
-
-    .hero-context-pill {
-      padding: 8px 12px;
+    .meta-pill {
+      padding: 9px 12px;
       border-radius: 999px;
       background: rgba(255,255,255,0.09);
       border: 1px solid rgba(255,255,255,0.10);
-      font-size: 0.8rem;
-      font-weight: 700;
+      font-size: 0.84rem;
     }
 
     .score-shell {
@@ -454,7 +446,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -670,45 +662,6 @@
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
 
-    .news-item,
-    .video-item {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .news-thumb,
-    .video-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 14px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      display: block;
-    }
-
-    .news-thumb img,
-    .video-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .news-copy,
-    .video-copy {
-      min-width: 0;
-    }
-
-    .video-item {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-
     .news-title,
     .video-title {
       font-weight: 700;
@@ -750,10 +703,66 @@
       line-height: 1.5;
     }
 
-    @media (max-width: 479px) {
-      .video-item {
-        grid-template-columns: 1fr;
-      }
+
+    .hero-gd {
+      margin-top: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-size: 0.84rem;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .fixture-subnav {
+      display: inline-flex;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .fixture-subnav-btn {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: inherit;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .fixture-subnav-btn.active {
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+    }
+
+    .news-item.with-thumb,
+    .video-item.with-thumb {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .media-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      display: block;
+    }
+
+    .media-stack {
+      min-width: 0;
     }
 
     @media (min-width: 760px) {
@@ -764,7 +773,7 @@
       .brand-copy p { font-size: 0.85rem; }
       .hero { padding: 22px; }
       .hero-grid { grid-template-columns: 1.15fr 0.85fr; gap: 18px; align-items: start; }
-      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
       .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -817,7 +826,14 @@
           <div>
             <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
             <h2 id="heroTitle">Loading latest football data</h2>
-            <p class="hero-sub" id="heroSub">Fixtures, standings, live status, news and highlights in one view.</p>          </div>
+            <p class="hero-sub" id="heroSub">Fixtures, standings, live status, news and highlights in one view.</p>
+            <div class="hero-meta">
+              <div class="meta-pill" id="heroMetaOne">Fixtures</div>
+              <div class="meta-pill" id="heroMetaTwo">Standings</div>
+              <div class="meta-pill" id="heroMetaThree">Live centre</div>
+            </div>
+            <div class="hero-gd" id="heroGD">Goal difference · –</div>
+          </div>
 
           <div class="score-shell">
             <section class="next-card">
@@ -855,9 +871,15 @@
         </div>
 
         <div class="stat-card card">
-          <div class="stat-label">Form</div>
-          <div class="stat-value" id="statForm">–</div>
-          <div class="stat-sub" id="statFormSub">Latest five</div>
+          <div class="stat-label">Goal difference</div>
+          <div class="stat-value" id="statGD">–</div>
+          <div class="stat-sub" id="statGDSub">–</div>
+        </div>
+
+        <div class="stat-card card">
+          <div class="stat-label">Record</div>
+          <div class="stat-value" id="statRecord">–</div>
+          <div class="stat-sub" id="statRecordSub">Wins / draws / losses</div>
         </div>
       </section>
 
@@ -874,7 +896,11 @@
             <h3>Fixtures</h3>
             <div class="subtle" id="fixturesSubtle">Loading…</div>
           </div>
-          <div class="match-list" id="fixturesPanel">
+          <div class="fixture-subnav" id="fixturesViewToggle">
+            <button class="fixture-subnav-btn active" data-fixtures-view="upcoming">Upcoming</button>
+            <button class="fixture-subnav-btn" data-fixtures-view="recent">Recent</button>
+          </div>
+          <div class="match-list" id="fixturesPanel" style="margin-top: 12px;">
             <div class="empty">Loading fixtures…</div>
           </div>
         </section>
@@ -895,7 +921,7 @@
             <div class="subtle">BBC football feed</div>
           </div>
           <div class="news-list" id="newsPanel">
-            <div class="empty">Open the News tab to load the latest stories.</div>
+            <div class="empty">Loading news…</div>
           </div>
         </section>
 
@@ -905,13 +931,13 @@
             <div class="subtle">YouTube search</div>
           </div>
           <div class="video-list" id="videosPanel">
-            <div class="empty">Open the Highlights tab to load the latest videos.</div>
+            <div class="empty">Loading highlights…</div>
           </div>
         </section>
       </section>
 
       <div class="footer-note">
-        Live and core match data refresh quietly in the background. News and highlights load when you open their tabs.
+        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
       </div>
     </div>
   </div>
@@ -919,8 +945,6 @@
   <script>
     const CURRENT_SEASON = 2025;
     const AUTO_REFRESH_MS = 30000;
-    const NEWS_REFRESH_MS = 10 * 60 * 1000;
-    const VIDEOS_REFRESH_MS = 15 * 60 * 1000;
 
     const TEAM_CONFIG = {
       tottenham: {
@@ -929,8 +953,8 @@
         shortName: "Spurs",
         teamId: 47,
         leagueName: "Premier League",
-        highlightQuery: "Tottenham Hotspur highlights Sky Sports",
-        highlightQueries: ["Tottenham Hotspur highlights Sky Sports", "Tottenham Hotspur highlights", "Spurs highlights Sky Sports", "Spurs highlights"],
+        highlightQuery: "Tottenham Hotspur highlights",
+        highlightQueries: ["Tottenham Hotspur highlights Sky Sports", "Tottenham highlights Sky Sports", "Spurs highlights Sky Sports", "Tottenham Hotspur highlights"],
         newsTerms: ["tottenham", "spurs", "tottenham hotspur", "ange", "postecoglou"],
         fallbackLogoText: "TH",
         fallbackLogoUrl: "",
@@ -949,7 +973,7 @@
         teamId: 1044,
         leagueName: "League One",
         highlightQuery: "AFC Wimbledon highlights",
-        highlightQueries: ["AFC Wimbledon highlights", "AFC Wimbledon highlights Sky Sports", "Wimbledon highlights"],
+        highlightQueries: ["AFC Wimbledon highlights", "AFC Wimbledon Sky Sports highlights", "Wimbledon highlights football"],
         newsTerms: ["afc wimbledon", "wimbledon", "the dons", "plough lane", "johnnie jackson"],
         fallbackLogoText: "AW",
         fallbackLogoUrl: "",
@@ -986,8 +1010,8 @@
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
-    let newsCache = {};
-    let videoCache = {};
+    let fixtureView = "upcoming";
+    const panelDataCache = { news: {}, videos: {} };
 
     const els = {
       body: document.body,
@@ -1003,7 +1027,10 @@
       heroEyebrow: document.getElementById("heroEyebrow"),
       heroTitle: document.getElementById("heroTitle"),
       heroSub: document.getElementById("heroSub"),
-
+      heroMetaOne: document.getElementById("heroMetaOne"),
+      heroMetaTwo: document.getElementById("heroMetaTwo"),
+      heroMetaThree: document.getElementById("heroMetaThree"),
+      heroGD: document.getElementById("heroGD"),
       heroKickoff: document.getElementById("heroKickoff"),
       heroKickoffSub: document.getElementById("heroKickoffSub"),
       nextBadge: document.getElementById("nextBadge"),
@@ -1013,15 +1040,18 @@
       statPositionSub: document.getElementById("statPositionSub"),
       statPoints: document.getElementById("statPoints"),
       statPointsSub: document.getElementById("statPointsSub"),
-      statForm: document.getElementById("statForm"),
-      statFormSub: document.getElementById("statFormSub"),
+      statGD: document.getElementById("statGD"),
+      statGDSub: document.getElementById("statGDSub"),
+      statRecord: document.getElementById("statRecord"),
+      statRecordSub: document.getElementById("statRecordSub"),
       fixturesSubtle: document.getElementById("fixturesSubtle"),
       tableSubtle: document.getElementById("tableSubtle"),
       fixturesPanel: document.getElementById("fixturesPanel"),
       tablePanel: document.getElementById("tablePanel"),
       newsPanel: document.getElementById("newsPanel"),
       videosPanel: document.getElementById("videosPanel"),
-      navRow: document.getElementById("navRow")
+      navRow: document.getElementById("navRow"),
+      fixturesViewToggle: document.getElementById("fixturesViewToggle")
     };
 
     function applyTheme() {
@@ -1084,66 +1114,23 @@
       els.navRow.querySelectorAll(".nav-btn").forEach(btn => {
         btn.addEventListener("click", () => setActivePanel(btn.dataset.panel));
       });
+      els.fixturesViewToggle?.querySelectorAll(".fixture-subnav-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          fixtureView = btn.dataset.fixturesView || "upcoming";
+          updateFixtureViewButtons();
+          if (latestSnapshot) renderFixtures(latestSnapshot.teamData);
+        });
+      });
+      updateFixtureViewButtons();
       setActivePanel(activePanelId, { skipStore: true });
     }
 
-    async function ensureNewsLoaded({ force = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = newsCache[team.key];
-      const fresh = cached && (Date.now() - cached.loadedAt < NEWS_REFRESH_MS);
-      if (!force && fresh) {
-        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-          latestSnapshot.newsData = cached.data;
-          renderNews(latestSnapshot.newsData, team.newsTerms, team);
-        }
-        return cached.data;
-      }
-
-      const data = await fetchJson(`/api/news/bbc-football?team=${team.key}`).catch(() => ({ items: [] }));
-      newsCache[team.key] = { data, loadedAt: Date.now() };
-      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-        latestSnapshot.newsData = data;
-        renderNews(data, team.newsTerms, team);
-      }
-      return data;
+    function updateFixtureViewButtons() {
+      els.fixturesViewToggle?.querySelectorAll(".fixture-subnav-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.fixturesView === fixtureView);
+      });
     }
 
-    async function ensureVideosLoaded({ force = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = videoCache[team.key];
-      const fresh = cached && (Date.now() - cached.loadedAt < VIDEOS_REFRESH_MS);
-      if (!force && fresh) {
-        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-          latestSnapshot.videosData = cached.data;
-          renderVideos(latestSnapshot.videosData, team);
-        }
-        return cached.data;
-      }
-
-      const queries = Array.isArray(team.highlightQueries) && team.highlightQueries.length
-        ? team.highlightQueries
-        : [team.highlightQuery];
-
-      let data = { items: [] };
-      for (const query of queries) {
-        const attempt = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`).catch(() => ({ items: [] }));
-        if (Array.isArray(attempt?.items) && attempt.items.length) {
-          data = attempt;
-          break;
-        }
-        if (!Array.isArray(data?.items) || !data.items.length) data = attempt;
-      }
-
-      videoCache[team.key] = { data, loadedAt: Date.now() };
-      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-        latestSnapshot.videosData = data;
-        renderVideos(data, team);
-      }
-      return data;
-    }
-
-    
-    
     function setActivePanel(panelId, options = {}) {
       activePanelId = normaliseStoredPanel(panelId || "fixturesPanelCard");
       document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -1155,15 +1142,11 @@
       if (!options.skipStore) {
         localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
       }
-      if (activePanelId === "newsPanelCard") {
-        ensureNewsLoaded();
-      } else if (activePanelId === "videosPanelCard") {
-        ensureVideosLoaded();
-      }
+      if (activePanelId === "newsPanelCard") ensureNewsLoaded();
+      if (activePanelId === "videosPanelCard") ensureVideosLoaded();
     }
 
-
-    async function refreshDashboard({ silent = true, resetIfEmpty = false, includeMedia = false } = {}) {
+    async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
       const team = TEAM_CONFIG[activeTeamKey];
       setRefreshing(true);
       updateRefreshLabel("Refreshing…");
@@ -1185,26 +1168,17 @@
           throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
         }
 
-        const previousNews = latestSnapshot?.teamKey === activeTeamKey ? (latestSnapshot.newsData || { items: [] }) : { items: [] };
-        const previousVideos = latestSnapshot?.teamKey === activeTeamKey ? (latestSnapshot.videosData || { items: [] }) : { items: [] };
-
         latestSnapshot = {
           teamData,
           liveData,
-          newsData: previousNews,
-          videosData: previousVideos,
+          newsData: panelDataCache.news[activeTeamKey] || { items: [] },
+          videosData: panelDataCache.videos[activeTeamKey] || { items: [] },
           teamKey: activeTeamKey
         };
-
         applySnapshot(latestSnapshot);
+        if (activePanelId === "newsPanelCard") ensureNewsLoaded(true);
+        if (activePanelId === "videosPanelCard") ensureVideosLoaded(true);
         updateRefreshLabel(`Updated ${formatNow()}`);
-
-        if (includeMedia || activePanelId === "newsPanelCard" || activePanelId === "videosPanelCard") {
-          await Promise.allSettled([
-            ensureNewsLoaded({ force: includeMedia && activePanelId === "newsPanelCard" }),
-            ensureVideosLoaded({ force: includeMedia && activePanelId === "videosPanelCard" })
-          ]);
-        }
       } catch (error) {
         if (!latestSnapshot) {
           renderErrorState(error);
@@ -1216,7 +1190,65 @@
       }
     }
 
-function applySnapshot(snapshot) {
+
+    async function ensureNewsLoaded(force = false) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      if (!force && panelDataCache.news[activeTeamKey]) {
+        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
+          latestSnapshot.newsData = panelDataCache.news[activeTeamKey];
+          renderNews(latestSnapshot.newsData, team.newsTerms);
+        }
+        return;
+      }
+      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
+      try {
+        const newsData = await fetchJson(`/api/news/bbc-football?team=${team.key}`);
+        panelDataCache.news[activeTeamKey] = newsData;
+        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
+          latestSnapshot.newsData = newsData;
+          renderNews(newsData, team.newsTerms);
+        }
+      } catch (error) {
+        els.newsPanel.innerHTML = `<div class="empty">Could not load news right now.</div>`;
+        console.error(error);
+      }
+    }
+
+    async function fetchYoutubeResults(query) {
+      return fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+    }
+
+    async function ensureVideosLoaded(force = false) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      if (!force && panelDataCache.videos[activeTeamKey]) {
+        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
+          latestSnapshot.videosData = panelDataCache.videos[activeTeamKey];
+          renderVideos(latestSnapshot.videosData);
+        }
+        return;
+      }
+      els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
+      try {
+        let videosData = { items: [] };
+        for (const query of team.highlightQueries || [team.highlightQuery]) {
+          const result = await fetchYoutubeResults(query);
+          if (Array.isArray(result?.items) && result.items.length) {
+            videosData = result;
+            break;
+          }
+        }
+        panelDataCache.videos[activeTeamKey] = videosData;
+        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
+          latestSnapshot.videosData = videosData;
+          renderVideos(videosData);
+        }
+      } catch (error) {
+        els.videosPanel.innerHTML = `<div class="empty">Could not load highlights right now.</div>`;
+        console.error(error);
+      }
+    }
+
+    function applySnapshot(snapshot) {
       const team = TEAM_CONFIG[snapshot.teamKey];
       const teamData = snapshot.teamData || {};
       const liveData = snapshot.liveData || {};
@@ -1230,64 +1262,9 @@ function applySnapshot(snapshot) {
       renderStats(teamStanding);
       renderFixtures(teamData);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
-      renderNews(newsData, team.newsTerms, team);
-      renderVideos(videosData, team);
+      renderNews(newsData, team.newsTerms);
+      renderVideos(videosData);
       setActivePanel(activePanelId, { skipStore: true });
-    }
-
-    async function ensureNewsLoaded({ force = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = newsCache[team.key];
-      const fresh = cached && (Date.now() - cached.loadedAt < NEWS_REFRESH_MS);
-      if (!force && fresh) {
-        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-          latestSnapshot.newsData = cached.data;
-          renderNews(latestSnapshot.newsData, team.newsTerms, team);
-        }
-        return cached.data;
-      }
-
-      const data = await fetchJson(`/api/news/bbc-football?team=${team.key}`).catch(() => ({ items: [] }));
-      newsCache[team.key] = { data, loadedAt: Date.now() };
-      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-        latestSnapshot.newsData = data;
-        renderNews(data, team.newsTerms, team);
-      }
-      return data;
-    }
-
-    async function ensureVideosLoaded({ force = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = videoCache[team.key];
-      const fresh = cached && (Date.now() - cached.loadedAt < VIDEOS_REFRESH_MS);
-      if (!force && fresh) {
-        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-          latestSnapshot.videosData = cached.data;
-          renderVideos(latestSnapshot.videosData, team);
-        }
-        return cached.data;
-      }
-
-      const queries = Array.isArray(team.highlightQueries) && team.highlightQueries.length
-        ? team.highlightQueries
-        : [team.highlightQuery];
-
-      let data = { items: [] };
-      for (const query of queries) {
-        const attempt = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`).catch(() => ({ items: [] }));
-        if (Array.isArray(attempt?.items) && attempt.items.length) {
-          data = attempt;
-          break;
-        }
-        if (!Array.isArray(data?.items) || !data.items.length) data = attempt;
-      }
-
-      videoCache[team.key] = { data, loadedAt: Date.now() };
-      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
-        latestSnapshot.videosData = data;
-        renderVideos(data, team);
-      }
-      return data;
     }
 
     function renderBootstrapLoading() {
@@ -1295,6 +1272,10 @@ function applySnapshot(snapshot) {
       els.heroSub.textContent = "Pulling fixtures, standings, live status, news and highlights.";
       els.heroEyebrow.textContent = "Club dashboard";
       els.heroEyebrow.classList.remove("live");
+      els.heroMetaOne.textContent = "Fixtures";
+      els.heroMetaTwo.textContent = "Standings";
+      els.heroMetaThree.textContent = "Live centre";
+      els.heroGD.textContent = "Goal difference · –";
       els.nextBadge.textContent = "Next match";
       els.nextBadge.classList.remove("live");
       els.heroKickoff.textContent = "–";
@@ -1309,8 +1290,8 @@ function applySnapshot(snapshot) {
       els.lineupsPanel.innerHTML = "";
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
-      els.newsPanel.innerHTML = `<div class="empty">Open the News tab to load the latest stories.</div>`;
-      els.videosPanel.innerHTML = `<div class="empty">Open the Highlights tab to load the latest videos.</div>`;
+      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
+      els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
     }
 
     function renderBrandLogo(teamData, standings, team) {
@@ -1330,47 +1311,36 @@ function applySnapshot(snapshot) {
       }
     }
 
-    
     function renderHero(team, teamData, teamStanding, liveData) {
       const featured = selectFeaturedFixture(teamData, liveData);
       const form = normaliseForm(teamStanding?.form);
       const live = featured.isLive;
+      const gd = teamStanding ? signed(teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–") : "–";
 
-      els.heroEyebrow.textContent = `${team.shortName} · ${live ? "Live now" : "Next up"}`;
+      els.heroEyebrow.textContent = `${team.shortName} · ${live ? "Live match centre" : "Next match"}`;
       els.heroEyebrow.classList.toggle("live", live);
 
       const competition = featured.competition || team.leagueName;
-      const venue = featured.venue || "";
+      const venue = featured.venue || "Venue TBC";
       const status = featured.status || "";
       const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
-      const heroContextBits = [competition];
-      if (venue) heroContextBits.push(venue);
 
       els.heroTitle.textContent = live
         ? `${home} ${safeScore(featured.homeScore)}–${safeScore(featured.awayScore)} ${away}`
         : `${home} vs ${away}`;
 
-      els.heroSub.textContent = heroContextBits.join(" · ");
-
-      const contextStatus = live ? (featured.liveStatus || status || "Live") : (fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC");
-      const gdValue = teamStanding ? signed(teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–") : "–";
-      const positionValue = teamStanding ? ordinal(teamStanding.position ?? teamStanding.rank ?? "–") : "–";
-      const pointsValue = teamStanding?.points ?? "–";
-      const heroSecondary = [`Pos ${positionValue}`, `${pointsValue} pts`, `GD ${gdValue}`];
-      if (form) heroSecondary.push(`Form ${form}`);
-      els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
-      els.heroKickoffSub.innerHTML = `
-        <div class="hero-context">
-          <span class="hero-context-pill">${escapeHtml(contextStatus)}</span>
-          <span class="hero-context-line">${escapeHtml(buildKickoffSubline(featured, fixtureDate))}</span>
-          <span class="hero-context-line">${escapeHtml(heroSecondary.join(" · "))}</span>
-        </div>
-      `;
-
+      els.heroSub.textContent = `${competition} · ${venue}`;
+      els.heroMetaOne.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
+      els.heroMetaTwo.textContent = live ? (featured.liveStatus || status || "Live") : (status || "Scheduled");
+      els.heroMetaThree.textContent = form || "Form unavailable";
+      els.heroGD.textContent = `Goal difference · ${gd}`;
       els.nextBadge.textContent = live ? "● Live match centre" : "Next match";
       els.nextBadge.classList.toggle("live", live);
+
+      els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
+      els.heroKickoffSub.textContent = buildKickoffSubline(featured, fixtureDate);
 
       els.nextMatchPanel.innerHTML = `
         <div class="team-score-row">
@@ -1639,53 +1609,59 @@ function selectFeaturedFixture(teamData, liveData) {
       }).filter(Boolean).slice(0, 11);
     }
 
-    
-    
     function renderStats(teamStanding) {
       if (!teamStanding) {
         els.statPosition.textContent = "–";
         els.statPositionSub.textContent = "Team not found";
         els.statPoints.textContent = "–";
         els.statPointsSub.textContent = "–";
-        els.statForm.textContent = "–";
-        els.statFormSub.textContent = "Latest five";
+        els.statGD.textContent = "–";
+        els.statGDSub.textContent = "–";
+        els.statRecord.textContent = "–";
         return;
       }
 
       const position = teamStanding.position ?? teamStanding.rank ?? null;
       const points = teamStanding.points ?? "–";
+      const gd = teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–";
       const played = teamStanding.playedGames ?? teamStanding.all?.played ?? "–";
-      const form = normaliseForm(teamStanding.form);
       const won = teamStanding.won ?? teamStanding.all?.win ?? 0;
       const draw = teamStanding.draw ?? teamStanding.all?.draw ?? 0;
       const lost = teamStanding.lost ?? teamStanding.all?.lose ?? 0;
+      const gf = teamStanding.goalsFor ?? teamStanding.all?.goals?.for ?? 0;
+      const ga = teamStanding.goalsAgainst ?? teamStanding.all?.goals?.against ?? 0;
 
       els.statPosition.textContent = ordinal(position);
       els.statPositionSub.textContent = teamStanding.description || "Current league position";
       els.statPoints.textContent = points;
       els.statPointsSub.textContent = `${played} played`;
-      els.statForm.textContent = form || `${won}-${draw}-${lost}`;
-      els.statFormSub.textContent = form ? "Latest five" : "Wins / draws / losses";
+      els.statGD.textContent = signed(gd);
+      els.statGDSub.textContent = `${gf} scored · ${ga} conceded`;
+      els.statRecord.textContent = `${won}-${draw}-${lost}`;
+      els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
-function renderFixtures(teamData) {
-      const combined = getAllFixtures(teamData)
-        .sort((a, b) => {
-          const aLive = isLiveStatus(a._status) ? 0 : 1;
-          const bLive = isLiveStatus(b._status) ? 0 : 1;
-          if (aLive !== bLive) return aLive - bLive;
-          return a._ts - b._ts;
-        });
+    function renderFixtures(teamData) {
+      const liveItems = getAllFixtures(teamData).filter(item => isLiveStatus(item._status)).sort((a, b) => a._ts - b._ts);
+      const upcomingItems = getAllFixtures(teamData)
+        .filter(item => item._date && !isLiveStatus(item._status) && item._ts >= Date.now() - 3 * 60 * 60 * 1000)
+        .sort((a, b) => a._ts - b._ts);
+      const recentItems = getAllFixtures(teamData)
+        .filter(item => item._date && !isLiveStatus(item._status) && item._ts < Date.now() + 60 * 1000)
+        .sort((a, b) => b._ts - a._ts);
 
-      const unique = dedupeMatches(combined).slice(0, 8);
+      const selected = fixtureView === "recent"
+        ? dedupeMatches(recentItems).slice(0, 8)
+        : dedupeMatches([...liveItems, ...upcomingItems]).slice(0, 8);
+
       els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming · ${(teamData.last || []).length} recent`;
 
-      if (!unique.length) {
-        els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
+      if (!selected.length) {
+        els.fixturesPanel.innerHTML = `<div class="empty">No ${fixtureView} fixtures returned.</div>`;
         return;
       }
 
-      els.fixturesPanel.innerHTML = unique.map(item => {
+      els.fixturesPanel.innerHTML = selected.map(item => {
         const date = item._date || fixtureDateValue(item);
         const status = item.status || item._status || "";
         const competition = item.competition?.name || "Competition";
@@ -1733,7 +1709,7 @@ function renderFixtures(teamData) {
         return;
       }
 
-      const rows = standings.slice(0, 12).map(row => {
+      const rows = standings.map(row => {
         const position = row.position ?? row.rank ?? "–";
         const played = row.playedGames ?? row.all?.played ?? "–";
         const points = row.points ?? "–";
@@ -1774,87 +1750,68 @@ function renderFixtures(teamData) {
       `;
     }
 
-    
-    
-    
-    function extractNewsThumbnail(item) {
-      return item?.thumbnail
-        || item?.image
-        || item?.imageUrl
-        || item?.mediaThumbnail
-        || item?.media?.thumbnail
-        || item?.enclosure?.url
-        || item?.itunes?.image
-        || item?.meta?.image
-        || "";
-    }
-
-function renderNews(newsData, terms, team = TEAM_CONFIG[activeTeamKey]) {
+    function renderNews(newsData, terms) {
       const allItems = Array.isArray(newsData?.items) ? newsData.items : [];
       const loweredTerms = terms.map(t => t.toLowerCase());
 
-      const filtered = allItems.filter(item => {
+      let filtered = allItems.filter(item => {
         const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
         return loweredTerms.some(term => text.includes(term));
-      }).slice(0, 6);
+      }).slice(0, 8);
 
-      const itemsToShow = filtered.length ? filtered : allItems.slice(0, 6);
+      if (!filtered.length) filtered = allItems.slice(0, 8);
 
-      if (!itemsToShow.length) {
-        els.newsPanel.innerHTML = `<div class="empty">No BBC football stories found right now for ${escapeHtml(team.shortName)}.</div>`;
+      if (!filtered.length) {
+        els.newsPanel.innerHTML = `<div class="empty">No BBC football stories found right now.</div>`;
         return;
       }
 
-      els.newsPanel.innerHTML = itemsToShow.map(item => {
-        const thumb = extractNewsThumbnail(item);
-        const url = item.link || "#";
+      els.newsPanel.innerHTML = filtered.map(item => {
+        const thumb = item.thumbnail || item.image || item.imageUrl || item.enclosure?.url || item.media?.thumbnail?.url || item.mediaThumbnail || "";
+        const hasThumb = !!thumb;
         return `
-        <article class="news-item">
-          <a class="news-thumb" href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">
-            ${thumb ? `<img src="${escapeAttribute(thumb)}" alt="${escapeAttribute(item.title || "News story")}" loading="lazy" />` : ``}
-          </a>
-          <div class="news-copy">
-            <div class="news-title">
-              <a href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+          <article class="news-item ${hasThumb ? "with-thumb" : ""}">
+            ${hasThumb ? `<img class="media-thumb" src="${escapeAttribute(thumb)}" alt="" loading="lazy" />` : ""}
+            <div class="media-stack">
+              <div class="news-title">
+                <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+              </div>
+              <div class="news-meta">
+                ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
+                ${escapeHtml(trimText(item.description || "", 180))}
+              </div>
             </div>
-            <div class="news-meta">
-              ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
-              ${escapeHtml(trimText(item.description || "", 180))}
-            </div>
-          </div>
-        </article>
-      `;
+          </article>
+        `;
       }).join("");
     }
 
-
-    function renderVideos(videosData, team = TEAM_CONFIG[activeTeamKey]) {
+    function renderVideos(videosData) {
+      const team = TEAM_CONFIG[activeTeamKey];
       const items = Array.isArray(videosData?.items) ? videosData.items : [];
       if (!items.length) {
         els.videosPanel.innerHTML = `
           <div class="empty">
-            No highlight videos returned right now.<br />
-            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(team.highlightQuery)}" target="_blank" rel="noreferrer">Open YouTube search</a>
-          </div>
-        `;
+            No highlight videos returned.
+            <div style="margin-top:10px;">
+              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((team.highlightQueries || [team.highlightQuery])[0])}" target="_blank" rel="noreferrer" style="color:#fff;">Open YouTube search</a>
+            </div>
+          </div>`;
         return;
       }
 
       els.videosPanel.innerHTML = items.slice(0, 6).map(item => {
-        const videoId = item.id?.videoId || "";
-        const title = item.snippet?.title || "Video";
-        const channel = item.snippet?.channelTitle || "YouTube";
-        const publishedAt = item.snippet?.publishedAt || "";
-        const thumb = item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url || "";
-        const url = videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : "#";
+        const videoId = item.id?.videoId || item.id || "";
+        const title = item.snippet?.title || item.title || "Video";
+        const channel = item.snippet?.channelTitle || item.channelTitle || "YouTube";
+        const publishedAt = item.snippet?.publishedAt || item.publishedAt || "";
+        const thumb = item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.default?.url || item.thumbnail || "";
         return `
-          <article class="video-item">
-            <a class="video-thumb" href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">
-              ${thumb ? `<img src="${escapeAttribute(thumb)}" alt="${escapeAttribute(title)}" loading="lazy" />` : ``}
-            </a>
-            <div class="video-copy">
+          <article class="video-item with-thumb">
+            ${thumb ? `<img class="media-thumb" src="${escapeAttribute(thumb)}" alt="" loading="lazy" />` : ""}
+            <div class="media-stack">
               <div class="video-title">
-                <a href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
+                <a href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
               </div>
               <div class="video-meta">
                 ${escapeHtml(channel)} · ${escapeHtml(publishedAt ? formatDateOnly(new Date(publishedAt)) : "Date n/a")}
@@ -1865,7 +1822,7 @@ function renderNews(newsData, terms, team = TEAM_CONFIG[activeTeamKey]) {
       }).join("");
     }
 
-function renderErrorState(error) {
+    function renderErrorState(error) {
       const message = error?.message || String(error) || "Could not load the dashboard.";
       els.heroTitle.textContent = "Dashboard error";
       els.heroSub.textContent = message;
@@ -2012,7 +1969,7 @@ function renderErrorState(error) {
       }, AUTO_REFRESH_MS);
     }
 
-    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true, includeMedia: activePanelId === "newsPanelCard" || activePanelId === "videosPanelCard" }));
+    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true }));
     els.menuButton.addEventListener("click", () => {
       if (els.menuPanel.classList.contains("open")) closeMenu();
       else openMenu();

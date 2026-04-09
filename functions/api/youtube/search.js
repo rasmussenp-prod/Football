@@ -1,42 +1,47 @@
 export async function onRequestGet(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
+  const url = new URL(context.request.url);
+  const q = url.searchParams.get("q") || "football highlights";
 
-  const q = url.searchParams.get("q");
-  if (!q) {
-    return json({ error: "Missing q" }, 400);
+  const API_KEY = context.env.YOUTUBE_API_KEY;
+
+  if (!API_KEY) {
+    return new Response(JSON.stringify({
+      error: "Missing YOUTUBE_API_KEY"
+    }), { status: 500 });
   }
+
+  // 🔁 Strong fallback queries
+  const queries = [
+    q,
+    `${q} sky sports`,
+    `${q} highlights`,
+    "tottenham highlights sky sports",
+    "football highlights sky sports"
+  ];
 
   try {
-    const upstream = new URL("https://www.googleapis.com/youtube/v3/search");
-    upstream.searchParams.set("part", "snippet");
-    upstream.searchParams.set("type", "video");
-    upstream.searchParams.set("order", "date");
-    upstream.searchParams.set("maxResults", "4");
-    upstream.searchParams.set("q", q);
-    upstream.searchParams.set("key", env.YOUTUBE_API_KEY);
+    for (const query of queries) {
+      const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=6&q=${encodeURIComponent(query)}&key=${API_KEY}`;
 
-    const res = await fetch(upstream.toString());
-    const data = await res.json();
+      const res = await fetch(ytUrl);
+      const data = await res.json();
 
-    return json(data, res.status);
-  } catch (error) {
-    return json(
-      {
-        error: "Could not load YouTube search results",
-        detail: String(error)
-      },
-      500
-    );
-  }
-}
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store"
+      if (data.items && data.items.length) {
+        return new Response(JSON.stringify({ items: data.items }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
-  });
+
+    // fallback empty
+    return new Response(JSON.stringify({ items: [] }), {
+      headers: { "Content-Type": "application/json" }
+    });
+
+  } catch (err) {
+    return new Response(JSON.stringify({
+      error: "YouTube fetch failed",
+      detail: err.message
+    }), { status: 500 });
+  }
 }
