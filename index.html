@@ -307,19 +307,27 @@
       max-width: 820px;
     }
 
-    .hero-meta {
+    .hero-context {
+      margin-top: 14px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 14px;
+      align-items: center;
     }
 
-    .meta-pill {
-      padding: 9px 12px;
+    .hero-context-line {
+      color: rgba(255,255,255,0.86);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .hero-context-pill {
+      padding: 8px 12px;
       border-radius: 999px;
       background: rgba(255,255,255,0.09);
       border: 1px solid rgba(255,255,255,0.10);
-      font-size: 0.84rem;
+      font-size: 0.8rem;
+      font-weight: 700;
     }
 
     .score-shell {
@@ -446,7 +454,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -662,6 +670,34 @@
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
 
+    .video-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .video-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      display: block;
+    }
+
+    .video-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-copy {
+      min-width: 0;
+    }
+
     .news-title,
     .video-title {
       font-weight: 700;
@@ -703,6 +739,12 @@
       line-height: 1.5;
     }
 
+    @media (max-width: 479px) {
+      .video-item {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (min-width: 760px) {
       body { padding: 16px; }
       .shell { padding: 18px; gap: 18px; }
@@ -711,7 +753,7 @@
       .brand-copy p { font-size: 0.85rem; }
       .hero { padding: 22px; }
       .hero-grid { grid-template-columns: 1.15fr 0.85fr; gap: 18px; align-items: start; }
-      .stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
       .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -764,13 +806,7 @@
           <div>
             <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
             <h2 id="heroTitle">Loading latest football data</h2>
-            <p class="hero-sub" id="heroSub">Fixtures, standings, live status, news and highlights in one view.</p>
-            <div class="hero-meta">
-              <div class="meta-pill" id="heroMetaOne">Fixtures</div>
-              <div class="meta-pill" id="heroMetaTwo">Standings</div>
-              <div class="meta-pill" id="heroMetaThree">Live centre</div>
-            </div>
-          </div>
+            <p class="hero-sub" id="heroSub">Fixtures, standings, live status, news and highlights in one view.</p>          </div>
 
           <div class="score-shell">
             <section class="next-card">
@@ -808,15 +844,9 @@
         </div>
 
         <div class="stat-card card">
-          <div class="stat-label">Goal difference</div>
-          <div class="stat-value" id="statGD">–</div>
-          <div class="stat-sub" id="statGDSub">–</div>
-        </div>
-
-        <div class="stat-card card">
-          <div class="stat-label">Record</div>
-          <div class="stat-value" id="statRecord">–</div>
-          <div class="stat-sub" id="statRecordSub">Wins / draws / losses</div>
+          <div class="stat-label">Form</div>
+          <div class="stat-value" id="statForm">–</div>
+          <div class="stat-sub" id="statFormSub">Latest five</div>
         </div>
       </section>
 
@@ -854,7 +884,7 @@
             <div class="subtle">BBC football feed</div>
           </div>
           <div class="news-list" id="newsPanel">
-            <div class="empty">Loading news…</div>
+            <div class="empty">Open the News tab to load the latest stories.</div>
           </div>
         </section>
 
@@ -864,13 +894,13 @@
             <div class="subtle">YouTube search</div>
           </div>
           <div class="video-list" id="videosPanel">
-            <div class="empty">Loading highlights…</div>
+            <div class="empty">Open the Highlights tab to load the latest videos.</div>
           </div>
         </section>
       </section>
 
       <div class="footer-note">
-        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
+        Live and core match data refresh quietly in the background. News and highlights load when you open their tabs.
       </div>
     </div>
   </div>
@@ -878,6 +908,8 @@
   <script>
     const CURRENT_SEASON = 2025;
     const AUTO_REFRESH_MS = 30000;
+    const NEWS_REFRESH_MS = 10 * 60 * 1000;
+    const VIDEOS_REFRESH_MS = 15 * 60 * 1000;
 
     const TEAM_CONFIG = {
       tottenham: {
@@ -941,6 +973,8 @@
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
+    let newsCache = {};
+    let videoCache = {};
 
     const els = {
       body: document.body,
@@ -956,9 +990,7 @@
       heroEyebrow: document.getElementById("heroEyebrow"),
       heroTitle: document.getElementById("heroTitle"),
       heroSub: document.getElementById("heroSub"),
-      heroMetaOne: document.getElementById("heroMetaOne"),
-      heroMetaTwo: document.getElementById("heroMetaTwo"),
-      heroMetaThree: document.getElementById("heroMetaThree"),
+
       heroKickoff: document.getElementById("heroKickoff"),
       heroKickoffSub: document.getElementById("heroKickoffSub"),
       nextBadge: document.getElementById("nextBadge"),
@@ -968,10 +1000,8 @@
       statPositionSub: document.getElementById("statPositionSub"),
       statPoints: document.getElementById("statPoints"),
       statPointsSub: document.getElementById("statPointsSub"),
-      statGD: document.getElementById("statGD"),
-      statGDSub: document.getElementById("statGDSub"),
-      statRecord: document.getElementById("statRecord"),
-      statRecordSub: document.getElementById("statRecordSub"),
+      statForm: document.getElementById("statForm"),
+      statFormSub: document.getElementById("statFormSub"),
       fixturesSubtle: document.getElementById("fixturesSubtle"),
       tableSubtle: document.getElementById("tableSubtle"),
       fixturesPanel: document.getElementById("fixturesPanel"),
@@ -1044,6 +1074,50 @@
       setActivePanel(activePanelId, { skipStore: true });
     }
 
+    async function ensureNewsLoaded({ force = false } = {}) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      const cached = newsCache[team.key];
+      const fresh = cached && (Date.now() - cached.loadedAt < NEWS_REFRESH_MS);
+      if (!force && fresh) {
+        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+          latestSnapshot.newsData = cached.data;
+          renderNews(latestSnapshot.newsData, team.newsTerms, team);
+        }
+        return cached.data;
+      }
+
+      const data = await fetchJson(`/api/news/bbc-football?team=${team.key}`).catch(() => ({ items: [] }));
+      newsCache[team.key] = { data, loadedAt: Date.now() };
+      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+        latestSnapshot.newsData = data;
+        renderNews(data, team.newsTerms, team);
+      }
+      return data;
+    }
+
+    async function ensureVideosLoaded({ force = false } = {}) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      const cached = videoCache[team.key];
+      const fresh = cached && (Date.now() - cached.loadedAt < VIDEOS_REFRESH_MS);
+      if (!force && fresh) {
+        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+          latestSnapshot.videosData = cached.data;
+          renderVideos(latestSnapshot.videosData, team);
+        }
+        return cached.data;
+      }
+
+      const data = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`).catch(() => ({ items: [] }));
+      videoCache[team.key] = { data, loadedAt: Date.now() };
+      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+        latestSnapshot.videosData = data;
+        renderVideos(data, team);
+      }
+      return data;
+    }
+
+    
+    
     function setActivePanel(panelId, options = {}) {
       activePanelId = normaliseStoredPanel(panelId || "fixturesPanelCard");
       document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -1055,9 +1129,15 @@
       if (!options.skipStore) {
         localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
       }
+      if (activePanelId === "newsPanelCard") {
+        ensureNewsLoaded();
+      } else if (activePanelId === "videosPanelCard") {
+        ensureVideosLoaded();
+      }
     }
 
-    async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
+
+    async function refreshDashboard({ silent = true, resetIfEmpty = false, includeMedia = false } = {}) {
       const team = TEAM_CONFIG[activeTeamKey];
       setRefreshing(true);
       updateRefreshLabel("Refreshing…");
@@ -1067,25 +1147,38 @@
       }
 
       try {
-        const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
+        const [teamDataResult, liveDataResult] = await Promise.allSettled([
           fetchJson(`/api/football/team?team=${team.key}`),
-          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/news/bbc-football?team=${team.key}`),
-          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
+          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
         ]);
 
         const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
         const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
-        const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
-        const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
 
         if (!teamData) {
           throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
         }
 
-        latestSnapshot = { teamData, liveData, newsData, videosData, teamKey: activeTeamKey };
+        const previousNews = latestSnapshot?.teamKey === activeTeamKey ? (latestSnapshot.newsData || { items: [] }) : { items: [] };
+        const previousVideos = latestSnapshot?.teamKey === activeTeamKey ? (latestSnapshot.videosData || { items: [] }) : { items: [] };
+
+        latestSnapshot = {
+          teamData,
+          liveData,
+          newsData: previousNews,
+          videosData: previousVideos,
+          teamKey: activeTeamKey
+        };
+
         applySnapshot(latestSnapshot);
         updateRefreshLabel(`Updated ${formatNow()}`);
+
+        if (includeMedia || activePanelId === "newsPanelCard" || activePanelId === "videosPanelCard") {
+          await Promise.allSettled([
+            ensureNewsLoaded({ force: includeMedia && activePanelId === "newsPanelCard" }),
+            ensureVideosLoaded({ force: includeMedia && activePanelId === "videosPanelCard" })
+          ]);
+        }
       } catch (error) {
         if (!latestSnapshot) {
           renderErrorState(error);
@@ -1097,7 +1190,7 @@
       }
     }
 
-    function applySnapshot(snapshot) {
+function applySnapshot(snapshot) {
       const team = TEAM_CONFIG[snapshot.teamKey];
       const teamData = snapshot.teamData || {};
       const liveData = snapshot.liveData || {};
@@ -1111,9 +1204,51 @@
       renderStats(teamStanding);
       renderFixtures(teamData);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
-      renderNews(newsData, team.newsTerms);
-      renderVideos(videosData);
+      renderNews(newsData, team.newsTerms, team);
+      renderVideos(videosData, team);
       setActivePanel(activePanelId, { skipStore: true });
+    }
+
+    async function ensureNewsLoaded({ force = false } = {}) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      const cached = newsCache[team.key];
+      const fresh = cached && (Date.now() - cached.loadedAt < NEWS_REFRESH_MS);
+      if (!force && fresh) {
+        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+          latestSnapshot.newsData = cached.data;
+          renderNews(latestSnapshot.newsData, team.newsTerms, team);
+        }
+        return cached.data;
+      }
+
+      const data = await fetchJson(`/api/news/bbc-football?team=${team.key}`).catch(() => ({ items: [] }));
+      newsCache[team.key] = { data, loadedAt: Date.now() };
+      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+        latestSnapshot.newsData = data;
+        renderNews(data, team.newsTerms, team);
+      }
+      return data;
+    }
+
+    async function ensureVideosLoaded({ force = false } = {}) {
+      const team = TEAM_CONFIG[activeTeamKey];
+      const cached = videoCache[team.key];
+      const fresh = cached && (Date.now() - cached.loadedAt < VIDEOS_REFRESH_MS);
+      if (!force && fresh) {
+        if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+          latestSnapshot.videosData = cached.data;
+          renderVideos(latestSnapshot.videosData, team);
+        }
+        return cached.data;
+      }
+
+      const data = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`).catch(() => ({ items: [] }));
+      videoCache[team.key] = { data, loadedAt: Date.now() };
+      if (latestSnapshot && latestSnapshot.teamKey === team.key) {
+        latestSnapshot.videosData = data;
+        renderVideos(data, team);
+      }
+      return data;
     }
 
     function renderBootstrapLoading() {
@@ -1121,9 +1256,6 @@
       els.heroSub.textContent = "Pulling fixtures, standings, live status, news and highlights.";
       els.heroEyebrow.textContent = "Club dashboard";
       els.heroEyebrow.classList.remove("live");
-      els.heroMetaOne.textContent = "Fixtures";
-      els.heroMetaTwo.textContent = "Standings";
-      els.heroMetaThree.textContent = "Live centre";
       els.nextBadge.textContent = "Next match";
       els.nextBadge.classList.remove("live");
       els.heroKickoff.textContent = "–";
@@ -1138,8 +1270,8 @@
       els.lineupsPanel.innerHTML = "";
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
-      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
-      els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
+      els.newsPanel.innerHTML = `<div class="empty">Open the News tab to load the latest stories.</div>`;
+      els.videosPanel.innerHTML = `<div class="empty">Open the Highlights tab to load the latest videos.</div>`;
     }
 
     function renderBrandLogo(teamData, standings, team) {
@@ -1159,34 +1291,42 @@
       }
     }
 
+    
     function renderHero(team, teamData, teamStanding, liveData) {
       const featured = selectFeaturedFixture(teamData, liveData);
       const form = normaliseForm(teamStanding?.form);
       const live = featured.isLive;
 
-      els.heroEyebrow.textContent = `${team.shortName} · ${live ? "Live match centre" : "Next match"}`;
+      els.heroEyebrow.textContent = `${team.shortName} · ${live ? "Live now" : "Next up"}`;
       els.heroEyebrow.classList.toggle("live", live);
 
       const competition = featured.competition || team.leagueName;
-      const venue = featured.venue || "Venue TBC";
+      const venue = featured.venue || "";
       const status = featured.status || "";
-      const fixtureDate = featured._date || fixtureDateValue(featured, { source: teamData?.source || "", teamKey: team.key });
+      const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
+      const heroContextBits = [competition];
+      if (venue) heroContextBits.push(venue);
 
       els.heroTitle.textContent = live
         ? `${home} ${safeScore(featured.homeScore)}–${safeScore(featured.awayScore)} ${away}`
         : `${home} vs ${away}`;
 
-      els.heroSub.textContent = `${competition} · ${venue}`;
-      els.heroMetaOne.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
-      els.heroMetaTwo.textContent = live ? (featured.liveStatus || status || "Live") : (status || "Scheduled");
-      els.heroMetaThree.textContent = form || "Form unavailable";
+      els.heroSub.textContent = heroContextBits.join(" · ");
+
+      const contextStatus = live ? (featured.liveStatus || status || "Live") : (fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC");
+      const contextForm = form ? `Form ${form}` : "Form unavailable";
+      els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
+      els.heroKickoffSub.innerHTML = `
+        <div class="hero-context">
+          <span class="hero-context-pill">${escapeHtml(contextStatus)}</span>
+          <span class="hero-context-line">${escapeHtml(buildKickoffSubline(featured, fixtureDate))}</span>
+        </div>
+      `;
+
       els.nextBadge.textContent = live ? "● Live match centre" : "Next match";
       els.nextBadge.classList.toggle("live", live);
-
-      els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
-      els.heroKickoffSub.textContent = buildKickoffSubline(featured, fixtureDate);
 
       els.nextMatchPanel.innerHTML = `
         <div class="team-score-row">
@@ -1203,14 +1343,7 @@
     }
 
     
-    function parseSkySportsLocalIso(raw) {
-      const m = String(raw || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?Z$/);
-      if (!m) return null;
-      const [, y, mo, d, h, mi, s] = m;
-      return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s || 0));
-    }
-
-    function parseMatchDate(value, options = {}) {
+    function parseMatchDate(value) {
       if (!value) return null;
       if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
       if (typeof value === "number") {
@@ -1219,16 +1352,6 @@
       }
       const raw = String(value).trim();
       if (!raw) return null;
-
-      const shouldTreatAsLondonLocal =
-        options.teamKey === "wimbledon" &&
-        /sky sports scrape/i.test(String(options.source || "")) &&
-        /Z$/.test(raw);
-
-      if (shouldTreatAsLondonLocal) {
-        const skyLocal = parseSkySportsLocalIso(raw);
-        if (skyLocal) return skyLocal;
-      }
 
       let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
       if (m) {
@@ -1246,7 +1369,7 @@
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    function fixtureDateValue(item, options = {}) {
+    function fixtureDateValue(item) {
       const candidates = [
         item?.utcDate,
         item?.date,
@@ -1260,19 +1383,17 @@
         item?.datetime
       ];
       for (const candidate of candidates) {
-        const parsed = parseMatchDate(candidate, options);
+        const parsed = parseMatchDate(candidate);
         if (parsed) return parsed;
       }
       return null;
     }
 
-    function normaliseFixture(item, source = "", teamKey = activeTeamKey) {
-      const date = fixtureDateValue(item, { source, teamKey });
+    function normaliseFixture(item) {
+      const date = fixtureDateValue(item);
       const status = String(item?.status || item?.fixture?.status?.short || item?.fixture?.status?.long || "").toUpperCase();
       return {
         ...item,
-        _source: source,
-        _teamKey: teamKey,
         _date: date,
         _ts: date ? date.getTime() : Number.POSITIVE_INFINITY,
         _status: status
@@ -1280,12 +1401,11 @@
     }
 
     function getAllFixtures(teamData) {
-      const source = teamData?.source || "";
       return [
         ...(Array.isArray(teamData?.live) ? teamData.live : []),
         ...(Array.isArray(teamData?.next) ? teamData.next : []),
         ...(Array.isArray(teamData?.last) ? teamData.last : [])
-      ].map(item => normaliseFixture(item, source, activeTeamKey));
+      ].map(normaliseFixture);
     }
 
     function getStandingsFromTeamData(teamData) {
@@ -1338,7 +1458,6 @@ function selectFeaturedFixture(teamData, liveData) {
       const liveLike = allFixtures.find(item => isLiveStatus(item._status));
       if (liveLike) return {
         isLive: true,
-        _date: liveLike._date || null,
         homeName: liveLike.homeTeam?.name || "Home",
         awayName: liveLike.awayTeam?.name || "Away",
         homeScore: liveLike.score?.fullTime?.home ?? liveLike.score?.home,
@@ -1352,12 +1471,11 @@ function selectFeaturedFixture(teamData, liveData) {
       };
 
       const upcoming = allFixtures
-        .filter(item => item._ts >= now - 30 * 60 * 1000)
+        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000)
         .sort((a, b) => a._ts - b._ts)[0];
       if (upcoming) {
         return {
           isLive: false,
-          _date: upcoming._date || null,
           homeName: upcoming.homeTeam?.name || "Home",
           awayName: upcoming.awayTeam?.name || "Away",
           homeScore: upcoming.score?.fullTime?.home ?? upcoming.score?.home,
@@ -1374,7 +1492,6 @@ function selectFeaturedFixture(teamData, liveData) {
       const mostRecent = allFixtures.sort((a, b) => b._ts - a._ts)[0] || (Array.isArray(teamData?.last) ? teamData.last[0] : null);
       return {
         isLive: false,
-        _date: mostRecent?._date || fixtureDateValue(mostRecent, { source: teamData?.source || "", teamKey: activeTeamKey }) || null,
         homeName: mostRecent?.homeTeam?.name || "Home",
         awayName: mostRecent?.awayTeam?.name || "Away",
         homeScore: mostRecent?.score?.fullTime?.home ?? mostRecent?.score?.home,
@@ -1478,39 +1595,36 @@ function selectFeaturedFixture(teamData, liveData) {
       }).filter(Boolean).slice(0, 11);
     }
 
+    
+    
     function renderStats(teamStanding) {
       if (!teamStanding) {
         els.statPosition.textContent = "–";
         els.statPositionSub.textContent = "Team not found";
         els.statPoints.textContent = "–";
         els.statPointsSub.textContent = "–";
-        els.statGD.textContent = "–";
-        els.statGDSub.textContent = "–";
-        els.statRecord.textContent = "–";
+        els.statForm.textContent = "–";
+        els.statFormSub.textContent = "Latest five";
         return;
       }
 
       const position = teamStanding.position ?? teamStanding.rank ?? null;
       const points = teamStanding.points ?? "–";
-      const gd = teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–";
       const played = teamStanding.playedGames ?? teamStanding.all?.played ?? "–";
+      const form = normaliseForm(teamStanding.form);
       const won = teamStanding.won ?? teamStanding.all?.win ?? 0;
       const draw = teamStanding.draw ?? teamStanding.all?.draw ?? 0;
       const lost = teamStanding.lost ?? teamStanding.all?.lose ?? 0;
-      const gf = teamStanding.goalsFor ?? teamStanding.all?.goals?.for ?? 0;
-      const ga = teamStanding.goalsAgainst ?? teamStanding.all?.goals?.against ?? 0;
 
       els.statPosition.textContent = ordinal(position);
       els.statPositionSub.textContent = teamStanding.description || "Current league position";
       els.statPoints.textContent = points;
       els.statPointsSub.textContent = `${played} played`;
-      els.statGD.textContent = signed(gd);
-      els.statGDSub.textContent = `${gf} scored · ${ga} conceded`;
-      els.statRecord.textContent = `${won}-${draw}-${lost}`;
-      els.statRecordSub.textContent = "Wins / draws / losses";
+      els.statForm.textContent = form || `${won}-${draw}-${lost}`;
+      els.statFormSub.textContent = form ? "Latest five" : "Wins / draws / losses";
     }
 
-    function renderFixtures(teamData) {
+function renderFixtures(teamData) {
       const combined = getAllFixtures(teamData)
         .sort((a, b) => {
           const aLive = isLiveStatus(a._status) ? 0 : 1;
@@ -1528,7 +1642,7 @@ function selectFeaturedFixture(teamData, liveData) {
       }
 
       els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = item._date || fixtureDateValue(item, { source: item._source || teamData?.source || "", teamKey: item._teamKey || activeTeamKey });
+        const date = item._date || fixtureDateValue(item);
         const status = item.status || item._status || "";
         const competition = item.competition?.name || "Competition";
         const home = item.homeTeam?.name || "Home";
@@ -1571,7 +1685,7 @@ function selectFeaturedFixture(teamData, liveData) {
       els.tableSubtle.textContent = leagueName;
 
       if (!standings.length) {
-        els.tablePanel.innerHTML = `<div class="empty">No standings were returned by the current ${escapeHtml(leagueName)} source.</div>`;
+        els.tablePanel.innerHTML = `<div class="empty">No standings returned.</div>`;
         return;
       }
 
@@ -1616,7 +1730,9 @@ function selectFeaturedFixture(teamData, liveData) {
       `;
     }
 
-    function renderNews(newsData, terms) {
+    
+    
+    function renderNews(newsData, terms, team = TEAM_CONFIG[activeTeamKey]) {
       const allItems = Array.isArray(newsData?.items) ? newsData.items : [];
       const loweredTerms = terms.map(t => t.toLowerCase());
 
@@ -1625,43 +1741,34 @@ function selectFeaturedFixture(teamData, liveData) {
         return loweredTerms.some(term => text.includes(term));
       }).slice(0, 6);
 
-      const chosen = filtered.length ? filtered : allItems.slice(0, 6);
+      const itemsToShow = filtered.length ? filtered : allItems.slice(0, 6);
 
-      if (!chosen.length) {
-        els.newsPanel.innerHTML = `
-          <div class="empty">
-            No BBC football stories returned right now.<br />
-            <a href="https://www.bbc.co.uk/sport/football" target="_blank" rel="noreferrer">Open BBC Football</a>
-          </div>
-        `;
+      if (!itemsToShow.length) {
+        els.newsPanel.innerHTML = `<div class="empty">No BBC football stories found right now for ${escapeHtml(team.shortName)}.</div>`;
         return;
       }
 
-      els.newsPanel.innerHTML = `
-        ${filtered.length ? "" : `<div class="empty" style="margin-bottom:10px;">Showing latest BBC football stories because no club-specific items matched just now.</div>`}
-        ${chosen.map(item => `
-          <article class="news-item">
-            <div class="news-title">
-              <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
-            </div>
-            <div class="news-meta">
-              ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
-              ${escapeHtml(trimText(item.description || "", 180))}
-            </div>
-          </article>
-        `).join("")}
-      `;
+      els.newsPanel.innerHTML = itemsToShow.map(item => `
+        <article class="news-item">
+          <div class="news-title">
+            <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+          </div>
+          <div class="news-meta">
+            ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
+            ${escapeHtml(trimText(item.description || "", 180))}
+          </div>
+        </article>
+      `).join("");
     }
 
-    function renderVideos(videosData) {
+
+    function renderVideos(videosData, team = TEAM_CONFIG[activeTeamKey]) {
       const items = Array.isArray(videosData?.items) ? videosData.items : [];
       if (!items.length) {
-        const team = TEAM_CONFIG[activeTeamKey];
-        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(team.highlightQuery)}`;
         els.videosPanel.innerHTML = `
           <div class="empty">
             No highlight videos returned right now.<br />
-            <a href="${searchUrl}" target="_blank" rel="noreferrer">Search YouTube for ${escapeHtml(team.shortName)} highlights</a>
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(team.highlightQuery)}" target="_blank" rel="noreferrer">Open YouTube search</a>
           </div>
         `;
         return;
@@ -1672,20 +1779,27 @@ function selectFeaturedFixture(teamData, liveData) {
         const title = item.snippet?.title || "Video";
         const channel = item.snippet?.channelTitle || "YouTube";
         const publishedAt = item.snippet?.publishedAt || "";
+        const thumb = item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url || "";
+        const url = videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : "#";
         return `
           <article class="video-item">
-            <div class="video-title">
-              <a href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
-            </div>
-            <div class="video-meta">
-              ${escapeHtml(channel)} · ${escapeHtml(publishedAt ? formatDateOnly(new Date(publishedAt)) : "Date n/a")}
+            <a class="video-thumb" href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">
+              ${thumb ? `<img src="${escapeAttribute(thumb)}" alt="${escapeAttribute(title)}" loading="lazy" />` : ``}
+            </a>
+            <div class="video-copy">
+              <div class="video-title">
+                <a href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
+              </div>
+              <div class="video-meta">
+                ${escapeHtml(channel)} · ${escapeHtml(publishedAt ? formatDateOnly(new Date(publishedAt)) : "Date n/a")}
+              </div>
             </div>
           </article>
         `;
       }).join("");
     }
 
-    function renderErrorState(error) {
+function renderErrorState(error) {
       const message = error?.message || String(error) || "Could not load the dashboard.";
       els.heroTitle.textContent = "Dashboard error";
       els.heroSub.textContent = message;
@@ -1832,7 +1946,7 @@ function selectFeaturedFixture(teamData, liveData) {
       }, AUTO_REFRESH_MS);
     }
 
-    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true }));
+    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true, includeMedia: activePanelId === "newsPanelCard" || activePanelId === "videosPanelCard" }));
     els.menuButton.addEventListener("click", () => {
       if (els.menuPanel.classList.contains("open")) closeMenu();
       else openMenu();
