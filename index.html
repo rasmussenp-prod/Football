@@ -1170,7 +1170,7 @@
       const competition = featured.competition || team.leagueName;
       const venue = featured.venue || "Venue TBC";
       const status = featured.status || "";
-      const fixtureDate = fixtureDateValue(featured);
+      const fixtureDate = featured._date || fixtureDateValue(featured, { source: teamData?.source || "", teamKey: team.key });
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
 
@@ -1203,7 +1203,14 @@
     }
 
     
-    function parseMatchDate(value) {
+    function parseSkySportsLocalIso(raw) {
+      const m = String(raw || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?Z$/);
+      if (!m) return null;
+      const [, y, mo, d, h, mi, s] = m;
+      return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s || 0));
+    }
+
+    function parseMatchDate(value, options = {}) {
       if (!value) return null;
       if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
       if (typeof value === "number") {
@@ -1212,6 +1219,16 @@
       }
       const raw = String(value).trim();
       if (!raw) return null;
+
+      const shouldTreatAsLondonLocal =
+        options.teamKey === "wimbledon" &&
+        /sky sports scrape/i.test(String(options.source || "")) &&
+        /Z$/.test(raw);
+
+      if (shouldTreatAsLondonLocal) {
+        const skyLocal = parseSkySportsLocalIso(raw);
+        if (skyLocal) return skyLocal;
+      }
 
       let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
       if (m) {
@@ -1229,7 +1246,7 @@
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    function fixtureDateValue(item) {
+    function fixtureDateValue(item, options = {}) {
       const candidates = [
         item?.utcDate,
         item?.date,
@@ -1243,17 +1260,19 @@
         item?.datetime
       ];
       for (const candidate of candidates) {
-        const parsed = parseMatchDate(candidate);
+        const parsed = parseMatchDate(candidate, options);
         if (parsed) return parsed;
       }
       return null;
     }
 
-    function normaliseFixture(item) {
-      const date = fixtureDateValue(item);
+    function normaliseFixture(item, source = "", teamKey = activeTeamKey) {
+      const date = fixtureDateValue(item, { source, teamKey });
       const status = String(item?.status || item?.fixture?.status?.short || item?.fixture?.status?.long || "").toUpperCase();
       return {
         ...item,
+        _source: source,
+        _teamKey: teamKey,
         _date: date,
         _ts: date ? date.getTime() : Number.POSITIVE_INFINITY,
         _status: status
@@ -1261,11 +1280,12 @@
     }
 
     function getAllFixtures(teamData) {
+      const source = teamData?.source || "";
       return [
         ...(Array.isArray(teamData?.live) ? teamData.live : []),
         ...(Array.isArray(teamData?.next) ? teamData.next : []),
         ...(Array.isArray(teamData?.last) ? teamData.last : [])
-      ].map(normaliseFixture);
+      ].map(item => normaliseFixture(item, source, activeTeamKey));
     }
 
     function getStandingsFromTeamData(teamData) {
@@ -1318,6 +1338,7 @@ function selectFeaturedFixture(teamData, liveData) {
       const liveLike = allFixtures.find(item => isLiveStatus(item._status));
       if (liveLike) return {
         isLive: true,
+        _date: liveLike._date || null,
         homeName: liveLike.homeTeam?.name || "Home",
         awayName: liveLike.awayTeam?.name || "Away",
         homeScore: liveLike.score?.fullTime?.home ?? liveLike.score?.home,
@@ -1331,11 +1352,12 @@ function selectFeaturedFixture(teamData, liveData) {
       };
 
       const upcoming = allFixtures
-        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000)
+        .filter(item => item._ts >= now - 30 * 60 * 1000)
         .sort((a, b) => a._ts - b._ts)[0];
       if (upcoming) {
         return {
           isLive: false,
+          _date: upcoming._date || null,
           homeName: upcoming.homeTeam?.name || "Home",
           awayName: upcoming.awayTeam?.name || "Away",
           homeScore: upcoming.score?.fullTime?.home ?? upcoming.score?.home,
@@ -1352,6 +1374,7 @@ function selectFeaturedFixture(teamData, liveData) {
       const mostRecent = allFixtures.sort((a, b) => b._ts - a._ts)[0] || (Array.isArray(teamData?.last) ? teamData.last[0] : null);
       return {
         isLive: false,
+        _date: mostRecent?._date || fixtureDateValue(mostRecent, { source: teamData?.source || "", teamKey: activeTeamKey }) || null,
         homeName: mostRecent?.homeTeam?.name || "Home",
         awayName: mostRecent?.awayTeam?.name || "Away",
         homeScore: mostRecent?.score?.fullTime?.home ?? mostRecent?.score?.home,
@@ -1505,7 +1528,7 @@ function selectFeaturedFixture(teamData, liveData) {
       }
 
       els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = item._date || fixtureDateValue(item);
+        const date = item._date || fixtureDateValue(item, { source: item._source || teamData?.source || "", teamKey: item._teamKey || activeTeamKey });
         const status = item.status || item._status || "";
         const competition = item.competition?.name || "Competition";
         const home = item.homeTeam?.name || "Home";
@@ -1548,7 +1571,7 @@ function selectFeaturedFixture(teamData, liveData) {
       els.tableSubtle.textContent = leagueName;
 
       if (!standings.length) {
-        els.tablePanel.innerHTML = `<div class="empty">No standings returned.</div>`;
+        els.tablePanel.innerHTML = `<div class="empty">No standings were returned by the current ${escapeHtml(leagueName)} source.</div>`;
         return;
       }
 
@@ -1602,28 +1625,45 @@ function selectFeaturedFixture(teamData, liveData) {
         return loweredTerms.some(term => text.includes(term));
       }).slice(0, 6);
 
-      if (!filtered.length) {
-        els.newsPanel.innerHTML = `<div class="empty">No club-specific BBC stories found right now.</div>`;
+      const chosen = filtered.length ? filtered : allItems.slice(0, 6);
+
+      if (!chosen.length) {
+        els.newsPanel.innerHTML = `
+          <div class="empty">
+            No BBC football stories returned right now.<br />
+            <a href="https://www.bbc.co.uk/sport/football" target="_blank" rel="noreferrer">Open BBC Football</a>
+          </div>
+        `;
         return;
       }
 
-      els.newsPanel.innerHTML = filtered.map(item => `
-        <article class="news-item">
-          <div class="news-title">
-            <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
-          </div>
-          <div class="news-meta">
-            ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
-            ${escapeHtml(trimText(item.description || "", 180))}
-          </div>
-        </article>
-      `).join("");
+      els.newsPanel.innerHTML = `
+        ${filtered.length ? "" : `<div class="empty" style="margin-bottom:10px;">Showing latest BBC football stories because no club-specific items matched just now.</div>`}
+        ${chosen.map(item => `
+          <article class="news-item">
+            <div class="news-title">
+              <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+            </div>
+            <div class="news-meta">
+              ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
+              ${escapeHtml(trimText(item.description || "", 180))}
+            </div>
+          </article>
+        `).join("")}
+      `;
     }
 
     function renderVideos(videosData) {
       const items = Array.isArray(videosData?.items) ? videosData.items : [];
       if (!items.length) {
-        els.videosPanel.innerHTML = `<div class="empty">No highlight videos returned.</div>`;
+        const team = TEAM_CONFIG[activeTeamKey];
+        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(team.highlightQuery)}`;
+        els.videosPanel.innerHTML = `
+          <div class="empty">
+            No highlight videos returned right now.<br />
+            <a href="${searchUrl}" target="_blank" rel="noreferrer">Search YouTube for ${escapeHtml(team.shortName)} highlights</a>
+          </div>
+        `;
         return;
       }
 
