@@ -670,6 +670,7 @@
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
 
+    .news-item,
     .video-item {
       display: grid;
       grid-template-columns: 120px 1fr;
@@ -677,6 +678,7 @@
       align-items: start;
     }
 
+    .news-thumb,
     .video-thumb {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -687,6 +689,7 @@
       display: block;
     }
 
+    .news-thumb img,
     .video-thumb img {
       width: 100%;
       height: 100%;
@@ -694,8 +697,16 @@
       display: block;
     }
 
+    .news-copy,
     .video-copy {
       min-width: 0;
+    }
+
+    .video-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+      align-items: start;
     }
 
     .news-title,
@@ -918,7 +929,8 @@
         shortName: "Spurs",
         teamId: 47,
         leagueName: "Premier League",
-        highlightQuery: "Tottenham Hotspur highlights",
+        highlightQuery: "Tottenham Hotspur highlights Sky Sports",
+        highlightQueries: ["Tottenham Hotspur highlights Sky Sports", "Tottenham Hotspur highlights", "Spurs highlights Sky Sports", "Spurs highlights"],
         newsTerms: ["tottenham", "spurs", "tottenham hotspur", "ange", "postecoglou"],
         fallbackLogoText: "TH",
         fallbackLogoUrl: "",
@@ -937,6 +949,7 @@
         teamId: 1044,
         leagueName: "League One",
         highlightQuery: "AFC Wimbledon highlights",
+        highlightQueries: ["AFC Wimbledon highlights", "AFC Wimbledon highlights Sky Sports", "Wimbledon highlights"],
         newsTerms: ["afc wimbledon", "wimbledon", "the dons", "plough lane", "johnnie jackson"],
         fallbackLogoText: "AW",
         fallbackLogoUrl: "",
@@ -1107,7 +1120,20 @@
         return cached.data;
       }
 
-      const data = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`).catch(() => ({ items: [] }));
+      const queries = Array.isArray(team.highlightQueries) && team.highlightQueries.length
+        ? team.highlightQueries
+        : [team.highlightQuery];
+
+      let data = { items: [] };
+      for (const query of queries) {
+        const attempt = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`).catch(() => ({ items: [] }));
+        if (Array.isArray(attempt?.items) && attempt.items.length) {
+          data = attempt;
+          break;
+        }
+        if (!Array.isArray(data?.items) || !data.items.length) data = attempt;
+      }
+
       videoCache[team.key] = { data, loadedAt: Date.now() };
       if (latestSnapshot && latestSnapshot.teamKey === team.key) {
         latestSnapshot.videosData = data;
@@ -1242,7 +1268,20 @@ function applySnapshot(snapshot) {
         return cached.data;
       }
 
-      const data = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`).catch(() => ({ items: [] }));
+      const queries = Array.isArray(team.highlightQueries) && team.highlightQueries.length
+        ? team.highlightQueries
+        : [team.highlightQuery];
+
+      let data = { items: [] };
+      for (const query of queries) {
+        const attempt = await fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`).catch(() => ({ items: [] }));
+        if (Array.isArray(attempt?.items) && attempt.items.length) {
+          data = attempt;
+          break;
+        }
+        if (!Array.isArray(data?.items) || !data.items.length) data = attempt;
+      }
+
       videoCache[team.key] = { data, loadedAt: Date.now() };
       if (latestSnapshot && latestSnapshot.teamKey === team.key) {
         latestSnapshot.videosData = data;
@@ -1316,12 +1355,17 @@ function applySnapshot(snapshot) {
       els.heroSub.textContent = heroContextBits.join(" · ");
 
       const contextStatus = live ? (featured.liveStatus || status || "Live") : (fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC");
-      const contextForm = form ? `Form ${form}` : "Form unavailable";
+      const gdValue = teamStanding ? signed(teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–") : "–";
+      const positionValue = teamStanding ? ordinal(teamStanding.position ?? teamStanding.rank ?? "–") : "–";
+      const pointsValue = teamStanding?.points ?? "–";
+      const heroSecondary = [`Pos ${positionValue}`, `${pointsValue} pts`, `GD ${gdValue}`];
+      if (form) heroSecondary.push(`Form ${form}`);
       els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
       els.heroKickoffSub.innerHTML = `
         <div class="hero-context">
           <span class="hero-context-pill">${escapeHtml(contextStatus)}</span>
           <span class="hero-context-line">${escapeHtml(buildKickoffSubline(featured, fixtureDate))}</span>
+          <span class="hero-context-line">${escapeHtml(heroSecondary.join(" · "))}</span>
         </div>
       `;
 
@@ -1732,7 +1776,20 @@ function renderFixtures(teamData) {
 
     
     
-    function renderNews(newsData, terms, team = TEAM_CONFIG[activeTeamKey]) {
+    
+    function extractNewsThumbnail(item) {
+      return item?.thumbnail
+        || item?.image
+        || item?.imageUrl
+        || item?.mediaThumbnail
+        || item?.media?.thumbnail
+        || item?.enclosure?.url
+        || item?.itunes?.image
+        || item?.meta?.image
+        || "";
+    }
+
+function renderNews(newsData, terms, team = TEAM_CONFIG[activeTeamKey]) {
       const allItems = Array.isArray(newsData?.items) ? newsData.items : [];
       const loweredTerms = terms.map(t => t.toLowerCase());
 
@@ -1748,17 +1805,26 @@ function renderFixtures(teamData) {
         return;
       }
 
-      els.newsPanel.innerHTML = itemsToShow.map(item => `
+      els.newsPanel.innerHTML = itemsToShow.map(item => {
+        const thumb = extractNewsThumbnail(item);
+        const url = item.link || "#";
+        return `
         <article class="news-item">
-          <div class="news-title">
-            <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
-          </div>
-          <div class="news-meta">
-            ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
-            ${escapeHtml(trimText(item.description || "", 180))}
+          <a class="news-thumb" href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">
+            ${thumb ? `<img src="${escapeAttribute(thumb)}" alt="${escapeAttribute(item.title || "News story")}" loading="lazy" />` : ``}
+          </a>
+          <div class="news-copy">
+            <div class="news-title">
+              <a href="${escapeAttribute(url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+            </div>
+            <div class="news-meta">
+              ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
+              ${escapeHtml(trimText(item.description || "", 180))}
+            </div>
           </div>
         </article>
-      `).join("");
+      `;
+      }).join("");
     }
 
 
