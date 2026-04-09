@@ -898,7 +898,7 @@
           </div>
           <div class="fixture-subnav" id="fixturesViewToggle">
             <button class="fixture-subnav-btn active" data-fixtures-view="upcoming">Upcoming</button>
-            <button class="fixture-subnav-btn" data-fixtures-view="recent">Recent</button>
+            <button class="fixture-subnav-btn" data-fixtures-view="recent">Results</button>
           </div>
           <div class="match-list" id="fixturesPanel" style="margin-top: 12px;">
             <div class="empty">Loading fixtures…</div>
@@ -1193,14 +1193,20 @@
 
     async function ensureNewsLoaded(force = false) {
       const team = TEAM_CONFIG[activeTeamKey];
-      if (!force && panelDataCache.news[activeTeamKey]) {
+      const cached = panelDataCache.news[activeTeamKey];
+      if (!force && cached) {
         if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.newsData = panelDataCache.news[activeTeamKey];
+          latestSnapshot.newsData = cached;
           renderNews(latestSnapshot.newsData, team.newsTerms);
         }
         return;
       }
-      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
+
+      const hasExistingContent = !!cached || !!els.newsPanel.querySelector('.news-item, .empty a, .media-thumb');
+      if (!hasExistingContent) {
+        els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
+      }
+
       try {
         const newsData = await fetchJson(`/api/news/bbc-football?team=${team.key}`);
         panelDataCache.news[activeTeamKey] = newsData;
@@ -1209,25 +1215,33 @@
           renderNews(newsData, team.newsTerms);
         }
       } catch (error) {
-        els.newsPanel.innerHTML = `<div class="empty">Could not load news right now.</div>`;
+        if (!hasExistingContent) {
+          els.newsPanel.innerHTML = `<div class="empty">Could not load news right now.</div>`;
+        }
         console.error(error);
       }
     }
 
     async function fetchYoutubeResults(query) {
-      return fetchJson(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+      return fetchJson(`/api/youtube/search?team=${encodeURIComponent(activeTeamKey)}&q=${encodeURIComponent(query)}`);
     }
 
     async function ensureVideosLoaded(force = false) {
       const team = TEAM_CONFIG[activeTeamKey];
-      if (!force && panelDataCache.videos[activeTeamKey]) {
+      const cached = panelDataCache.videos[activeTeamKey];
+      if (!force && cached) {
         if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.videosData = panelDataCache.videos[activeTeamKey];
+          latestSnapshot.videosData = cached;
           renderVideos(latestSnapshot.videosData);
         }
         return;
       }
-      els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
+
+      const hasExistingContent = !!cached || !!els.videosPanel.querySelector('.video-item, .empty a, .media-thumb');
+      if (!hasExistingContent) {
+        els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
+      }
+
       try {
         let videosData = { items: [] };
         for (const query of team.highlightQueries || [team.highlightQuery]) {
@@ -1243,7 +1257,9 @@
           renderVideos(videosData);
         }
       } catch (error) {
-        els.videosPanel.innerHTML = `<div class="empty">Could not load highlights right now.</div>`;
+        if (!hasExistingContent) {
+          els.videosPanel.innerHTML = `<div class="empty">Could not load highlights right now.</div>`;
+        }
         console.error(error);
       }
     }
