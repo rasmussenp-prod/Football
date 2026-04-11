@@ -244,216 +244,161 @@
     }
 
     .hero {
-      padding: 16px;
       position: relative;
       overflow: hidden;
+      padding: 18px 14px 20px;
       background:
-        radial-gradient(circle at 80% 16%, rgba(255,255,255,0.14), transparent 20%),
-        radial-gradient(circle at 76% 2%, rgba(255,255,255,0.07), transparent 28%),
+        linear-gradient(180deg, rgba(6,10,16,0.92), rgba(8,12,18,0.98)),
         linear-gradient(135deg, var(--team-primary), var(--team-secondary));
+      min-height: 260px;
     }
 
     .hero::after {
       content: "";
       position: absolute;
-      right: -90px;
-      bottom: -120px;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: radial-gradient(circle, var(--team-glow), transparent 65%);
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.82) 100%);
       pointer-events: none;
-    }
-
-    .hero-grid {
-      position: relative;
       z-index: 1;
-      display: grid;
-      gap: 14px;
-    }
-
-    .hero-main {
-      position: relative;
-      overflow: hidden;
-      min-height: 260px;
-      display: grid;
-      align-content: start;
-      gap: 12px;
     }
 
     .hero-art {
       position: absolute;
-      right: -10px;
-      bottom: -18px;
-      width: min(62vw, 460px);
-      max-height: 108%;
-      object-fit: contain;
-      object-position: right bottom;
-      opacity: 0.14;
-      filter: saturate(0) brightness(1.45) contrast(1.05);
-      pointer-events: none;
-      z-index: 0;
-      mix-blend-mode: screen;
-    }
-
-    .hero-art-glow {
-      position: absolute;
       inset: 0;
-      background:
-        linear-gradient(90deg, rgba(7,17,31,0.82) 0%, rgba(7,17,31,0.66) 38%, rgba(7,17,31,0.18) 100%),
-        radial-gradient(circle at 80% 52%, rgba(255,255,255,0.12), transparent 28%);
+      background-image: var(--hero-art, none);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: 40%;
+      opacity: 0.08;
+      filter: saturate(1.1) contrast(1.05);
       z-index: 0;
       pointer-events: none;
     }
 
-    .hero-copy {
+    .hero-stage {
       position: relative;
-      z-index: 1;
-      max-width: 860px;
+      z-index: 2;
+      display: grid;
+      gap: 18px;
+      align-content: center;
+      min-height: 220px;
     }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.92);
-    }
-
-    .eyebrow.live {
-      background: rgba(255,103,125,0.18);
-      border-color: rgba(255,103,125,0.28);
-    }
-
-    .hero h2 {
-      margin: 14px 0 0;
-      font-size: clamp(1.9rem, 7vw, 3.4rem);
-      line-height: 0.97;
-      letter-spacing: -0.04em;
-      max-width: 860px;
-    }
-
-    .hero-sub {
-      margin: 12px 0 0;
-      color: rgba(255,255,255,0.84);
-      line-height: 1.5;
+    .hero-headline {
+      text-align: center;
+      color: rgba(255,255,255,0.78);
       font-size: 0.95rem;
-      max-width: 820px;
+      letter-spacing: 0.01em;
     }
 
-    .hero-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .meta-pill {
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-size: 0.84rem;
-    }
-
-    .score-shell {
+    .hero-match {
       display: grid;
-      gap: 12px;
-      margin-top: 14px;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
     }
 
-    .next-card {
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.18);
-      padding: 14px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .next-top {
+    .hero-side {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 0.76rem;
-      font-weight: 800;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.07);
-    }
-
-    .badge.live {
-      background: rgba(255,103,125,0.18);
-      border-color: rgba(255,103,125,0.28);
-    }
-
-    .next-kickoff {
-      color: rgba(255,255,255,0.82);
-      font-size: 0.84rem;
-      text-align: right;
-    }
-
-    .scoreboard {
-      display: grid;
-      gap: 10px;
-    }
-
-    .scoreboard:empty {
-      display: none;
-    }
-
-    .team-score-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      justify-content: flex-end;
+      gap: 14px;
       min-width: 0;
     }
 
-    .team-score-name {
+    .hero-side.away {
+      justify-content: flex-start;
+    }
+
+    .hero-team {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      line-height: 1.05;
       color: #fff;
-      font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .team-score-value {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: var(--team-accent);
+    .hero-crest-wrap {
+      width: clamp(52px, 7vw, 76px);
+      height: clamp(52px, 7vw, 76px);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
     }
 
-    .match-centre-meta {
-      margin-top: 10px;
-      color: rgba(255,255,255,0.82);
-      font-size: 0.86rem;
-      line-height: 1.45;
+    .hero-crest-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .hero-crest-fallback {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 1rem;
+      color: #07111f;
+      background: linear-gradient(135deg, var(--team-accent-2), var(--team-accent));
+    }
+
+    .hero-middle {
+      min-width: 150px;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+    }
+
+    .hero-core {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      min-height: 78px;
+    }
+
+    .hero-kickoff-time,
+    .hero-score-big {
+      font-size: clamp(3.1rem, 10vw, 5rem);
+      line-height: 0.95;
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-score-divider {
+      width: 3px;
+      height: clamp(38px, 7vw, 56px);
+      border-radius: 999px;
+      background: var(--team-accent);
+      opacity: 0.92;
+    }
+
+    .hero-status {
+      color: var(--team-accent);
+      font-size: 0.95rem;
+      font-weight: 700;
+      min-height: 1.2em;
+    }
+
+    .hero-subdetail {
+      text-align: center;
+      color: rgba(255,255,255,0.78);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      min-height: 1.4em;
     }
 
     .lineup-wrap {
-      margin-top: 12px;
+      margin-top: 4px;
       display: grid;
       gap: 10px;
+      position: relative;
+      z-index: 2;
     }
 
     .lineup-grid {
@@ -486,6 +431,7 @@
     .lineup-note {
       color: rgba(255,255,255,0.78);
       font-size: 0.8rem;
+      text-align: center;
     }
 
     .stats-row {
@@ -747,84 +693,49 @@
       line-height: 1.5;
     }
 
-
-    .hero-gd {
-      margin-top: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-size: 0.84rem;
-      color: rgba(255,255,255,0.92);
-    }
-
-    .fixture-subnav {
-      display: inline-flex;
-      gap: 8px;
-      padding: 4px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
-    }
-
-    .fixture-subnav-btn {
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font: inherit;
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .fixture-subnav-btn.active {
-      background: rgba(255,255,255,0.10);
-      color: #fff;
-    }
-
-    .news-item.with-thumb,
-    .video-item.with-thumb {
-      display: grid;
-      grid-template-columns: 112px 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .media-thumb {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      object-fit: cover;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      display: block;
-    }
-
-    .media-stack {
-      min-width: 0;
-    }
-
     @media (min-width: 760px) {
       body { padding: 16px; }
       .shell { padding: 18px; gap: 18px; }
       .topbar { padding: 12px 14px; }
       .brand-copy h1 { font-size: 1.2rem; }
       .brand-copy p { font-size: 0.85rem; }
-      .hero { padding: 22px; }
-      .hero-grid { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+      .hero { padding: 24px 20px 24px; min-height: 310px; }
       .stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
       .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
+    @media (max-width: 759px) {
+      .hero-match {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+      .hero-side,
+      .hero-side.away {
+        justify-content: center;
+      }
+      .hero-side.home {
+        flex-direction: row;
+      }
+      .hero-side.away {
+        flex-direction: row-reverse;
+      }
+      .hero-team {
+        font-size: clamp(1.55rem, 7vw, 2.2rem);
+        white-space: normal;
+        text-align: center;
+      }
+      .hero-middle {
+        min-width: 0;
+      }
+      .hero-headline {
+        font-size: 0.9rem;
+      }
+    }
+
     @media (min-width: 1100px) {
-      .hero h2 { max-width: 700px; }
       .topbar-inner { grid-template-columns: auto 1fr auto; }
+      .hero-art { background-size: 30%; }
     }
   </style>
 </head>
@@ -865,34 +776,19 @@
         </div>
       </header>
 
-      
       <section class="hero card">
-        <div class="hero-grid hero-main">
-          <div class="hero-art-glow" aria-hidden="true"></div>
-          <img class="hero-art" id="heroArtwork" alt="" hidden />
-          <div class="hero-copy">
-            <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
-            <h2 id="heroTitle">Loading latest football data</h2>
-            <p class="hero-sub" id="heroSub">Fixtures, standings, live status and news in one view.</p>
-
-            <div class="next-kickoff" id="heroKickoff">–</div>
-
-            <div class="scoreboard" id="nextMatchPanel">
-              <div class="team-score-row">
-                <div class="team-score-name">Loading…</div>
-                <div class="team-score-value">–</div>
-              </div>
-            </div>
-
-            <div class="match-centre-meta" id="heroKickoffSub">Waiting for match data…</div>
-
-            <div class="lineup-wrap" id="lineupsPanel" hidden></div>
+        <div class="hero-art" id="heroArt"></div>
+        <div class="hero-stage">
+          <div class="hero-headline" id="heroEyebrow">Loading latest football data</div>
+          <div class="hero-match" id="nextMatchPanel">
+            <div class="empty">Loading match centre…</div>
           </div>
+          <div class="hero-subdetail" id="heroKickoffSub">Waiting for match data…</div>
+          <div class="lineup-wrap" id="lineupsPanel" hidden></div>
         </div>
       </section>
 
       <section class="stats-row">
-
         <div class="stat-card card">
           <div class="stat-label">League position</div>
           <div class="stat-value" id="statPosition">–</div>
@@ -922,7 +818,7 @@
         <button class="nav-btn active" data-panel="fixturesPanelCard">Fixtures</button>
         <button class="nav-btn" data-panel="tablePanelCard">Table</button>
         <button class="nav-btn" data-panel="newsPanelCard">News</button>
-        <button class="nav-btn" data-panel="resultsPanelCard">Results</button>
+        <button class="nav-btn" data-panel="videosPanelCard">Highlights</button>
       </nav>
 
       <section class="content-grid">
@@ -956,19 +852,19 @@
           </div>
         </section>
 
-        <section class="panel card" id="resultsPanelCard" hidden>
+        <section class="panel card" id="videosPanelCard" hidden>
           <div class="panel-head">
-            <h3>Results</h3>
-            <div class="subtle" id="resultsSubtle">Latest completed matches</div>
+            <h3>Highlights</h3>
+            <div class="subtle">YouTube search</div>
           </div>
-          <div class="video-list" id="resultsPanel">
-            <div class="empty">Loading results…</div>
+          <div class="video-list" id="videosPanel">
+            <div class="empty">Loading highlights…</div>
           </div>
         </section>
       </section>
 
       <div class="footer-note">
-        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes, and the current UI stays visible until fresh data is ready.
+        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
       </div>
     </div>
   </div>
@@ -985,7 +881,6 @@
         teamId: 47,
         leagueName: "Premier League",
         highlightQuery: "Tottenham Hotspur highlights",
-        highlightQueries: ["Tottenham Hotspur highlights Sky Sports", "Tottenham highlights Sky Sports", "Spurs highlights Sky Sports", "Tottenham Hotspur highlights"],
         newsTerms: ["tottenham", "spurs", "tottenham hotspur", "ange", "postecoglou"],
         fallbackLogoText: "TH",
         fallbackLogoUrl: "",
@@ -1004,7 +899,6 @@
         teamId: 1044,
         leagueName: "League One",
         highlightQuery: "AFC Wimbledon highlights",
-        highlightQueries: ["AFC Wimbledon highlights", "AFC Wimbledon Sky Sports highlights", "Wimbledon highlights football"],
         newsTerms: ["afc wimbledon", "wimbledon", "the dons", "plough lane", "johnnie jackson"],
         fallbackLogoText: "AW",
         fallbackLogoUrl: "",
@@ -1032,7 +926,7 @@
     }
 
     function normaliseStoredPanel(value) {
-      const validPanels = new Set(["fixturesPanelCard", "resultsPanelCard", "tablePanelCard", "newsPanelCard"]);
+      const validPanels = new Set(["fixturesPanelCard", "tablePanelCard", "newsPanelCard", "videosPanelCard"]);
       return validPanels.has(value) ? value : "fixturesPanelCard";
     }
 
@@ -1041,7 +935,6 @@
     let autoRefreshTimer = null;
     let isRefreshing = false;
     let latestSnapshot = null;
-    const panelDataCache = { news: {}, results: {} };
 
     const els = {
       body: document.body,
@@ -1055,11 +948,8 @@
       brandLogo: document.getElementById("brandLogo"),
       brandFallback: document.getElementById("brandFallback"),
       heroEyebrow: document.getElementById("heroEyebrow"),
-      heroTitle: document.getElementById("heroTitle"),
-      heroSub: document.getElementById("heroSub"),      heroGD: document.getElementById("heroGD"),
-      heroKickoff: document.getElementById("heroKickoff"),
+      heroArt: document.getElementById("heroArt"),
       heroKickoffSub: document.getElementById("heroKickoffSub"),
-      heroArtwork: document.getElementById("heroArtwork"),
       nextMatchPanel: document.getElementById("nextMatchPanel"),
       lineupsPanel: document.getElementById("lineupsPanel"),
       statPosition: document.getElementById("statPosition"),
@@ -1071,12 +961,11 @@
       statRecord: document.getElementById("statRecord"),
       statRecordSub: document.getElementById("statRecordSub"),
       fixturesSubtle: document.getElementById("fixturesSubtle"),
-      resultsSubtle: document.getElementById("resultsSubtle"),
       tableSubtle: document.getElementById("tableSubtle"),
       fixturesPanel: document.getElementById("fixturesPanel"),
-      resultsPanel: document.getElementById("resultsPanel"),
       tablePanel: document.getElementById("tablePanel"),
       newsPanel: document.getElementById("newsPanel"),
+      videosPanel: document.getElementById("videosPanel"),
       navRow: document.getElementById("navRow")
     };
 
@@ -1143,7 +1032,6 @@
       setActivePanel(activePanelId, { skipStore: true });
     }
 
-
     function setActivePanel(panelId, options = {}) {
       activePanelId = normaliseStoredPanel(panelId || "fixturesPanelCard");
       document.querySelectorAll(".nav-btn").forEach(btn => {
@@ -1155,8 +1043,6 @@
       if (!options.skipStore) {
         localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
       }
-      if (activePanelId === "newsPanelCard") ensureNewsLoaded();
-      if (activePanelId === "resultsPanelCard") ensureResultsLoaded();
     }
 
     async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
@@ -1169,28 +1055,24 @@
       }
 
       try {
-        const [teamDataResult, liveDataResult] = await Promise.allSettled([
+        const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
           fetchJson(`/api/football/team?team=${team.key}`),
-          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`)
+          fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
+          fetchJson(`/api/news/bbc-football?team=${team.key}`),
+          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
         ]);
 
         const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
         const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
+        const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
+        const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
 
         if (!teamData) {
           throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
         }
 
-        latestSnapshot = {
-          teamData,
-          liveData,
-          newsData: panelDataCache.news[activeTeamKey] || { items: [] },
-          resultsData: panelDataCache.results[activeTeamKey] || {},
-          teamKey: activeTeamKey
-        };
+        latestSnapshot = { teamData, liveData, newsData, videosData, teamKey: activeTeamKey };
         applySnapshot(latestSnapshot);
-        if (activePanelId === "newsPanelCard") ensureNewsLoaded(true);
-        if (activePanelId === "resultsPanelCard") ensureResultsLoaded(true);
         updateRefreshLabel(`Updated ${formatNow()}`);
       } catch (error) {
         if (!latestSnapshot) {
@@ -1203,97 +1085,12 @@
       }
     }
 
-
-    async function ensureNewsLoaded(force = false) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = panelDataCache.news[activeTeamKey];
-      if (!force && cached) {
-        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.newsData = cached;
-          renderNews(latestSnapshot.newsData, team.newsTerms);
-        }
-        return;
-      }
-
-      const hasExistingContent = !!cached || !!els.newsPanel.querySelector('.news-item, .empty a, .media-thumb');
-      if (!hasExistingContent) {
-        els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
-      }
-
-      try {
-        const newsData = await fetchJson(`/api/news/bbc-football?team=${team.key}`);
-        panelDataCache.news[activeTeamKey] = newsData;
-        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.newsData = newsData;
-          renderNews(newsData, team.newsTerms);
-        }
-      } catch (error) {
-        if (!hasExistingContent) {
-          els.newsPanel.innerHTML = `<div class="empty">Could not load news right now.</div>`;
-        }
-        console.error(error);
-      }
-    }
-
-    
-    async function fetchYoutubeResults(query) {
-      return fetchJson(`/api/youtube/search?team=${encodeURIComponent(activeTeamKey)}&q=${encodeURIComponent(query)}`);
-    }
-
-    async function ensureResultsLoaded(force = false) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const cached = panelDataCache.results[activeTeamKey];
-      const recentFixtures = getRecentResults(latestSnapshot?.teamData || {});
-      if (!force && cached && Object.keys(cached).length) {
-        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.resultsData = cached;
-          renderResults(latestSnapshot.teamData, cached);
-        }
-        return;
-      }
-
-      const hasExistingContent = !!cached || !!els.resultsPanel.querySelector('.video-item, .empty a, .media-thumb');
-      if (!hasExistingContent) {
-        els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
-      }
-
-      const resultsMap = { ...(cached || {}) };
-      try {
-        const fixturesToLoad = recentFixtures.slice(0, 6);
-        for (const item of fixturesToLoad) {
-          const key = resultCacheKey(item);
-          if (resultsMap[key]) continue;
-          const query = buildResultVideoQuery(item, team);
-          try {
-            const result = await fetchYoutubeResults(query);
-            const first = Array.isArray(result?.items) && result.items.length ? result.items[0] : null;
-            resultsMap[key] = {
-              query,
-              item: first || null
-            };
-          } catch (err) {
-            resultsMap[key] = { query, item: null };
-          }
-        }
-        panelDataCache.results[activeTeamKey] = resultsMap;
-        if (latestSnapshot && latestSnapshot.teamKey === activeTeamKey) {
-          latestSnapshot.resultsData = resultsMap;
-          renderResults(latestSnapshot.teamData, resultsMap);
-        }
-      } catch (error) {
-        if (!hasExistingContent) {
-          els.resultsPanel.innerHTML = `<div class="empty">Could not load results right now.</div>`;
-        }
-        console.error(error);
-      }
-    }
-
     function applySnapshot(snapshot) {
       const team = TEAM_CONFIG[snapshot.teamKey];
       const teamData = snapshot.teamData || {};
       const liveData = snapshot.liveData || {};
       const newsData = snapshot.newsData || {};
-      const resultsData = snapshot.resultsData || {};
+      const videosData = snapshot.videosData || {};
       const standings = getStandingsFromTeamData(teamData);
       const teamStanding = getTeamStanding(teamData, standings, teamData.team?.id || team.teamId, team.name);
 
@@ -1301,34 +1098,25 @@
       renderHero(team, teamData, teamStanding, liveData);
       renderStats(teamStanding);
       renderFixtures(teamData);
-      renderResults(teamData, resultsData);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
       renderNews(newsData, team.newsTerms);
+      renderVideos(videosData);
       setActivePanel(activePanelId, { skipStore: true });
     }
 
     function renderBootstrapLoading() {
-      els.heroTitle.textContent = "Loading latest football data";
-      els.heroSub.textContent = "Pulling fixtures, standings, live status, news and highlights.";
-      els.heroEyebrow.textContent = "Club dashboard";
-      els.heroEyebrow.classList.remove("live");      els.heroGD.textContent = "Goal difference · –";      els.heroKickoff.textContent = "–";
+      els.heroEyebrow.textContent = "Loading latest football data";
       els.heroKickoffSub.textContent = "Waiting for match data…";
-      els.nextMatchPanel.innerHTML = `
-        <div class="team-score-row">
-          <div class="team-score-name">Loading…</div>
-          <div class="team-score-value">–</div>
-        </div>
-      `;
+      els.nextMatchPanel.innerHTML = `<div class="empty">Loading match centre…</div>`;
+      if (els.heroArt) {
+        els.heroArt.style.setProperty("--hero-art", "none");
+      }
       els.lineupsPanel.hidden = true;
       els.lineupsPanel.innerHTML = "";
-      if (els.heroArtwork) {
-        els.heroArtwork.hidden = true;
-        els.heroArtwork.removeAttribute("src");
-      }
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
       els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
-      els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
+      els.videosPanel.innerHTML = `<div class="empty">Loading highlights…</div>`;
     }
 
     function renderBrandLogo(teamData, standings, team) {
@@ -1336,45 +1124,72 @@
         ? (standings.find(row => String(row.team?.id) === String(teamData.team?.id))?.team?.crest ||
            standings.find(row => String(row.team?.id) === String(team.teamId))?.team?.crest)
         : "";
-      const directCrest = teamData.team?.crest || teamData.team?.logo || standingCrest || team.fallbackLogoUrl || "";
+      const directCrest = teamData.team?.crest || teamData.team?.logo || team.fallbackLogoUrl || standingCrest || "";
 
       if (directCrest) {
         els.brandLogo.src = directCrest;
         els.brandLogo.hidden = false;
         els.brandFallback.hidden = true;
-        if (els.heroArtwork) {
-          els.heroArtwork.src = directCrest;
-          els.heroArtwork.hidden = false;
-        }
       } else {
         els.brandLogo.hidden = true;
         els.brandFallback.hidden = false;
-        if (els.heroArtwork) {
-          els.heroArtwork.hidden = true;
-          els.heroArtwork.removeAttribute("src");
-        }
       }
     }
 
     function renderHero(team, teamData, teamStanding, liveData) {
       const featured = selectFeaturedFixture(teamData, liveData);
-      const live = featured.isLive;
-
-      els.heroEyebrow.textContent = `${team.shortName} ${live ? "live match" : "next match"}`;
-      els.heroEyebrow.classList.toggle("live", live);
-
-      const competition = featured.competition || team.leagueName;
-      const venue = cleanVenue(featured.venue);
       const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
+      const competition = featured.competition || team.leagueName;
+      const live = featured.isLive;
+      const finished = isFinishedStatus(featured.status);
+      const statusText = buildHeroStatus(featured, fixtureDate);
+      const subtitle = buildHeroSubtitle(featured, fixtureDate);
+      const dateLine = buildHeroDateLine(fixtureDate, competition);
 
-      els.heroTitle.textContent = `${home} ${safeScore(featured.homeScore)}–${safeScore(featured.awayScore)} ${away}`;
-      els.heroSub.textContent = venue ? `${competition} · ${venue}` : competition;
-      els.heroKickoff.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
-      els.heroKickoffSub.textContent = buildKickoffSubline(featured, fixtureDate);
+      els.heroEyebrow.textContent = dateLine;
+      els.heroKickoffSub.textContent = subtitle;
 
-      els.nextMatchPanel.innerHTML = "";
+      const homeCrest = featured.homeCrest || "";
+      const awayCrest = featured.awayCrest || "";
+      const middleMarkup = (live || finished)
+        ? `
+          <div class="hero-core">
+            <span class="hero-score-big">${safeScore(featured.homeScore)}</span>
+            <span class="hero-score-divider"></span>
+            <span class="hero-score-big">${safeScore(featured.awayScore)}</span>
+          </div>
+        `
+        : `
+          <div class="hero-core">
+            <span class="hero-kickoff-time">${fixtureDate ? formatHeroTime(fixtureDate) : "TBC"}</span>
+          </div>
+        `;
+
+      els.nextMatchPanel.innerHTML = `
+        <div class="hero-side home">
+          <div class="hero-team">${escapeHtml(home)}</div>
+          <div class="hero-crest-wrap">
+            ${renderHeroCrest(homeCrest, home)}
+          </div>
+        </div>
+        <div class="hero-middle">
+          ${middleMarkup}
+          <div class="hero-status">${escapeHtml(statusText)}</div>
+        </div>
+        <div class="hero-side away">
+          <div class="hero-crest-wrap">
+            ${renderHeroCrest(awayCrest, away)}
+          </div>
+          <div class="hero-team">${escapeHtml(away)}</div>
+        </div>
+      `;
+
+      const artCrest = featured.awayCrest || featured.homeCrest || teamData?.team?.crest || team.fallbackLogoUrl || "";
+      if (els.heroArt) {
+        els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
+      }
 
       renderLineups(featured, liveData, fixtureDate);
     }
@@ -1485,7 +1300,9 @@ function selectFeaturedFixture(teamData, liveData) {
           status: liveData.fixture?.fixture?.status?.short || "LIVE",
           liveStatus: liveData.fixture?.fixture?.status?.long || "Live",
           lineups: extractLineups(liveData),
-          elapsed: liveData.fixture?.fixture?.status?.elapsed
+          elapsed: liveData.fixture?.fixture?.status?.elapsed,
+          homeCrest: liveData.fixture?.teams?.home?.logo || "",
+          awayCrest: liveData.fixture?.teams?.away?.logo || ""
         };
       }
 
@@ -1504,7 +1321,9 @@ function selectFeaturedFixture(teamData, liveData) {
         venue: liveLike.venue || "",
         status: liveLike.status || "LIVE",
         liveStatus: liveLike.status || "Live",
-        lineups: extractLineups(liveLike)
+        lineups: extractLineups(liveLike),
+        homeCrest: liveLike.homeTeam?.crest || "",
+        awayCrest: liveLike.awayTeam?.crest || ""
       };
 
       const upcoming = allFixtures
@@ -1522,7 +1341,9 @@ function selectFeaturedFixture(teamData, liveData) {
           venue: upcoming.venue || "",
           status: upcoming.status || "SCHEDULED",
           liveStatus: "",
-          lineups: extractLineups(upcoming)
+          lineups: extractLineups(upcoming),
+          homeCrest: upcoming.homeTeam?.crest || "",
+          awayCrest: upcoming.awayTeam?.crest || ""
         };
       }
 
@@ -1538,32 +1359,73 @@ function selectFeaturedFixture(teamData, liveData) {
         venue: mostRecent?.venue || "",
         status: mostRecent?.status || "Latest result",
         liveStatus: "",
-        lineups: extractLineups(mostRecent)
+        lineups: extractLineups(mostRecent),
+        homeCrest: mostRecent?.homeTeam?.crest || "",
+        awayCrest: mostRecent?.awayTeam?.crest || ""
       };
     }
 
     function buildKickoffSubline(featured, fixtureDate) {
       const parts = [];
-      const status = String(featured.status || "").toUpperCase();
       if (fixtureDate) parts.push(relativeFromNow(fixtureDate));
-      if (featured.liveStatus && !["TIMED", "SCHEDULED"].includes(String(featured.liveStatus).toUpperCase())) {
-        parts.push(featured.liveStatus);
-      } else if (status && !["TIMED", "SCHEDULED"].includes(status)) {
-        parts.push(featured.status);
-      }
+      if (featured.liveStatus) parts.push(featured.liveStatus);
+      else if (featured.status) parts.push(featured.status);
       if (featured.elapsed) parts.push(`${featured.elapsed}'`);
       return parts.join(" · ") || "Match timing unavailable";
     }
 
-    
-    function cleanVenue(value) {
-      const venue = String(value || "").trim();
-      if (!venue) return "";
-      if (["venue tbc", "tbc", "unknown", "unavailable"].includes(venue.toLowerCase())) return "";
-      return venue;
+    function buildHeroDateLine(fixtureDate, competition) {
+      const datePart = fixtureDate
+        ? fixtureDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+        : "Date TBC";
+      return `${datePart} · ${competition || "Competition"}`;
     }
 
-function renderLineups(featured, liveData, fixtureDate) {
+    function buildHeroStatus(featured, fixtureDate) {
+      const status = String(featured?.status || "").toUpperCase();
+      if (featured?.elapsed) return `${featured.elapsed}'`;
+      if (isLiveStatus(status)) return "LIVE";
+      if (isFinishedStatus(status)) return humanReadableStatus(status);
+      if (fixtureDate) return "";
+      return "Scheduled";
+    }
+
+    function buildHeroSubtitle(featured, fixtureDate) {
+      const bits = [];
+      if (!featured?.isLive && !isFinishedStatus(featured?.status) && fixtureDate) {
+        bits.push(relativeFromNow(fixtureDate));
+      }
+      if (featured?.venue) {
+        bits.push(`Venue: ${featured.venue}`);
+      }
+      return bits.join(" · ");
+    }
+
+    function humanReadableStatus(status) {
+      const s = String(status || "").toUpperCase();
+      if (s === "FINISHED") return "FT";
+      if (s === "PAUSED") return "HT";
+      if (s === "SCHEDULED" || s === "TIMED") return "";
+      return s;
+    }
+
+    function isFinishedStatus(status) {
+      return ["FINISHED", "FT", "AET", "PEN"].includes(String(status || "").toUpperCase());
+    }
+
+    function formatHeroTime(date) {
+      return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function renderHeroCrest(src, teamName) {
+      if (src) {
+        return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(teamName)} crest" loading="lazy" />`;
+      }
+      const initials = String(teamName || "?").split(/\s+/).map(part => part[0] || "").join("").slice(0, 3).toUpperCase();
+      return `<div class="hero-crest-fallback">${escapeHtml(initials)}</div>`;
+    }
+
+    function renderLineups(featured, liveData, fixtureDate) {
       const show = shouldShowLineups(featured, fixtureDate);
       const lineups = featured.lineups || extractLineups(liveData);
 
@@ -1677,21 +1539,23 @@ function renderLineups(featured, liveData, fixtureDate) {
     }
 
     function renderFixtures(teamData) {
-      const liveItems = getAllFixtures(teamData).filter(item => isLiveStatus(item._status)).sort((a, b) => a._ts - b._ts);
-      const upcomingItems = getAllFixtures(teamData)
-        .filter(item => item._date && !isLiveStatus(item._status) && item._ts >= Date.now() - 3 * 60 * 60 * 1000)
-        .sort((a, b) => a._ts - b._ts);
+      const combined = getAllFixtures(teamData)
+        .sort((a, b) => {
+          const aLive = isLiveStatus(a._status) ? 0 : 1;
+          const bLive = isLiveStatus(b._status) ? 0 : 1;
+          if (aLive !== bLive) return aLive - bLive;
+          return a._ts - b._ts;
+        });
 
-      const selected = dedupeMatches([...liveItems, ...upcomingItems]).slice(0, 8);
+      const unique = dedupeMatches(combined).slice(0, 8);
+      els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming · ${(teamData.last || []).length} recent`;
 
-      els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming`;
-
-      if (!selected.length) {
-        els.fixturesPanel.innerHTML = `<div class="empty">No upcoming fixtures returned.</div>`;
+      if (!unique.length) {
+        els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
         return;
       }
 
-      els.fixturesPanel.innerHTML = selected.map(item => {
+      els.fixturesPanel.innerHTML = unique.map(item => {
         const date = item._date || fixtureDateValue(item);
         const status = item.status || item._status || "";
         const competition = item.competition?.name || "Competition";
@@ -1728,84 +1592,6 @@ function renderLineups(featured, liveData, fixtureDate) {
             </div>
           </article>
         `;
-
-      }).join("");
-    }
-
-    function getRecentResults(teamData) {
-      return dedupeMatches(
-        getAllFixtures(teamData)
-          .filter(item => item._date && !isLiveStatus(item._status) && item._ts < Date.now() + 60 * 1000)
-          .sort((a, b) => b._ts - a._ts)
-      );
-    }
-
-    function resultCacheKey(item) {
-      return item?.id || `${item?.homeTeam?.name || "home"}-${item?.awayTeam?.name || "away"}-${item?.utcDate || item?.date || ""}`;
-    }
-
-    function buildResultVideoQuery(item, team) {
-      const competition = item?.competition?.name || team.leagueName || "football";
-      const home = item?.homeTeam?.name || "Home";
-      const away = item?.awayTeam?.name || "Away";
-      return `${competition} ${home} ${away} highlights Sky Sports`;
-    }
-
-    function renderResults(teamData, resultsData) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      const recentItems = getRecentResults(teamData).slice(0, 8);
-      els.resultsSubtle.textContent = `${recentItems.length} recent result${recentItems.length === 1 ? "" : "s"}`;
-
-      if (!recentItems.length) {
-        els.resultsPanel.innerHTML = `<div class="empty">No recent results returned.</div>`;
-        return;
-      }
-
-      els.resultsPanel.innerHTML = recentItems.map(item => {
-        const key = resultCacheKey(item);
-        const matchData = resultsData?.[key] || {};
-        const date = item._date || fixtureDateValue(item);
-        const competition = item.competition?.name || "Competition";
-        const home = item.homeTeam?.name || "Home";
-        const away = item.awayTeam?.name || "Away";
-        const homeScore = item.score?.fullTime?.home ?? item.score?.home;
-        const awayScore = item.score?.fullTime?.away ?? item.score?.away;
-        const youtubeItem = matchData.item || null;
-        const query = matchData.query || buildResultVideoQuery(item, team);
-        const videoId = youtubeItem?.id?.videoId || youtubeItem?.id || "";
-        const thumb = youtubeItem?.snippet?.thumbnails?.high?.url || youtubeItem?.snippet?.thumbnails?.medium?.url || youtubeItem?.snippet?.thumbnails?.default?.url || "";
-        const link = videoId
-          ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
-          : `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-        const clipTitle = youtubeItem?.snippet?.title || `Search Sky Sports highlights`;
-        const channel = youtubeItem?.snippet?.channelTitle || "YouTube";
-
-        return `
-          <article class="video-item with-thumb">
-            ${thumb ? `<img class="media-thumb" src="${escapeAttribute(thumb)}" alt="" loading="lazy" />` : `<a class="media-thumb media-thumb-fallback" href="${escapeAttribute(link)}" target="_blank" rel="noreferrer">▶</a>`}
-            <div class="media-stack">
-              <div class="match-competition">${escapeHtml(competition)}</div>
-              <div class="teams">
-                <div class="team-line">
-                  <span class="team-name">${escapeHtml(home)}</span>
-                  <span class="team-score">${safeScore(homeScore)}</span>
-                </div>
-                <div class="team-line">
-                  <span class="team-name">${escapeHtml(away)}</span>
-                  <span class="team-score">${safeScore(awayScore)}</span>
-                </div>
-              </div>
-              <div class="match-side">
-                <div>${date ? formatShortDateTime(date) : "Date TBC"}</div>
-                <div>${escapeHtml(item.status || "FT")}</div>
-              </div>
-              <div class="video-title" style="margin-top:10px;">
-                <a href="${escapeAttribute(link)}" target="_blank" rel="noreferrer">${escapeHtml(clipTitle)}</a>
-              </div>
-              <div class="video-meta">${escapeHtml(channel)}</div>
-            </div>
-          </article>
-        `;
       }).join("");
     }
 
@@ -1817,7 +1603,7 @@ function renderLineups(featured, liveData, fixtureDate) {
         return;
       }
 
-      const rows = standings.map(row => {
+      const rows = standings.slice(0, 12).map(row => {
         const position = row.position ?? row.rank ?? "–";
         const played = row.playedGames ?? row.all?.played ?? "–";
         const points = row.points ?? "–";
@@ -1862,47 +1648,63 @@ function renderLineups(featured, liveData, fixtureDate) {
       const allItems = Array.isArray(newsData?.items) ? newsData.items : [];
       const loweredTerms = terms.map(t => t.toLowerCase());
 
-      let filtered = allItems.filter(item => {
+      const filtered = allItems.filter(item => {
         const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
         return loweredTerms.some(term => text.includes(term));
-      }).slice(0, 8);
-
-      if (!filtered.length) filtered = allItems.slice(0, 8);
+      }).slice(0, 6);
 
       if (!filtered.length) {
-        els.newsPanel.innerHTML = `<div class="empty">No BBC football stories found right now.</div>`;
+        els.newsPanel.innerHTML = `<div class="empty">No club-specific BBC stories found right now.</div>`;
         return;
       }
 
-      els.newsPanel.innerHTML = filtered.map(item => {
-        const thumb = item.thumbnail || item.image || item.imageUrl || item.enclosure?.url || item.media?.thumbnail?.url || item.mediaThumbnail || "";
-        const hasThumb = !!thumb;
+      els.newsPanel.innerHTML = filtered.map(item => `
+        <article class="news-item">
+          <div class="news-title">
+            <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
+          </div>
+          <div class="news-meta">
+            ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
+            ${escapeHtml(trimText(item.description || "", 180))}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderVideos(videosData) {
+      const items = Array.isArray(videosData?.items) ? videosData.items : [];
+      if (!items.length) {
+        els.videosPanel.innerHTML = `<div class="empty">No highlight videos returned.</div>`;
+        return;
+      }
+
+      els.videosPanel.innerHTML = items.slice(0, 6).map(item => {
+        const videoId = item.id?.videoId || "";
+        const title = item.snippet?.title || "Video";
+        const channel = item.snippet?.channelTitle || "YouTube";
+        const publishedAt = item.snippet?.publishedAt || "";
         return `
-          <article class="news-item ${hasThumb ? "with-thumb" : ""}">
-            ${hasThumb ? `<img class="media-thumb" src="${escapeAttribute(thumb)}" alt="" loading="lazy" />` : ""}
-            <div class="media-stack">
-              <div class="news-title">
-                <a href="${escapeAttribute(item.link || "#")}" target="_blank" rel="noreferrer">${escapeHtml(item.title || "Untitled story")}</a>
-              </div>
-              <div class="news-meta">
-                ${escapeHtml(item.pubDate ? formatPubDate(item.pubDate) : "No date")} ·
-                ${escapeHtml(trimText(item.description || "", 180))}
-              </div>
+          <article class="video-item">
+            <div class="video-title">
+              <a href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
+            </div>
+            <div class="video-meta">
+              ${escapeHtml(channel)} · ${escapeHtml(publishedAt ? formatDateOnly(new Date(publishedAt)) : "Date n/a")}
             </div>
           </article>
         `;
       }).join("");
     }
 
-
     function renderErrorState(error) {
       const message = error?.message || String(error) || "Could not load the dashboard.";
-      els.heroTitle.textContent = "Dashboard error";
-      els.heroSub.textContent = message;
+      els.heroEyebrow.textContent = "Dashboard error";
+      els.heroKickoffSub.textContent = message;
+      els.nextMatchPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.fixturesPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.tablePanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.newsPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
-      els.resultsPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      els.videosPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
     }
 
     function dedupeMatches(matches) {
