@@ -6,23 +6,25 @@ export async function onRequestGet(context) {
   }
 
   const TEAM_ID = 73;
-  const COMPETITIONS = ["PL", "CL", "FAC", "ELC"];
+  const TEAM = {
+    id: 73,
+    name: "Tottenham Hotspur",
+    shortName: "Spurs",
+    tla: "TOT",
+    crest: "https://crests.football-data.org/73.svg"
+  };
 
   try {
     const today = new Date();
     const dateFrom = addDays(today, -120);
     const dateTo = addDays(today, 180);
 
-    const [teamData, plStandingsData, ...competitionResults] = await Promise.all([
-      fdFetch(env, `/teams/${TEAM_ID}`),
-      fdFetchSafe(env, `/competitions/PL/standings`),
-      ...COMPETITIONS.map((code) =>
-        fdFetchSafe(env, `/competitions/${code}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`)
-      )
+    const [plStandingsData, plMatchesData] = await Promise.all([
+      fdFetch(env, `/competitions/PL/standings`),
+      fdFetch(env, `/competitions/PL/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`)
     ]);
 
-    const allMatches = competitionResults
-      .flatMap((result) => Array.isArray(result?.matches) ? result.matches : [])
+    const allMatches = (Array.isArray(plMatchesData?.matches) ? plMatchesData.matches : [])
       .filter((match) =>
         String(match?.homeTeam?.id) === String(TEAM_ID) ||
         String(match?.awayTeam?.id) === String(TEAM_ID)
@@ -52,12 +54,11 @@ export async function onRequestGet(context) {
       .slice(0, 8);
 
     const table = extractStandings(plStandingsData, TEAM_ID);
-    const team = normaliseTeam(teamData);
 
     return json(
       {
         source: "football-data.org",
-        team,
+        team: TEAM,
         live: live.map(normaliseMatch),
         next: next.map(normaliseMatch),
         last: last.map(normaliseMatch),
@@ -65,7 +66,7 @@ export async function onRequestGet(context) {
         standing: table.teamStanding
       },
       200,
-      60
+      300
     );
   } catch (error) {
     return json(
@@ -74,7 +75,7 @@ export async function onRequestGet(context) {
         detail: error?.message || String(error)
       },
       500,
-      5
+      10
     );
   }
 }
@@ -96,28 +97,10 @@ async function fdFetch(env, path) {
   return res.json();
 }
 
-async function fdFetchSafe(env, path) {
-  try {
-    return await fdFetch(env, path);
-  } catch {
-    return { matches: [] };
-  }
-}
-
 function addDays(date, days) {
   const d = new Date(date);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-function normaliseTeam(data) {
-  return {
-    id: data?.id ?? 73,
-    name: data?.name ?? "Tottenham Hotspur",
-    shortName: data?.shortName ?? "Spurs",
-    tla: data?.tla ?? "TOT",
-    crest: data?.crest ?? ""
-  };
 }
 
 function extractStandings(data, teamId) {
