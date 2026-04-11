@@ -1,4 +1,4 @@
-const TIMEOUT_MS = 1800;
+const TIMEOUT_MS = 5000;
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
 // simple in-memory cache per worker instance
@@ -83,7 +83,6 @@ async function handleWimbledon(context) {
     const data = await fetchWithTimeout(primaryUrl);
     const normalised = normalisePrimaryShape(data, "wimbledon");
 
-    // if the primary source gives us usable fixtures/results, keep it
     if ((normalised.next?.length || 0) > 0 || (normalised.last?.length || 0) > 0) {
       setCached("wimbledon", normalised);
       return json(normalised);
@@ -104,10 +103,6 @@ async function handleWimbledon(context) {
 }
 
 async function fetchWimbledonFallback() {
-  // AFC Wimbledon team id used in your app: 1044
-  // TheSportsDB fallback ids used here:
-  // - team next / previous schedule endpoints
-  // These are free schedule endpoints in their documentation.
   const teamId = "133602";
 
   const [nextData, lastData] = await Promise.all([
@@ -193,7 +188,6 @@ function toIsoFromSportsDb(event) {
     if (!Number.isNaN(d.getTime())) return d.toISOString();
   }
 
-  // best-effort ISO
   const combined = `${datePart}T${timePart}`.replace(" ", "T");
   const d = new Date(combined);
   if (!Number.isNaN(d.getTime())) return d.toISOString();

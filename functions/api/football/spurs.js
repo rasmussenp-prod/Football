@@ -6,7 +6,7 @@ export async function onRequestGet(context) {
   }
 
   const TEAM_ID = 73;
-  const COMPETITIONS = ["PL", "CL", "FAC"];
+  const COMPETITIONS = ["PL", "CL", "FAC", "ELC"];
 
   try {
     const today = new Date();
@@ -15,7 +15,7 @@ export async function onRequestGet(context) {
 
     const [teamData, plStandingsData, ...competitionResults] = await Promise.all([
       fdFetch(env, `/teams/${TEAM_ID}`),
-      fdFetch(env, `/competitions/PL/standings`),
+      fdFetchSafe(env, `/competitions/PL/standings`),
       ...COMPETITIONS.map((code) =>
         fdFetchSafe(env, `/competitions/${code}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`)
       )
