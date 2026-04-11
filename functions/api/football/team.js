@@ -1,5 +1,7 @@
+const TIMEOUT_MS = 5000;
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
+// simple in-memory cache per worker instance
 const CACHE = {
   tottenham: null,
   wimbledon: null
@@ -15,23 +17,15 @@ export async function onRequestGet(context) {
 
   try {
     if (team === "tottenham") {
-      const data = await fetchTottenhamDirect(context.env);
-      setCached("tottenham", data);
-      return json(data);
+      return await handleTottenham(context);
     }
 
     if (team === "wimbledon") {
-      const data = await fetchWimbledonData();
-      setCached("wimbledon", data);
-      return json(data);
+      return await handleWimbledon(context);
     }
 
     return json({ error: "Invalid team" }, 400);
-
   } catch (err) {
-    const cached = getCached(team);
-    if (cached) return json(cached);
-
     return json({
       error: "Team endpoint failed",
       detail: err?.message || String(err)
@@ -39,18 +33,16 @@ export async function onRequestGet(context) {
   }
 }
 
-function normaliseTeam(v) {
-  v = String(v || "").toLowerCase();
-  if (v.includes("tottenham") || v.includes("spurs")) return "tottenham";
-  if (v.includes("wimbledon")) return "wimbledon";
+function normaliseTeam(value) {
+  const v = String(value || "").toLowerCase().trim();
+  if (!v) return null;
+  if (["tottenham", "spurs", "tottenham hotspur", "47"].includes(v)) return "tottenham";
+  if (["wimbledon", "afc wimbledon", "dons", "1044"].includes(v)) return "wimbledon";
   return null;
 }
 
-function setCached(team, data) {
-  CACHE[team] = {
-    ts: Date.now(),
-    data
-  };
+function getBaseUrl(requestUrl) {
+  return requestUrl.split("/api/football/team")[0];
 }
 
 function getCached(team) {
@@ -60,64 +52,208 @@ function getCached(team) {
   return item.data;
 }
 
-async function fetchTottenhamDirect(env) {
-  if (!env.FOOTBALL_DATA_KEY) {
-    throw new Error("Missing FOOTBALL_DATA_KEY");
-  }
-
-  const TEAM_ID = 73;
-
-  const res = await fetch(
-    "https://api.football-data.org/v4/competitions/PL/matches",
-    {
-      headers: {
-        "X-Auth-Token": env.FOOTBALL_DATA_KEY
-      }
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error("Football-data API failed");
-  }
-
-  const data = await res.json();
-
-  const matches = data.matches.filter(
-    m => m.homeTeam.id === TEAM_ID || m.awayTeam.id === TEAM_ID
-  );
-
-  return {
-    source: "football-data",
-    team: {
-      id: 73,
-      name: "Tottenham Hotspur"
-    },
-    matches
+function setCached(team, data) {
+  CACHE[team] = {
+    ts: Date.now(),
+    data
   };
 }
 
-async function fetchWimbledonData() {
-  const res = await fetch(
-    "https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=133602"
-  );
+async function handleTottenham(context) {
+  const base = getBaseUrl(context.request.url);
+  const primaryUrl = `${base}/api/football/spurs`;
 
-  const data = await res.json();
+  try {
+    const data = await fetchWithTimeout(primaryUrl);
+    const normalised = normalisePrimaryShape(data, "tottenham");
+    setCached("tottenham", normalised);
+    return json(normalised);
+  } catch (err) {
+    const cached = getCached("tottenham");
+    if (cached) return json(cached);
+    throw err;
+  }
+}
+
+async function handleWimbledon(context) {
+  const base = getBaseUrl(context.request.url);
+  const primaryUrl = `${base}/api/football/wimbledon`;
+
+  try {
+    const data = await fetchWithTimeout(primaryUrl);
+    const normalised = normalisePrimaryShape(data, "wimbledon");
+
+    if ((normalised.next?.length || 0) > 0 || (normalised.last?.length || 0) > 0) {
+      setCached("wimbledon", normalised);
+      return json(normalised);
+    }
+
+    throw new Error("Primary Wimbledon source returned no useful fixtures");
+  } catch (primaryErr) {
+    try {
+      const fallback = await fetchWimbledonFallback();
+      setCached("wimbledon", fallback);
+      return json(fallback);
+    } catch (fallbackErr) {
+      const cached = getCached("wimbledon");
+      if (cached) return json(cached);
+      throw fallbackErr;
+    }
+  }
+}
+
+async function fetchWimbledonFallback() {
+  const teamId = "133602";
+
+  const [nextData, lastData] = await Promise.all([
+    fetchWithTimeout(`https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=${teamId}`),
+    fetchWithTimeout(`https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=${teamId}`)
+  ]);
 
   return {
-    source: "sportsdb",
+    source: "TheSportsDB fallback",
     team: {
       id: 1044,
-      name: "AFC Wimbledon"
+      name: "AFC Wimbledon",
+      shortName: "Wimbledon",
+      tla: "AW",
+      crest: ""
     },
-    matches: data.events || []
+    live: [],
+    next: mapSportsDbEvents(nextData?.events || [], { forceStatus: "SCHEDULED" }),
+    last: mapSportsDbEvents(lastData?.results || lastData?.events || [], { forceStatus: "FINISHED" }),
+    standings: [],
+    standing: null
   };
+}
+
+function mapSportsDbEvents(events, options = {}) {
+  const forceStatus = options.forceStatus || "";
+  return events.map((e) => {
+    const utcDate = toIsoFromSportsDb(e);
+    const homeScore = isBlank(e.intHomeScore) ? null : Number(e.intHomeScore);
+    const awayScore = isBlank(e.intAwayScore) ? null : Number(e.intAwayScore);
+
+    return {
+      id: e.idEvent || `${e.strHomeTeam}-${e.strAwayTeam}-${utcDate}`,
+      utcDate,
+      status: forceStatus || inferStatusFromSportsDb(e),
+      competition: {
+        code: "",
+        name: e.strLeague || e.strLeagueAlternate || "Competition"
+      },
+      stage: e.strRound || "",
+      matchday: null,
+      venue: e.strVenue || "",
+      homeTeam: {
+        id: null,
+        name: e.strHomeTeam || "Home",
+        shortName: e.strHomeTeam || "Home",
+        tla: initials(e.strHomeTeam),
+        crest: ""
+      },
+      awayTeam: {
+        id: null,
+        name: e.strAwayTeam || "Away",
+        shortName: e.strAwayTeam || "Away",
+        tla: initials(e.strAwayTeam),
+        crest: ""
+      },
+      score: {
+        winner: null,
+        fullTime: {
+          home: homeScore,
+          away: awayScore
+        },
+        halfTime: {
+          home: null,
+          away: null
+        }
+      }
+    };
+  });
+}
+
+function inferStatusFromSportsDb(event) {
+  const hasScore = !isBlank(event.intHomeScore) || !isBlank(event.intAwayScore);
+  return hasScore ? "FINISHED" : "SCHEDULED";
+}
+
+function toIsoFromSportsDb(event) {
+  const datePart = event.dateEvent || event.strTimestamp || "";
+  const timePart = event.strTime || "15:00:00";
+
+  if (event.strTimestamp) {
+    const d = new Date(event.strTimestamp);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+  }
+
+  const combined = `${datePart}T${timePart}`.replace(" ", "T");
+  const d = new Date(combined);
+  if (!Number.isNaN(d.getTime())) return d.toISOString();
+
+  return `${datePart}T${timePart}`;
+}
+
+function normalisePrimaryShape(data, teamKey) {
+  return {
+    source: data?.source || `${teamKey} primary`,
+    team: data?.team || {
+      id: teamKey === "tottenham" ? 47 : 1044,
+      name: teamKey === "tottenham" ? "Tottenham Hotspur" : "AFC Wimbledon",
+      shortName: teamKey === "tottenham" ? "Spurs" : "Wimbledon",
+      tla: teamKey === "tottenham" ? "TOT" : "AW",
+      crest: ""
+    },
+    live: Array.isArray(data?.live) ? data.live : [],
+    next: Array.isArray(data?.next) ? data.next : [],
+    last: Array.isArray(data?.last) ? data.last : [],
+    standings: Array.isArray(data?.standings) ? data.standings : [],
+    standing: data?.standing || null
+  };
+}
+
+async function fetchWithTimeout(url) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch failed ${res.status} for ${url}`);
+    }
+
+    return await res.json();
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+function isBlank(v) {
+  return v === null || v === undefined || v === "";
+}
+
+function initials(name) {
+  return String(name || "")
+    .split(/\s+/)
+    .map(part => part[0] || "")
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
 }
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
     }
   });
 }
