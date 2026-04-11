@@ -283,15 +283,27 @@
 
     .hero-art {
       position: absolute;
-      right: -20px;
-      bottom: -14px;
-      width: min(48vw, 360px);
-      max-height: 92%;
+      right: -10px;
+      bottom: -18px;
+      width: min(62vw, 460px);
+      max-height: 108%;
       object-fit: contain;
-      opacity: 0.12;
-      filter: saturate(0) brightness(1.5);
+      object-position: right bottom;
+      opacity: 0.14;
+      filter: saturate(0) brightness(1.45) contrast(1.05);
       pointer-events: none;
       z-index: 0;
+      mix-blend-mode: screen;
+    }
+
+    .hero-art-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(7,17,31,0.82) 0%, rgba(7,17,31,0.66) 38%, rgba(7,17,31,0.18) 100%),
+        radial-gradient(circle at 80% 52%, rgba(255,255,255,0.12), transparent 28%);
+      z-index: 0;
+      pointer-events: none;
     }
 
     .hero-copy {
@@ -399,6 +411,10 @@
     .scoreboard {
       display: grid;
       gap: 10px;
+    }
+
+    .scoreboard:empty {
+      display: none;
     }
 
     .team-score-row {
@@ -852,6 +868,7 @@
       
       <section class="hero card">
         <div class="hero-grid hero-main">
+          <div class="hero-art-glow" aria-hidden="true"></div>
           <img class="hero-art" id="heroArtwork" alt="" hidden />
           <div class="hero-copy">
             <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
@@ -1319,7 +1336,7 @@
         ? (standings.find(row => String(row.team?.id) === String(teamData.team?.id))?.team?.crest ||
            standings.find(row => String(row.team?.id) === String(team.teamId))?.team?.crest)
         : "";
-      const directCrest = teamData.team?.crest || teamData.team?.logo || team.fallbackLogoUrl || standingCrest || "";
+      const directCrest = teamData.team?.crest || teamData.team?.logo || standingCrest || team.fallbackLogoUrl || "";
 
       if (directCrest) {
         els.brandLogo.src = directCrest;
@@ -1352,21 +1369,12 @@
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
 
-      els.heroTitle.textContent = `${home} vs ${away}`;
+      els.heroTitle.textContent = `${home} ${safeScore(featured.homeScore)}–${safeScore(featured.awayScore)} ${away}`;
       els.heroSub.textContent = venue ? `${competition} · ${venue}` : competition;
       els.heroKickoff.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
       els.heroKickoffSub.textContent = buildKickoffSubline(featured, fixtureDate);
 
-      els.nextMatchPanel.innerHTML = `
-        <div class="team-score-row">
-          <div class="team-score-name">${escapeHtml(home)}</div>
-          <div class="team-score-value">${safeScore(featured.homeScore)}</div>
-        </div>
-        <div class="team-score-row">
-          <div class="team-score-name">${escapeHtml(away)}</div>
-          <div class="team-score-value">${safeScore(featured.awayScore)}</div>
-        </div>
-      `;
+      els.nextMatchPanel.innerHTML = "";
 
       renderLineups(featured, liveData, fixtureDate);
     }
