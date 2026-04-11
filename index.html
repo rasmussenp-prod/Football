@@ -272,6 +272,34 @@
       gap: 14px;
     }
 
+    .hero-main {
+      position: relative;
+      overflow: hidden;
+      min-height: 260px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .hero-art {
+      position: absolute;
+      right: -20px;
+      bottom: -14px;
+      width: min(48vw, 360px);
+      max-height: 92%;
+      object-fit: contain;
+      opacity: 0.12;
+      filter: saturate(0) brightness(1.5);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+    }
+
     .eyebrow {
       display: inline-flex;
       align-items: center;
@@ -772,7 +800,7 @@
       .brand-copy h1 { font-size: 1.2rem; }
       .brand-copy p { font-size: 0.85rem; }
       .hero { padding: 22px; }
-      .hero-grid { grid-template-columns: 1.15fr 0.85fr; gap: 18px; align-items: start; }
+      .hero-grid { grid-template-columns: 1fr; gap: 18px; align-items: start; }
       .stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
       .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -821,43 +849,33 @@
         </div>
       </header>
 
+      
       <section class="hero card">
-        <div class="hero-grid">
-          <div>
+        <div class="hero-grid hero-main">
+          <img class="hero-art" id="heroArtwork" alt="" hidden />
+          <div class="hero-copy">
             <div class="eyebrow" id="heroEyebrow">Club dashboard</div>
             <h2 id="heroTitle">Loading latest football data</h2>
-            <p class="hero-sub" id="heroSub">Fixtures, standings, live status, news and highlights in one view.</p>
-            <div class="hero-meta">
-              <div class="meta-pill" id="heroMetaOne">Fixtures</div>
-              <div class="meta-pill" id="heroMetaTwo">Standings</div>
-              <div class="meta-pill" id="heroMetaThree">Live centre</div>
+            <p class="hero-sub" id="heroSub">Fixtures, standings, live status and news in one view.</p>
+
+            <div class="next-kickoff" id="heroKickoff">–</div>
+
+            <div class="scoreboard" id="nextMatchPanel">
+              <div class="team-score-row">
+                <div class="team-score-name">Loading…</div>
+                <div class="team-score-value">–</div>
+              </div>
             </div>
-            <div class="hero-gd" id="heroGD">Goal difference · –</div>
-          </div>
 
-          <div class="score-shell">
-            <section class="next-card">
-              <div class="next-top">
-                <div class="badge" id="nextBadge">Next match</div>
-                <div class="next-kickoff" id="heroKickoff">–</div>
-              </div>
+            <div class="match-centre-meta" id="heroKickoffSub">Waiting for match data…</div>
 
-              <div class="scoreboard" id="nextMatchPanel">
-                <div class="team-score-row">
-                  <div class="team-score-name">Loading…</div>
-                  <div class="team-score-value">–</div>
-                </div>
-              </div>
-
-              <div class="match-centre-meta" id="heroKickoffSub">Waiting for match data…</div>
-
-              <div class="lineup-wrap" id="lineupsPanel" hidden></div>
-            </section>
+            <div class="lineup-wrap" id="lineupsPanel" hidden></div>
           </div>
         </div>
       </section>
 
       <section class="stats-row">
+
         <div class="stat-card card">
           <div class="stat-label">League position</div>
           <div class="stat-value" id="statPosition">–</div>
@@ -1021,14 +1039,10 @@
       brandFallback: document.getElementById("brandFallback"),
       heroEyebrow: document.getElementById("heroEyebrow"),
       heroTitle: document.getElementById("heroTitle"),
-      heroSub: document.getElementById("heroSub"),
-      heroMetaOne: document.getElementById("heroMetaOne"),
-      heroMetaTwo: document.getElementById("heroMetaTwo"),
-      heroMetaThree: document.getElementById("heroMetaThree"),
-      heroGD: document.getElementById("heroGD"),
+      heroSub: document.getElementById("heroSub"),      heroGD: document.getElementById("heroGD"),
       heroKickoff: document.getElementById("heroKickoff"),
       heroKickoffSub: document.getElementById("heroKickoffSub"),
-      nextBadge: document.getElementById("nextBadge"),
+      heroArtwork: document.getElementById("heroArtwork"),
       nextMatchPanel: document.getElementById("nextMatchPanel"),
       lineupsPanel: document.getElementById("lineupsPanel"),
       statPosition: document.getElementById("statPosition"),
@@ -1280,14 +1294,7 @@
       els.heroTitle.textContent = "Loading latest football data";
       els.heroSub.textContent = "Pulling fixtures, standings, live status, news and highlights.";
       els.heroEyebrow.textContent = "Club dashboard";
-      els.heroEyebrow.classList.remove("live");
-      els.heroMetaOne.textContent = "Fixtures";
-      els.heroMetaTwo.textContent = "Standings";
-      els.heroMetaThree.textContent = "Live centre";
-      els.heroGD.textContent = "Goal difference · –";
-      els.nextBadge.textContent = "Next match";
-      els.nextBadge.classList.remove("live");
-      els.heroKickoff.textContent = "–";
+      els.heroEyebrow.classList.remove("live");      els.heroGD.textContent = "Goal difference · –";      els.heroKickoff.textContent = "–";
       els.heroKickoffSub.textContent = "Waiting for match data…";
       els.nextMatchPanel.innerHTML = `
         <div class="team-score-row">
@@ -1297,6 +1304,10 @@
       `;
       els.lineupsPanel.hidden = true;
       els.lineupsPanel.innerHTML = "";
+      if (els.heroArtwork) {
+        els.heroArtwork.hidden = true;
+        els.heroArtwork.removeAttribute("src");
+      }
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
       els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
@@ -1314,41 +1325,36 @@
         els.brandLogo.src = directCrest;
         els.brandLogo.hidden = false;
         els.brandFallback.hidden = true;
+        if (els.heroArtwork) {
+          els.heroArtwork.src = directCrest;
+          els.heroArtwork.hidden = false;
+        }
       } else {
         els.brandLogo.hidden = true;
         els.brandFallback.hidden = false;
+        if (els.heroArtwork) {
+          els.heroArtwork.hidden = true;
+          els.heroArtwork.removeAttribute("src");
+        }
       }
     }
 
     function renderHero(team, teamData, teamStanding, liveData) {
       const featured = selectFeaturedFixture(teamData, liveData);
-      const form = normaliseForm(teamStanding?.form);
       const live = featured.isLive;
-      const gd = teamStanding ? signed(teamStanding.goalDifference ?? teamStanding.goalsDiff ?? "–") : "–";
 
-      els.heroEyebrow.textContent = `${team.shortName} · ${live ? "Live match centre" : "Next match"}`;
+      els.heroEyebrow.textContent = `${team.shortName} ${live ? "live match" : "next match"}`;
       els.heroEyebrow.classList.toggle("live", live);
 
       const competition = featured.competition || team.leagueName;
-      const venue = featured.venue || "Venue TBC";
-      const status = featured.status || "";
+      const venue = cleanVenue(featured.venue);
       const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
       const away = featured.awayName || "Away";
 
-      els.heroTitle.textContent = live
-        ? `${home} ${safeScore(featured.homeScore)}–${safeScore(featured.awayScore)} ${away}`
-        : `${home} vs ${away}`;
-
-      els.heroSub.textContent = `${competition} · ${venue}`;
-      els.heroMetaOne.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
-      els.heroMetaTwo.textContent = live ? (featured.liveStatus || status || "Live") : (status || "Scheduled");
-      els.heroMetaThree.textContent = form || "Form unavailable";
-      els.heroGD.textContent = `Goal difference · ${gd}`;
-      els.nextBadge.textContent = live ? "● Live match centre" : "Next match";
-      els.nextBadge.classList.toggle("live", live);
-
-      els.heroKickoff.textContent = fixtureDate ? formatShortDateTime(fixtureDate) : "Date TBC";
+      els.heroTitle.textContent = `${home} vs ${away}`;
+      els.heroSub.textContent = venue ? `${competition} · ${venue}` : competition;
+      els.heroKickoff.textContent = fixtureDate ? formatLongDateTime(fixtureDate) : "Date TBC";
       els.heroKickoffSub.textContent = buildKickoffSubline(featured, fixtureDate);
 
       els.nextMatchPanel.innerHTML = `
@@ -1530,14 +1536,26 @@ function selectFeaturedFixture(teamData, liveData) {
 
     function buildKickoffSubline(featured, fixtureDate) {
       const parts = [];
+      const status = String(featured.status || "").toUpperCase();
       if (fixtureDate) parts.push(relativeFromNow(fixtureDate));
-      if (featured.liveStatus) parts.push(featured.liveStatus);
-      else if (featured.status) parts.push(featured.status);
+      if (featured.liveStatus && !["TIMED", "SCHEDULED"].includes(String(featured.liveStatus).toUpperCase())) {
+        parts.push(featured.liveStatus);
+      } else if (status && !["TIMED", "SCHEDULED"].includes(status)) {
+        parts.push(featured.status);
+      }
       if (featured.elapsed) parts.push(`${featured.elapsed}'`);
       return parts.join(" · ") || "Match timing unavailable";
     }
 
-    function renderLineups(featured, liveData, fixtureDate) {
+    
+    function cleanVenue(value) {
+      const venue = String(value || "").trim();
+      if (!venue) return "";
+      if (["venue tbc", "tbc", "unknown", "unavailable"].includes(venue.toLowerCase())) return "";
+      return venue;
+    }
+
+function renderLineups(featured, liveData, fixtureDate) {
       const show = shouldShowLineups(featured, fixtureDate);
       const lineups = featured.lineups || extractLineups(liveData);
 
