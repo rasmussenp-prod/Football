@@ -1,125 +1,207 @@
+const TIMEOUT_MS = 1800;
+const LIVE_WINDOW_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
+const LIVE_WINDOW_AFTER_KICKOFF_MS = 3 * 60 * 60 * 1000;
+
 export async function onRequestGet(context) {
-  const { request, env } = context;
-  const url = new URL(request.url);
+  const url = new URL(context.request.url);
+  const rawTeam = url.searchParams.get("team");
+  const season = url.searchParams.get("season") || "";
 
-  const team = url.searchParams.get("team");
-  const season = url.searchParams.get("season");
+  const teamKey = normaliseTeam(rawTeam);
 
-  if (!team || !season) {
-    return json({ error: "Missing team or season" }, 400, 0);
+  if (!teamKey) {
+    return json({ error: "Missing team or season" }, 400);
   }
 
   try {
-    const liveFixturesData = await fetchApiSports(env, "/fixtures", {
-      team,
-      season,
-      live: "all"
-    });
+    const base = getBaseUrl(context.request.url);
 
-    const liveFixtures = Array.isArray(liveFixturesData?.response)
-      ? liveFixturesData.response
-      : [];
+    // 1) Get the unified team data first
+    const teamData = await fetchWithTimeout(`${base}/api/football/team?team=${teamKey}`);
 
-    const teamLiveFixture =
-      liveFixtures.find((fixture) => {
-        const homeId = fixture?.teams?.home?.id;
-        const awayId = fixture?.teams?.away?.id;
-        return String(homeId) === String(team) || String(awayId) === String(team);
-      }) || null;
+    // 2) Try explicit live array from team feed
+    const explicitLive = Array.isArray(teamData?.live)
+      ? teamData.live.find(match => isLiveStatus(match?.status))
+      : null;
 
-    if (!teamLiveFixture) {
-      return json(
-        {
-          live: false,
-          teamId: Number(team),
-          fixture: null,
-          events: []
-        },
-        200,
-        15
-      );
-    }
-
-    const fixtureId = teamLiveFixture?.fixture?.id;
-
-    const eventsData = await fetchApiSports(env, "/fixtures/events", {
-      fixture: fixtureId
-    });
-
-    const events = Array.isArray(eventsData?.response) ? eventsData.response : [];
-
-    return json(
-      {
+    if (explicitLive) {
+      return json({
         live: true,
-        teamId: Number(team),
-        fixture: teamLiveFixture,
-        events: normaliseEvents(events)
-      },
-      200,
-      15
-    );
-  } catch (error) {
-    return json(
-      {
-        error: "Could not load live match data",
-        detail: String(error)
-      },
-      500,
-      5
-    );
-  }
-}
-
-async function fetchApiSports(env, path, params = {}) {
-  const upstream = new URL(`https://v3.football.api-sports.io${path}`);
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      upstream.searchParams.set(key, String(value));
+        source: "team.live",
+        fixture: mapToLiveFixture(explicitLive, teamKey)
+      });
     }
-  });
 
-  const res = await fetch(upstream.toString(), {
-    method: "GET",
-    headers: {
-      "x-apisports-key": env.API_FOOTBALL_KEY
+    // 3) Try current-window inference from next + last + live
+    const inferred = inferLiveFixture(teamData, teamKey);
+    if (inferred) {
+      return json({
+        live: true,
+        source: "inferred",
+        fixture: inferred
+      });
     }
-  });
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`API-Sports ${path} failed: ${res.status} ${text}`);
-  }
-
-  return res.json();
-}
-
-function normaliseEvents(events) {
-  return events
-    .map((event) => ({
-      time: event?.time?.elapsed ?? null,
-      extra: event?.time?.extra ?? null,
-      team: event?.team?.name ?? "",
-      teamId: event?.team?.id ?? null,
-      player: event?.player?.name ?? "",
-      assist: event?.assist?.name ?? "",
-      type: event?.type ?? "",
-      detail: event?.detail ?? "",
-      comments: event?.comments ?? ""
-    }))
-    .sort((a, b) => {
-      const aTime = Number(a.time ?? 0);
-      const bTime = Number(b.time ?? 0);
-      return bTime - aTime;
+    // 4) No live match found
+    return json({
+      live: false,
+      season,
+      fixture: null
     });
+  } catch (err) {
+    return json({
+      live: false,
+      error: "Live endpoint failed",
+      detail: err?.message || String(err),
+      fixture: null
+    }, 200);
+  }
 }
 
-function json(data, status = 200, cacheSeconds = 0) {
+function normaliseTeam(value) {
+  const v = String(value || "").toLowerCase().trim();
+
+  if (["47", "tottenham", "spurs", "tottenham hotspur"].includes(v)) return "tottenham";
+  if (["1044", "wimbledon", "afc wimbledon", "dons"].includes(v)) return "wimbledon";
+
+  return null;
+}
+
+function getBaseUrl(requestUrl) {
+  return requestUrl.split("/api/football/live")[0];
+}
+
+function inferLiveFixture(teamData, teamKey) {
+  const all = [
+    ...(Array.isArray(teamData?.live) ? teamData.live : []),
+    ...(Array.isArray(teamData?.next) ? teamData.next : []),
+    ...(Array.isArray(teamData?.last) ? teamData.last : [])
+  ];
+
+  const now = Date.now();
+
+  // explicit live-like statuses first
+  const liveByStatus = all.find(match => isLiveStatus(match?.status));
+  if (liveByStatus) {
+    return mapToLiveFixture(liveByStatus, teamKey);
+  }
+
+  // otherwise infer by kickoff window
+  const candidates = all
+    .map(match => ({ match, date: parseDate(match?.utcDate || match?.date || match?.kickoff) }))
+    .filter(item => item.date);
+
+  const liveWindowMatch = candidates.find(({ match, date }) => {
+    const kickoff = date.getTime();
+    const status = String(match?.status || "").toUpperCase();
+
+    if (["FINISHED", "POSTPONED", "CANCELLED", "SUSPENDED"].includes(status)) return false;
+
+    return (
+      now >= kickoff - LIVE_WINDOW_BEFORE_KICKOFF_MS &&
+      now <= kickoff + LIVE_WINDOW_AFTER_KICKOFF_MS
+    );
+  });
+
+  if (!liveWindowMatch) return null;
+
+  const mapped = mapToLiveFixture(liveWindowMatch.match, teamKey);
+
+  // mark as likely live / match centre window
+  if (!mapped.fixture?.status?.short || mapped.fixture.status.short === "SCHEDULED") {
+    mapped.fixture.status.short = "LIVE";
+    mapped.fixture.status.long = "Match centre";
+  }
+
+  return mapped;
+}
+
+function mapToLiveFixture(match, teamKey) {
+  const homeScore = match?.score?.fullTime?.home ?? match?.score?.home ?? null;
+  const awayScore = match?.score?.fullTime?.away ?? match?.score?.away ?? null;
+
+  return {
+    fixture: {
+      id: match?.id || null,
+      date: match?.utcDate || match?.date || match?.kickoff || null,
+      venue: {
+        name: match?.venue || ""
+      },
+      status: {
+        short: String(match?.status || "LIVE").toUpperCase(),
+        long: humanStatus(match?.status)
+      }
+    },
+    league: {
+      name: match?.competition?.name || (teamKey === "tottenham" ? "Premier League" : "League One")
+    },
+    teams: {
+      home: {
+        name: match?.homeTeam?.name || "Home"
+      },
+      away: {
+        name: match?.awayTeam?.name || "Away"
+      }
+    },
+    goals: {
+      home: homeScore,
+      away: awayScore
+    },
+    lineups: match?.lineups || null
+  };
+}
+
+function humanStatus(status) {
+  const s = String(status || "").toUpperCase();
+  if (s === "IN_PLAY") return "In play";
+  if (s === "PAUSED") return "Paused";
+  if (s === "TIMED") return "Timed";
+  if (s === "SCHEDULED") return "Scheduled";
+  if (s === "FINISHED") return "Finished";
+  if (s === "LIVE") return "Live";
+  return s || "Live";
+}
+
+function isLiveStatus(status) {
+  return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(
+    String(status || "").toUpperCase()
+  );
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+async function fetchWithTimeout(url) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch failed ${res.status} for ${url}`);
+    }
+
+    return await res.json();
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": `public, max-age=${cacheSeconds}`
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store"
     }
   });
 }
