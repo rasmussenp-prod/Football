@@ -19,12 +19,13 @@ export async function onRequestGet(context) {
     const dateFrom = addDays(today, -120);
     const dateTo = addDays(today, 180);
 
-    const [plStandingsData, plMatchesData] = await Promise.all([
-      fdFetch(env, `/competitions/PL/standings`),
-      fdFetch(env, `/competitions/PL/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`)
-    ]);
+    // Only one upstream call to reduce flakiness / free-tier pressure
+    const matchesData = await fdFetch(
+      env,
+      `/competitions/PL/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`
+    );
 
-    const allMatches = (Array.isArray(plMatchesData?.matches) ? plMatchesData.matches : [])
+    const allMatches = (Array.isArray(matchesData?.matches) ? matchesData.matches : [])
       .filter((match) =>
         String(match?.homeTeam?.id) === String(TEAM_ID) ||
         String(match?.awayTeam?.id) === String(TEAM_ID)
@@ -53,8 +54,6 @@ export async function onRequestGet(context) {
       .sort(sortByUtcDesc)
       .slice(0, 8);
 
-    const table = extractStandings(plStandingsData, TEAM_ID);
-
     return json(
       {
         source: "football-data.org",
@@ -62,8 +61,8 @@ export async function onRequestGet(context) {
         live: live.map(normaliseMatch),
         next: next.map(normaliseMatch),
         last: last.map(normaliseMatch),
-        standings: table.standings,
-        standing: table.teamStanding
+        standings: [],
+        standing: null
       },
       200,
       300
@@ -101,41 +100,6 @@ function addDays(date, days) {
   const d = new Date(date);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-function extractStandings(data, teamId) {
-  const allTables = Array.isArray(data?.standings) ? data.standings : [];
-  const totalTable =
-    allTables.find((table) => table?.type === "TOTAL") ||
-    allTables[0] ||
-    { table: [] };
-
-  const standings = Array.isArray(totalTable.table)
-    ? totalTable.table.map((row) => ({
-        position: row?.position ?? null,
-        team: {
-          id: row?.team?.id ?? null,
-          name: row?.team?.name ?? "",
-          shortName: row?.team?.shortName ?? "",
-          tla: row?.team?.tla ?? "",
-          crest: row?.team?.crest ?? ""
-        },
-        playedGames: row?.playedGames ?? 0,
-        points: row?.points ?? 0,
-        goalsFor: row?.goalsFor ?? 0,
-        goalsAgainst: row?.goalsAgainst ?? 0,
-        goalDifference: row?.goalDifference ?? 0,
-        won: row?.won ?? 0,
-        draw: row?.draw ?? 0,
-        lost: row?.lost ?? 0,
-        form: row?.form ?? ""
-      }))
-    : [];
-
-  const teamStanding =
-    standings.find((row) => String(row.team.id) === String(teamId)) || null;
-
-  return { standings, teamStanding };
 }
 
 function normaliseMatch(match) {
