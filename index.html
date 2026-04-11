@@ -296,14 +296,14 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
-      gap: 14px;
+      gap: 18px;
     }
 
     .hero-side {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 14px;
+      gap: 16px;
       min-width: 0;
     }
 
@@ -312,8 +312,8 @@
     }
 
     .hero-team {
-      font-size: clamp(1.5rem, 4vw, 3rem);
-      line-height: 1.05;
+      font-size: clamp(1.15rem, 2.5vw, 2.15rem);
+      line-height: 1.06;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
@@ -321,8 +321,8 @@
     }
 
     .hero-crest-wrap {
-      width: clamp(52px, 7vw, 76px);
-      height: clamp(52px, 7vw, 76px);
+      width: clamp(56px, 6vw, 84px);
+      height: clamp(56px, 6vw, 84px);
       display: grid;
       place-items: center;
       flex: 0 0 auto;
@@ -347,23 +347,23 @@
     }
 
     .hero-middle {
-      min-width: 150px;
+      min-width: 170px;
       display: grid;
       justify-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .hero-core {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      min-height: 78px;
+      gap: 16px;
+      min-height: 86px;
     }
 
     .hero-kickoff-time,
     .hero-score-big {
-      font-size: clamp(3.1rem, 10vw, 5rem);
+      font-size: clamp(3rem, 7vw, 4.4rem);
       line-height: 0.95;
       font-weight: 400;
       color: #fff;
@@ -380,7 +380,7 @@
 
     .hero-status {
       color: var(--team-accent);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       min-height: 1.2em;
     }
@@ -388,7 +388,7 @@
     .hero-subdetail {
       text-align: center;
       color: rgba(255,255,255,0.78);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       line-height: 1.4;
       min-height: 1.4em;
     }
@@ -706,30 +706,71 @@
     }
 
     @media (max-width: 759px) {
+      .hero {
+        padding: 18px 12px 20px;
+        min-height: 250px;
+      }
+
       .hero-match {
         grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 16px;
       }
+
       .hero-side,
       .hero-side.away {
         justify-content: center;
+        gap: 12px;
       }
+
       .hero-side.home {
         flex-direction: row;
       }
+
       .hero-side.away {
         flex-direction: row-reverse;
       }
+
       .hero-team {
-        font-size: clamp(1.55rem, 7vw, 2.2rem);
+        font-size: clamp(1rem, 5.2vw, 1.45rem);
         white-space: normal;
         text-align: center;
+        max-width: 150px;
       }
+
+      .hero-crest-wrap {
+        width: 50px;
+        height: 50px;
+      }
+
       .hero-middle {
         min-width: 0;
+        gap: 8px;
       }
+
+      .hero-core {
+        min-height: 64px;
+        gap: 12px;
+      }
+
+      .hero-kickoff-time,
+      .hero-score-big {
+        font-size: clamp(2.3rem, 12vw, 3.3rem);
+      }
+
+      .hero-score-divider {
+        height: 38px;
+      }
+
       .hero-headline {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
+      }
+
+      .hero-status {
+        font-size: 0.84rem;
+      }
+
+      .hero-subdetail {
+        font-size: 0.86rem;
       }
     }
 

@@ -6,24 +6,32 @@ export async function onRequestGet(context) {
   }
 
   const TEAM_ID = 73;
+  const COMPETITIONS = ["PL", "CL", "FAC"];
 
   try {
     const today = new Date();
     const dateFrom = addDays(today, -120);
     const dateTo = addDays(today, 180);
 
-    const [teamData, plStandingsData, matchesData] = await Promise.all([
+    const [teamData, plStandingsData, ...competitionResults] = await Promise.all([
       fdFetch(env, `/teams/${TEAM_ID}`),
       fdFetch(env, `/competitions/PL/standings`),
-      fdFetch(
-        env,
-        `/teams/${TEAM_ID}/matches?competitions=PL,CL,FAC&dateFrom=${dateFrom}&dateTo=${dateTo}`
+      ...COMPETITIONS.map((code) =>
+        fdFetchSafe(env, `/competitions/${code}/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`)
       )
     ]);
 
-    const team = normaliseTeam(teamData);
+    const allMatches = competitionResults
+      .flatMap((result) => Array.isArray(result?.matches) ? result.matches : [])
+      .filter((match) =>
+        String(match?.homeTeam?.id) === String(TEAM_ID) ||
+        String(match?.awayTeam?.id) === String(TEAM_ID)
+      )
+      .filter((match, index, arr) => {
+        const id = String(match?.id || "");
+        return id ? arr.findIndex((m) => String(m?.id || "") === id) === index : true;
+      });
 
-    const allMatches = Array.isArray(matchesData?.matches) ? matchesData.matches : [];
     const now = new Date();
 
     const live = allMatches
@@ -39,11 +47,12 @@ export async function onRequestGet(context) {
       .slice(0, 8);
 
     const last = allMatches
-      .filter((match) => match?.status === "FINISHED")
+      .filter((match) => String(match?.status || "").toUpperCase() === "FINISHED")
       .sort(sortByUtcDesc)
       .slice(0, 8);
 
     const table = extractStandings(plStandingsData, TEAM_ID);
+    const team = normaliseTeam(teamData);
 
     return json(
       {
@@ -62,7 +71,7 @@ export async function onRequestGet(context) {
     return json(
       {
         error: "Could not load Spurs data from football-data.org",
-        detail: String(error)
+        detail: error?.message || String(error)
       },
       500,
       5
@@ -85,6 +94,14 @@ async function fdFetch(env, path) {
   }
 
   return res.json();
+}
+
+async function fdFetchSafe(env, path) {
+  try {
+    return await fdFetch(env, path);
+  } catch {
+    return { matches: [] };
+  }
 }
 
 function addDays(date, days) {
