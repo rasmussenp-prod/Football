@@ -8,17 +8,11 @@
     :root {
       --bg: #07111f;
       --bg-2: #0c1c31;
-      --panel: rgba(12, 22, 38, 0.92);
-      --panel-2: rgba(16, 28, 48, 0.96);
       --line: rgba(255,255,255,0.08);
       --line-strong: rgba(255,255,255,0.14);
       --text: #eef5ff;
       --muted: #9fb3ca;
       --soft: #dbe7f6;
-      --live: #ff6f86;
-      --good: #62d6a3;
-      --warn: #ffd970;
-      --bad: #ff99a7;
       --shadow: 0 24px 60px rgba(0,0,0,0.34);
 
       --team-primary: #111d45;
@@ -121,9 +115,7 @@
       background: linear-gradient(135deg, var(--team-accent-2), var(--team-accent));
     }
 
-    .brand-copy {
-      min-width: 0;
-    }
+    .brand-copy { min-width: 0; }
 
     .brand-copy h1 {
       margin: 0;
@@ -189,9 +181,7 @@
 
     .spinner.show { display: inline-block; }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .menu-wrap { position: relative; }
 
@@ -307,9 +297,7 @@
       min-width: 0;
     }
 
-    .hero-side.away {
-      justify-content: flex-start;
-    }
+    .hero-side.away { justify-content: flex-start; }
 
     .hero-team {
       font-size: clamp(1.15rem, 2.5vw, 2.15rem);
@@ -440,9 +428,7 @@
       gap: 12px;
     }
 
-    .stat-card {
-      padding: 14px;
-    }
+    .stat-card { padding: 14px; }
 
     .stat-label {
       font-size: 0.72rem;
@@ -490,15 +476,8 @@
       color: #fff;
     }
 
-    .content-grid {
-      display: grid;
-      gap: 12px;
-    }
-
-    .panel {
-      padding: 14px;
-    }
-
+    .content-grid { display: grid; gap: 12px; }
+    .panel { padding: 14px; }
     .panel[hidden] { display: none !important; }
 
     .panel-head {
@@ -520,15 +499,13 @@
     }
 
     .match-list,
-    .news-list,
-    .video-list {
+    .news-list {
       display: grid;
       gap: 10px;
     }
 
     .match-item,
-    .news-item,
-    .video-item {
+    .news-item {
       padding: 12px;
       border-radius: 18px;
       background: rgba(255,255,255,0.035);
@@ -606,6 +583,19 @@
       flex-wrap: wrap;
     }
 
+    .highlight-link {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--team-accent);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .highlight-link:hover { text-decoration: underline; }
+
     .status-pill {
       display: inline-flex;
       align-items: center;
@@ -620,6 +610,7 @@
     }
     .status-live { background: rgba(255,90,110,0.16); border-color: rgba(255,90,110,0.24); }
     .status-upcoming { background: rgba(98,214,163,0.12); border-color: rgba(98,214,163,0.18); }
+    .status-finished { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
 
     .table-wrap { overflow-x: auto; }
     table { width: 100%; min-width: 560px; border-collapse: collapse; }
@@ -652,26 +643,22 @@
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
 
-    .news-title,
-    .video-title {
+    .news-title {
       font-weight: 700;
       line-height: 1.35;
       margin-bottom: 6px;
     }
 
-    .news-item a,
-    .video-item a {
+    .news-item a {
       color: #fff;
       text-decoration: none;
     }
 
-    .news-item a:hover,
-    .video-item a:hover {
+    .news-item a:hover {
       text-decoration: underline;
     }
 
-    .news-meta,
-    .video-meta {
+    .news-meta {
       color: var(--muted);
       font-size: 0.82rem;
       line-height: 1.45;
@@ -706,72 +693,27 @@
     }
 
     @media (max-width: 759px) {
-      .hero {
-        padding: 18px 12px 20px;
-        min-height: 250px;
-      }
-
-      .hero-match {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
+      .hero { padding: 18px 12px 20px; min-height: 250px; }
+      .hero-match { grid-template-columns: 1fr; gap: 16px; }
       .hero-side,
-      .hero-side.away {
-        justify-content: center;
-        gap: 12px;
-      }
-
-      .hero-side.home {
-        flex-direction: row;
-      }
-
-      .hero-side.away {
-        flex-direction: row-reverse;
-      }
-
+      .hero-side.away { justify-content: center; gap: 12px; }
+      .hero-side.home { flex-direction: row; }
+      .hero-side.away { flex-direction: row-reverse; }
       .hero-team {
         font-size: clamp(1rem, 5.2vw, 1.45rem);
         white-space: normal;
         text-align: center;
         max-width: 150px;
       }
-
-      .hero-crest-wrap {
-        width: 50px;
-        height: 50px;
-      }
-
-      .hero-middle {
-        min-width: 0;
-        gap: 8px;
-      }
-
-      .hero-core {
-        min-height: 64px;
-        gap: 12px;
-      }
-
+      .hero-crest-wrap { width: 50px; height: 50px; }
+      .hero-middle { min-width: 0; gap: 8px; }
+      .hero-core { min-height: 64px; gap: 12px; }
       .hero-kickoff-time,
-      .hero-score-big {
-        font-size: clamp(2.3rem, 12vw, 3.3rem);
-      }
-
-      .hero-score-divider {
-        height: 38px;
-      }
-
-      .hero-headline {
-        font-size: 0.88rem;
-      }
-
-      .hero-status {
-        font-size: 0.84rem;
-      }
-
-      .hero-subdetail {
-        font-size: 0.86rem;
-      }
+      .hero-score-big { font-size: clamp(2.3rem, 12vw, 3.3rem); }
+      .hero-score-divider { height: 38px; }
+      .hero-headline { font-size: 0.88rem; }
+      .hero-status { font-size: 0.84rem; }
+      .hero-subdetail { font-size: 0.86rem; }
     }
 
     @media (min-width: 1100px) {
@@ -786,7 +728,7 @@
       <header class="topbar">
         <div class="topbar-inner">
           <div class="brand">
-            <div class="brand-logo-wrap" id="brandLogoWrap">
+            <div class="brand-logo-wrap">
               <div class="brand-fallback" id="brandFallback">FC</div>
               <img id="brandLogo" alt="" hidden />
             </div>
@@ -799,7 +741,7 @@
           <div></div>
 
           <div class="top-actions">
-            <div class="status-chip refresh-wrap" id="refreshState">
+            <div class="status-chip refresh-wrap">
               <span class="spinner" id="refreshSpinner"></span>
               <span id="refreshLabel">Updated just now</span>
             </div>
@@ -857,9 +799,9 @@
 
       <nav class="nav-row" id="navRow" aria-label="Dashboard sections">
         <button class="nav-btn active" data-panel="fixturesPanelCard">Fixtures</button>
+        <button class="nav-btn" data-panel="resultsPanelCard">Results</button>
         <button class="nav-btn" data-panel="tablePanelCard">Table</button>
         <button class="nav-btn" data-panel="newsPanelCard">News</button>
-        <button class="nav-btn" data-panel="videosPanelCard">Results</button>
       </nav>
 
       <section class="content-grid">
@@ -870,6 +812,16 @@
           </div>
           <div class="match-list" id="fixturesPanel">
             <div class="empty">Loading fixtures…</div>
+          </div>
+        </section>
+
+        <section class="panel card" id="resultsPanelCard" hidden>
+          <div class="panel-head">
+            <h3>Results</h3>
+            <div class="subtle" id="resultsSubtle">Loading…</div>
+          </div>
+          <div class="match-list" id="resultsPanel">
+            <div class="empty">Loading results…</div>
           </div>
         </section>
 
@@ -892,16 +844,6 @@
             <div class="empty">Loading news…</div>
           </div>
         </section>
-
-        <section class="panel card" id="videosPanelCard" hidden>
-          <div class="panel-head">
-            <h3>Results</h3>
-            <div class="subtle">YouTube search</div>
-          </div>
-          <div class="video-list" id="videosPanel">
-            <div class="empty">Loading results…</div>
-          </div>
-        </section>
       </section>
 
       <div class="footer-note">
@@ -921,7 +863,6 @@
         shortName: "Spurs",
         teamId: 47,
         leagueName: "Premier League",
-        highlightQuery: "Tottenham Hotspur highlights",
         newsTerms: ["tottenham", "spurs", "tottenham hotspur", "ange", "postecoglou"],
         fallbackLogoText: "TH",
         fallbackLogoUrl: "",
@@ -939,7 +880,6 @@
         shortName: "Wimbledon",
         teamId: 1044,
         leagueName: "League One",
-        highlightQuery: "AFC Wimbledon highlights",
         newsTerms: ["afc wimbledon", "wimbledon", "the dons", "plough lane", "johnnie jackson"],
         fallbackLogoText: "AW",
         fallbackLogoUrl: "",
@@ -967,18 +907,21 @@
     }
 
     function normaliseStoredPanel(value) {
-      const validPanels = new Set(["fixturesPanelCard", "tablePanelCard", "newsPanelCard", "videosPanelCard"]);
+      const validPanels = new Set([
+        "fixturesPanelCard",
+        "resultsPanelCard",
+        "tablePanelCard",
+        "newsPanelCard"
+      ]);
       return validPanels.has(value) ? value : "fixturesPanelCard";
     }
 
     let activeTeamKey = normaliseStoredTeam(localStorage.getItem(STORAGE_KEYS.team));
     let activePanelId = normaliseStoredPanel(localStorage.getItem(STORAGE_KEYS.panel));
     let autoRefreshTimer = null;
-    let isRefreshing = false;
     let latestSnapshot = null;
 
     const els = {
-      body: document.body,
       teamToggle: document.getElementById("teamToggle"),
       menuButton: document.getElementById("menuButton"),
       menuPanel: document.getElementById("menuPanel"),
@@ -1002,11 +945,12 @@
       statRecord: document.getElementById("statRecord"),
       statRecordSub: document.getElementById("statRecordSub"),
       fixturesSubtle: document.getElementById("fixturesSubtle"),
+      resultsSubtle: document.getElementById("resultsSubtle"),
       tableSubtle: document.getElementById("tableSubtle"),
       fixturesPanel: document.getElementById("fixturesPanel"),
+      resultsPanel: document.getElementById("resultsPanel"),
       tablePanel: document.getElementById("tablePanel"),
       newsPanel: document.getElementById("newsPanel"),
-      videosPanel: document.getElementById("videosPanel"),
       navRow: document.getElementById("navRow")
     };
 
@@ -1018,7 +962,7 @@
       document.documentElement.style.setProperty("--team-accent-2", team.colours.accent2);
       document.documentElement.style.setProperty("--team-glow", team.colours.glow);
       els.brandSubtitle.textContent = `${team.name} · ${team.leagueName}`;
-      els.brandFallback.textContent = team.fallbackLogoText || team.shortName.slice(0,2).toUpperCase();
+      els.brandFallback.textContent = team.fallbackLogoText || team.shortName.slice(0, 2).toUpperCase();
     }
 
     function renderTeamButtons() {
@@ -1057,7 +1001,6 @@
     }
 
     function setRefreshing(isOn) {
-      isRefreshing = isOn;
       els.refreshSpinner.classList.toggle("show", isOn);
       els.refreshButton.disabled = isOn;
     }
@@ -1096,23 +1039,21 @@
       }
 
       try {
-        const [teamDataResult, liveDataResult, newsDataResult, videosDataResult] = await Promise.allSettled([
+        const [teamDataResult, liveDataResult, newsDataResult] = await Promise.allSettled([
           fetchJson(`/api/football/team?team=${team.key}`),
           fetchJson(`/api/football/live?team=${team.teamId}&season=${CURRENT_SEASON}`),
-          fetchJson(`/api/news/bbc-football?team=${team.key}`),
-          fetchJson(`/api/youtube/search?q=${encodeURIComponent(team.highlightQuery)}`)
+          fetchJson(`/api/news/bbc-football?team=${team.key}`)
         ]);
 
         const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
         const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
         const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
-        const videosData = videosDataResult.status === "fulfilled" ? videosDataResult.value : { items: [] };
 
         if (!teamData) {
           throw (teamDataResult.status === "rejected" ? teamDataResult.reason : new Error("Could not load team dashboard data."));
         }
 
-        latestSnapshot = { teamData, liveData, newsData, videosData, teamKey: activeTeamKey };
+        latestSnapshot = { teamData, liveData, newsData, teamKey: activeTeamKey };
         applySnapshot(latestSnapshot);
         updateRefreshLabel(`Updated ${formatNow()}`);
       } catch (error) {
@@ -1131,17 +1072,16 @@
       const teamData = snapshot.teamData || {};
       const liveData = snapshot.liveData || {};
       const newsData = snapshot.newsData || {};
-      const videosData = snapshot.videosData || {};
       const standings = getStandingsFromTeamData(teamData);
       const teamStanding = getTeamStanding(teamData, standings, teamData.team?.id || team.teamId, team.name);
 
       renderBrandLogo(teamData, standings, team);
-      renderHero(team, teamData, teamStanding, liveData);
+      renderHero(team, teamData, liveData);
       renderStats(teamStanding);
       renderFixtures(teamData);
+      renderResults(teamData);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
       renderNews(newsData, team.newsTerms);
-      renderVideos(videosData);
       setActivePanel(activePanelId, { skipStore: true });
     }
 
@@ -1149,15 +1089,13 @@
       els.heroEyebrow.textContent = "Loading latest football data";
       els.heroKickoffSub.textContent = "Waiting for match data…";
       els.nextMatchPanel.innerHTML = `<div class="empty">Loading match centre…</div>`;
-      if (els.heroArt) {
-        els.heroArt.style.setProperty("--hero-art", "none");
-      }
+      els.heroArt.style.setProperty("--hero-art", "none");
       els.lineupsPanel.hidden = true;
       els.lineupsPanel.innerHTML = "";
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
+      els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
       els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
-      els.videosPanel.innerHTML = `<div class="empty">Loading results…</div>`;
     }
 
     function renderBrandLogo(teamData, standings, team) {
@@ -1177,7 +1115,7 @@
       }
     }
 
-    function renderHero(team, teamData, teamStanding, liveData) {
+    function renderHero(team, teamData, liveData) {
       const featured = selectFeaturedFixture(teamData, liveData);
       const fixtureDate = fixtureDateValue(featured);
       const home = featured.homeName || "Home";
@@ -1192,8 +1130,6 @@
       els.heroEyebrow.textContent = dateLine;
       els.heroKickoffSub.textContent = subtitle;
 
-      const homeCrest = featured.homeCrest || "";
-      const awayCrest = featured.awayCrest || "";
       const middleMarkup = (live || finished)
         ? `
           <div class="hero-core">
@@ -1212,7 +1148,7 @@
         <div class="hero-side home">
           <div class="hero-team">${escapeHtml(home)}</div>
           <div class="hero-crest-wrap">
-            ${renderHeroCrest(homeCrest, home)}
+            ${renderHeroCrest(featured.homeCrest || "", home)}
           </div>
         </div>
         <div class="hero-middle">
@@ -1221,21 +1157,18 @@
         </div>
         <div class="hero-side away">
           <div class="hero-crest-wrap">
-            ${renderHeroCrest(awayCrest, away)}
+            ${renderHeroCrest(featured.awayCrest || "", away)}
           </div>
           <div class="hero-team">${escapeHtml(away)}</div>
         </div>
       `;
 
       const artCrest = featured.awayCrest || featured.homeCrest || teamData?.team?.crest || team.fallbackLogoUrl || "";
-      if (els.heroArt) {
-        els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
-      }
+      els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
 
       renderLineups(featured, liveData, fixtureDate);
     }
 
-    
     function parseMatchDate(value) {
       if (!value) return null;
       if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
@@ -1293,12 +1226,23 @@
       };
     }
 
+    function getFixtureBuckets(teamData) {
+      const live = (Array.isArray(teamData?.live) ? teamData.live : []).map(normaliseFixture);
+      const next = (Array.isArray(teamData?.next) ? teamData.next : []).map(normaliseFixture);
+      const last = (Array.isArray(teamData?.last) ? teamData.last : []).map(normaliseFixture);
+
+      const fixtures = [...live, ...next]
+        .filter(item => item && item._date && !isFinishedStatus(item._status));
+
+      const results = [...last]
+        .filter(item => item && item._date && isFinishedStatus(item._status || "FINISHED"));
+
+      return { live, next, last, fixtures, results };
+    }
+
     function getAllFixtures(teamData) {
-      return [
-        ...(Array.isArray(teamData?.live) ? teamData.live : []),
-        ...(Array.isArray(teamData?.next) ? teamData.next : []),
-        ...(Array.isArray(teamData?.last) ? teamData.last : [])
-      ].map(normaliseFixture);
+      const b = getFixtureBuckets(teamData);
+      return [...b.live, ...b.next, ...b.last];
     }
 
     function getStandingsFromTeamData(teamData) {
@@ -1327,7 +1271,7 @@
       ) || null;
     }
 
-function selectFeaturedFixture(teamData, liveData) {
+    function selectFeaturedFixture(teamData, liveData) {
       const allFixtures = getAllFixtures(teamData).filter(item => item && item._date);
       const now = Date.now();
 
@@ -1352,7 +1296,7 @@ function selectFeaturedFixture(teamData, liveData) {
       }
 
       const upcoming = allFixtures
-        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000)
+        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000 && !isFinishedStatus(item._status))
         .sort((a, b) => a._ts - b._ts)[0];
 
       if (upcoming) {
@@ -1431,15 +1375,6 @@ function selectFeaturedFixture(teamData, liveData) {
       };
     }
 
-    function buildKickoffSubline(featured, fixtureDate) {
-      const parts = [];
-      if (fixtureDate) parts.push(relativeFromNow(fixtureDate));
-      if (featured.liveStatus) parts.push(featured.liveStatus);
-      else if (featured.status) parts.push(featured.status);
-      if (featured.elapsed) parts.push(`${featured.elapsed}'`);
-      return parts.join(" · ") || "Match timing unavailable";
-    }
-
     function buildHeroDateLine(fixtureDate, competition) {
       const datePart = fixtureDate
         ? fixtureDate.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
@@ -1458,12 +1393,8 @@ function selectFeaturedFixture(teamData, liveData) {
 
     function buildHeroSubtitle(featured, fixtureDate) {
       const bits = [];
-      if (!featured?.isLive && !isFinishedStatus(featured?.status) && fixtureDate) {
-        bits.push(relativeFromNow(fixtureDate));
-      }
-      if (featured?.venue) {
-        bits.push(`Venue: ${featured.venue}`);
-      }
+      if (!featured?.isLive && !isFinishedStatus(featured?.status) && fixtureDate) bits.push(relativeFromNow(fixtureDate));
+      if (featured?.venue) bits.push(`Venue: ${featured.venue}`);
       return bits.join(" · ");
     }
 
@@ -1549,15 +1480,11 @@ function selectFeaturedFixture(teamData, liveData) {
 
       for (const candidate of candidates) {
         if (candidate.home || candidate.away) return candidate;
-        if (Array.isArray(candidate) && candidate.length >= 2) {
-          return { home: candidate[0], away: candidate[1] };
-        }
+        if (Array.isArray(candidate) && candidate.length >= 2) return { home: candidate[0], away: candidate[1] };
       }
 
       const responseLineups = source.response?.[0]?.lineups;
-      if (Array.isArray(responseLineups)) {
-        return { home: responseLineups[0], away: responseLineups[1] };
-      }
+      if (Array.isArray(responseLineups)) return { home: responseLineups[0], away: responseLineups[1] };
 
       return null;
     }
@@ -1566,10 +1493,9 @@ function selectFeaturedFixture(teamData, liveData) {
       if (!side) return [];
       const players = side.startXI || side.startingXI || side.players || side.starting || side.xi || [];
       if (!Array.isArray(players)) return [];
-      return players.map(item => {
-        if (typeof item === "string") return item;
-        return item.player?.name || item.name || item.nickname || "";
-      }).filter(Boolean).slice(0, 11);
+      return players.map(item => typeof item === "string" ? item : (item.player?.name || item.name || item.nickname || ""))
+        .filter(Boolean)
+        .slice(0, 11);
     }
 
     function renderStats(teamStanding) {
@@ -1581,6 +1507,7 @@ function selectFeaturedFixture(teamData, liveData) {
         els.statGD.textContent = "–";
         els.statGDSub.textContent = "–";
         els.statRecord.textContent = "–";
+        els.statRecordSub.textContent = "Wins / draws / losses";
         return;
       }
 
@@ -1605,7 +1532,9 @@ function selectFeaturedFixture(teamData, liveData) {
     }
 
     function renderFixtures(teamData) {
-      const combined = getAllFixtures(teamData)
+      const { live, next, fixtures } = getFixtureBuckets(teamData);
+
+      const combined = fixtures
         .sort((a, b) => {
           const aLive = isLiveStatus(a._status) ? 0 : 1;
           const bLive = isLiveStatus(b._status) ? 0 : 1;
@@ -1614,51 +1543,85 @@ function selectFeaturedFixture(teamData, liveData) {
         });
 
       const unique = dedupeMatches(combined).slice(0, 8);
-      els.fixturesSubtle.textContent = `${(teamData.live || []).length} live · ${(teamData.next || []).length} upcoming · ${(teamData.last || []).length} recent`;
+      els.fixturesSubtle.textContent = `${live.length} live · ${next.length} upcoming`;
 
       if (!unique.length) {
         els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
         return;
       }
 
-      els.fixturesPanel.innerHTML = unique.map(item => {
-        const date = item._date || fixtureDateValue(item);
-        const status = item.status || item._status || "";
-        const competition = item.competition?.name || "Competition";
-        const home = item.homeTeam?.name || "Home";
-        const away = item.awayTeam?.name || "Away";
-        const homeScore = item.score?.fullTime?.home ?? item.score?.home;
-        const awayScore = item.score?.fullTime?.away ?? item.score?.away;
-        let statusClass = "";
-        if (isLiveStatus(status)) statusClass = "status-live";
-        else if (["SCHEDULED", "TIMED"].includes(String(status).toUpperCase())) statusClass = "status-upcoming";
+      els.fixturesPanel.innerHTML = unique.map(item => renderMatchCard(item, { mode: "fixture" })).join("");
+    }
 
-        return `
-          <article class="match-item">
-            <div class="date-box">
-              <strong>${date ? date.getDate() : "–"}</strong>
-              ${date ? date.toLocaleString("en-GB", { month: "short" }) : "TBC"}
-            </div>
-            <div class="match-main">
-              <div class="match-competition">${escapeHtml(competition)}</div>
-              <div class="teams">
-                <div class="team-line">
-                  <span class="team-name">${escapeHtml(home)}</span>
-                  <span class="team-score">${safeScore(homeScore)}</span>
-                </div>
-                <div class="team-line">
-                  <span class="team-name">${escapeHtml(away)}</span>
-                  <span class="team-score">${safeScore(awayScore)}</span>
-                </div>
+    function renderResults(teamData) {
+      const { results } = getFixtureBuckets(teamData);
+      const combined = results.sort((a, b) => b._ts - a._ts);
+      const unique = dedupeMatches(combined).slice(0, 8);
+      els.resultsSubtle.textContent = `${unique.length} recent`;
+
+      if (!unique.length) {
+        els.resultsPanel.innerHTML = `<div class="empty">No recent results returned.</div>`;
+        return;
+      }
+
+      els.resultsPanel.innerHTML = unique.map(item => renderMatchCard(item, { mode: "result" })).join("");
+    }
+
+    function buildHighlightsSearchUrl(item) {
+      const competition = item.competition?.name || "";
+      const home = item.homeTeam?.name || "";
+      const away = item.awayTeam?.name || "";
+      const query = [competition, home, away].filter(Boolean).join(" ");
+      return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    }
+
+    function renderMatchCard(item, { mode = "fixture" } = {}) {
+      const date = item._date || fixtureDateValue(item);
+      const status = item.status || item._status || "";
+      const competition = item.competition?.name || "Competition";
+      const home = item.homeTeam?.name || "Home";
+      const away = item.awayTeam?.name || "Away";
+      const homeScore = item.score?.fullTime?.home ?? item.score?.home;
+      const awayScore = item.score?.fullTime?.away ?? item.score?.away;
+      const upperStatus = String(status).toUpperCase();
+
+      let statusClass = "";
+      if (isLiveStatus(upperStatus)) statusClass = "status-live";
+      else if (["SCHEDULED", "TIMED"].includes(upperStatus)) statusClass = "status-upcoming";
+      else if (isFinishedStatus(upperStatus)) statusClass = "status-finished";
+
+      const displayStatus = humanReadableStatus(upperStatus) || upperStatus || "TBC";
+
+      return `
+        <article class="match-item">
+          <div class="date-box">
+            <strong>${date ? date.getDate() : "–"}</strong>
+            ${date ? date.toLocaleString("en-GB", { month: "short" }) : "TBC"}
+          </div>
+          <div class="match-main">
+            <div class="match-competition">${escapeHtml(competition)}</div>
+            <div class="teams">
+              <div class="team-line">
+                <span class="team-name">${escapeHtml(home)}</span>
+                <span class="team-score">${safeScore(homeScore)}</span>
               </div>
-              <div class="match-side">
-                <div class="status-pill ${statusClass}">${escapeHtml(status || "TBC")}</div>
-                <div>${date ? formatShortDateTime(date) : "Date TBC"}</div>
+              <div class="team-line">
+                <span class="team-name">${escapeHtml(away)}</span>
+                <span class="team-score">${safeScore(awayScore)}</span>
               </div>
             </div>
-          </article>
-        `;
-      }).join("");
+            <div class="match-side">
+              <div class="status-pill ${statusClass}">${escapeHtml(displayStatus)}</div>
+              <div>${date ? formatShortDateTime(date) : "Date TBC"}</div>
+            </div>
+            ${mode === "result" ? `
+              <a class="highlight-link" href="${buildHighlightsSearchUrl(item)}" target="_blank" rel="noreferrer">
+                Search match summary
+              </a>
+            ` : ""}
+          </div>
+        </article>
+      `;
     }
 
     function renderTable(standings, activeTeamId, leagueName) {
@@ -1737,46 +1700,21 @@ function selectFeaturedFixture(teamData, liveData) {
       `).join("");
     }
 
-    function renderVideos(videosData) {
-      const items = Array.isArray(videosData?.items) ? videosData.items : [];
-      if (!items.length) {
-        els.videosPanel.innerHTML = `<div class="empty">No highlight videos returned.</div>`;
-        return;
-      }
-
-      els.videosPanel.innerHTML = items.slice(0, 6).map(item => {
-        const videoId = item.id?.videoId || "";
-        const title = item.snippet?.title || "Video";
-        const channel = item.snippet?.channelTitle || "YouTube";
-        const publishedAt = item.snippet?.publishedAt || "";
-        return `
-          <article class="video-item">
-            <div class="video-title">
-              <a href="https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
-            </div>
-            <div class="video-meta">
-              ${escapeHtml(channel)} · ${escapeHtml(publishedAt ? formatDateOnly(new Date(publishedAt)) : "Date n/a")}
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-
     function renderErrorState(error) {
       const message = error?.message || String(error) || "Could not load the dashboard.";
       els.heroEyebrow.textContent = "Dashboard error";
       els.heroKickoffSub.textContent = message;
       els.nextMatchPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.fixturesPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
+      els.resultsPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.tablePanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
       els.newsPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
-      els.videosPanel.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
     }
 
     function dedupeMatches(matches) {
       const map = new Map();
       for (const item of matches) {
-        const id = item?.id || `${item?.homeTeam?.name}-${item?.awayTeam?.name}-${item?.utcDate}`;
+        const id = item?.id || `${item?.homeTeam?.name}-${item?.awayTeam?.name}-${item?.utcDate || item?.date || item?._ts}`;
         if (!map.has(id)) map.set(id, item);
       }
       return [...map.values()];
@@ -1827,16 +1765,6 @@ function selectFeaturedFixture(teamData, liveData) {
       return diff >= 0 ? `in ${days}d` : `${days}d ago`;
     }
 
-    function formatLongDateTime(date) {
-      return date.toLocaleString("en-GB", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    }
-
     function formatShortDateTime(date) {
       return date.toLocaleString("en-GB", {
         day: "numeric",
@@ -1854,14 +1782,6 @@ function selectFeaturedFixture(teamData, liveData) {
         month: "short",
         hour: "2-digit",
         minute: "2-digit"
-      });
-    }
-
-    function formatDateOnly(date) {
-      return date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
       });
     }
 
