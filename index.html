@@ -139,8 +139,8 @@
       gap: 6px;
     }
 
-    .status-chip,
     .icon-btn {
+      width: 40px;
       height: 40px;
       border-radius: 14px;
       border: 1px solid var(--line);
@@ -149,21 +149,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0 12px;
-      font: inherit;
-    }
-
-    .icon-btn {
-      width: 40px;
       padding: 0;
+      font: inherit;
       cursor: pointer;
-      position: relative;
     }
 
     .icon-btn:hover { border-color: var(--line-strong); }
 
     .refresh-wrap {
-      position: relative;
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -172,9 +165,8 @@
       color: var(--muted);
       background: transparent;
       border: 0;
-      height: auto;
-      min-height: 0;
       padding: 0;
+      min-height: 0;
     }
 
     .spinner {
@@ -189,7 +181,9 @@
 
     .spinner.show { display: inline-block; }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
     .menu-wrap { position: relative; }
 
@@ -233,6 +227,7 @@
 
     .team-option strong { color: #fff; font-size: 0.96rem; }
     .team-option span { color: var(--muted); font-size: 0.8rem; }
+
     .team-option.active {
       background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
       border-color: rgba(255,255,255,0.16);
@@ -386,47 +381,6 @@
       min-height: 1.4em;
     }
 
-    .lineup-wrap {
-      margin-top: 4px;
-      display: grid;
-      gap: 10px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .lineup-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .lineup-card {
-      border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 12px;
-    }
-
-    .lineup-card h4 {
-      margin: 0 0 8px;
-      font-size: 0.9rem;
-    }
-
-    .lineup-list {
-      margin: 0;
-      padding-left: 18px;
-      display: grid;
-      gap: 4px;
-      color: rgba(255,255,255,0.92);
-      font-size: 0.84rem;
-      line-height: 1.35;
-    }
-
-    .lineup-note {
-      color: rgba(255,255,255,0.78);
-      font-size: 0.8rem;
-      text-align: center;
-    }
-
     .stats-row {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -434,6 +388,7 @@
     }
 
     .stat-card { padding: 14px; }
+
     .stat-label {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -461,6 +416,7 @@
       padding-bottom: 2px;
       scrollbar-width: none;
     }
+
     .nav-row::-webkit-scrollbar { display: none; }
 
     .nav-btn {
@@ -621,9 +577,7 @@
       line-height: 1.35;
     }
 
-    .result-video-title a:hover {
-      text-decoration: underline;
-    }
+    .result-video-title a:hover { text-decoration: underline; }
 
     .result-video-meta {
       color: var(--muted);
@@ -638,9 +592,7 @@
       text-decoration: none;
     }
 
-    .result-video-link:hover {
-      text-decoration: underline;
-    }
+    .result-video-link:hover { text-decoration: underline; }
 
     .status-pill {
       display: inline-flex;
@@ -654,13 +606,19 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.05);
     }
+
     .status-live { background: rgba(255,90,110,0.16); border-color: rgba(255,90,110,0.24); }
     .status-upcoming { background: rgba(98,214,163,0.12); border-color: rgba(98,214,163,0.18); }
     .status-finished { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
 
     .table-wrap { overflow-x: auto; }
     table { width: 100%; min-width: 560px; border-collapse: collapse; }
-    th, td { text-align: left; padding: 12px 10px; }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+    }
+
     th {
       color: var(--muted);
       font-size: 0.74rem;
@@ -668,23 +626,47 @@
       letter-spacing: 0.08em;
       font-weight: 700;
     }
+
     td {
       border-top: 1px solid var(--line);
       color: var(--soft);
       font-size: 0.9rem;
     }
-    tr.active-row td { background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent); }
-    .team-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+    tr.active-row td {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent);
+    }
+
+    .team-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
     .team-logo {
-      width: 26px; height: 26px; object-fit: contain; border-radius: 9px;
-      background: rgba(255,255,255,0.06); padding: 2px; flex: 0 0 auto;
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.06);
+      padding: 2px;
+      flex: 0 0 auto;
     }
 
     .form-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+
     .form-chip {
-      width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
-      font-size: 0.72rem; font-weight: 800; color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
     }
+
     .form-chip.w { background: rgba(98,214,163,0.22); color: #caffe4; }
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
@@ -757,9 +739,8 @@
       .brand-copy h1 { font-size: 1.2rem; }
       .brand-copy p { font-size: 0.85rem; }
       .hero { padding: 24px 20px 24px; min-height: 310px; }
-      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
-      .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 759px) {
@@ -796,29 +777,62 @@
         font-size: 0.72rem;
       }
 
-      .hero { padding: 18px 12px 20px; min-height: 250px; }
-      .hero-match { grid-template-columns: 1fr; gap: 16px; }
+      .hero {
+        padding: 18px 12px 20px;
+        min-height: 250px;
+      }
+
+      .hero-match {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
       .hero-side,
-      .hero-side.away { justify-content: center; gap: 12px; }
+      .hero-side.away {
+        justify-content: center;
+        gap: 12px;
+      }
+
       .hero-side.home { flex-direction: row; }
       .hero-side.away { flex-direction: row-reverse; }
+
       .hero-team {
         font-size: clamp(1rem, 5.2vw, 1.45rem);
         white-space: normal;
         text-align: center;
         max-width: 150px;
       }
-      .hero-crest-wrap { width: 50px; height: 50px; }
-      .hero-middle { min-width: 0; gap: 8px; }
-      .hero-core { min-height: 64px; gap: 12px; }
+
+      .hero-crest-wrap {
+        width: 50px;
+        height: 50px;
+      }
+
+      .hero-middle {
+        min-width: 0;
+        gap: 8px;
+      }
+
+      .hero-core {
+        min-height: 64px;
+        gap: 12px;
+      }
+
       .hero-kickoff-time,
-      .hero-score-big { font-size: clamp(2.3rem, 12vw, 3.3rem); }
+      .hero-score-big {
+        font-size: clamp(2.3rem, 12vw, 3.3rem);
+      }
+
       .hero-score-divider { height: 38px; }
       .hero-headline { font-size: 0.88rem; }
       .hero-status { font-size: 0.84rem; }
       .hero-subdetail { font-size: 0.86rem; }
+
       .news-inner,
-      .result-media { grid-template-columns: 1fr; }
+      .result-media {
+        grid-template-columns: 1fr;
+      }
+
       .news-thumb,
       .result-thumb {
         width: 100%;
@@ -828,7 +842,6 @@
     }
 
     @media (min-width: 1100px) {
-      .topbar-inner { grid-template-columns: auto 1fr auto; }
       .hero-art { background-size: 30%; }
     }
   </style>
@@ -875,7 +888,6 @@
             <div class="empty">Loading match centre…</div>
           </div>
           <div class="hero-subdetail" id="heroKickoffSub">Waiting for match data…</div>
-          <div class="lineup-wrap" id="lineupsPanel" hidden></div>
         </div>
       </section>
 
@@ -885,6 +897,7 @@
           <div class="stat-value" id="statPosition">–</div>
           <div class="stat-sub" id="statPositionSub">–</div>
         </div>
+
         <div class="stat-card card">
           <div class="stat-label">Points</div>
           <div class="stat-value" id="statPoints">–</div>
@@ -942,14 +955,14 @@
       </section>
 
       <div class="footer-note">
-        Silent background refresh is enabled every 30 seconds. Team selection and active section are preserved between refreshes.
+        Silent background refresh is enabled every 10 seconds. Team selection and active section are preserved between refreshes.
       </div>
     </div>
   </div>
 
   <script>
     const CURRENT_SEASON = 2025;
-    const AUTO_REFRESH_MS = 30000;
+    const AUTO_REFRESH_MS = 10000;
     const RESULT_VIDEO_LIMIT = 6;
     const resultVideoCache = new Map();
 
@@ -1026,7 +1039,6 @@
       heroArt: document.getElementById("heroArt"),
       heroKickoffSub: document.getElementById("heroKickoffSub"),
       nextMatchPanel: document.getElementById("nextMatchPanel"),
-      lineupsPanel: document.getElementById("lineupsPanel"),
       statPosition: document.getElementById("statPosition"),
       statPositionSub: document.getElementById("statPositionSub"),
       statPoints: document.getElementById("statPoints"),
@@ -1132,7 +1144,7 @@
         ]);
 
         const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : null;
-        const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null, events: [], lineups: null };
+        const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : { live: false, fixture: null };
         const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : { items: [] };
 
         if (!teamData) {
@@ -1146,7 +1158,7 @@
         if (!latestSnapshot) {
           renderErrorState(error);
         }
-        updateRefreshLabel("Updated failed");
+        updateRefreshLabel("Update failed");
         console.error(error);
       } finally {
         setRefreshing(false);
@@ -1176,8 +1188,6 @@
       els.heroKickoffSub.textContent = "Waiting for match data…";
       els.nextMatchPanel.innerHTML = `<div class="empty">Loading match centre…</div>`;
       els.heroArt.style.setProperty("--hero-art", "none");
-      els.lineupsPanel.hidden = true;
-      els.lineupsPanel.innerHTML = "";
       els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
       els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
       els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
@@ -1251,40 +1261,18 @@
 
       const artCrest = featured.awayCrest || featured.homeCrest || teamData?.team?.crest || team.fallbackLogoUrl || "";
       els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
-
-      renderLineups(featured, liveData, fixtureDate);
     }
 
     function parseMatchDate(value) {
       if (!value) return null;
-      if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-      if (typeof value === "number") {
-        const d = new Date(value);
-        return Number.isNaN(d.getTime()) ? null : d;
-      }
-      const raw = String(value).trim();
-      if (!raw) return null;
-
-      let m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/);
-      if (m) {
-        const [, y, mo, d, h, mi, s] = m;
-        return new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s || 0));
-      }
-
-      m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2}))?$/);
-      if (m) {
-        const [, d, mo, y, h, mi] = m;
-        return new Date(Number(y), Number(mo) - 1, Number(d), Number(h || 0), Number(mi || 0), 0);
-      }
-
-      const d = new Date(raw);
+      const d = new Date(value);
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
     function fixtureDateValue(item) {
       const candidates = [
-        item?.utcDate, item?.date, item?.kickoff, item?.kickOff, item?.kickoffTime, item?.startTime,
-        item?.fixture?.date, item?.fixture?.utcDate, item?.fixtureDate, item?.datetime
+        item?.utcDate, item?.date, item?.kickoff, item?.kickOff, item?.kickoffTime,
+        item?.startTime, item?.fixture?.date, item?.fixture?.utcDate, item?.fixtureDate, item?.datetime
       ];
       for (const candidate of candidates) {
         const parsed = parseMatchDate(candidate);
@@ -1316,25 +1304,29 @@
     }
 
     function getAllFixtures(teamData) {
-      const b = getFixtureBuckets(teamData);
-      return [...b.live, ...b.next, ...b.last];
+      const buckets = getFixtureBuckets(teamData);
+      return [...buckets.live, ...buckets.next, ...buckets.last];
     }
 
-    function flattenArrays(root, maxDepth = 5) {
+    function flattenArrays(root, maxDepth = 6) {
       const out = [];
       const seen = new Set();
+
       function walk(value, depth) {
         if (!value || depth > maxDepth || seen.has(value)) return;
         if (typeof value === "object") seen.add(value);
+
         if (Array.isArray(value)) {
           out.push(value);
           for (const item of value) walk(item, depth + 1);
           return;
         }
+
         if (typeof value === "object") {
           for (const key of Object.keys(value)) walk(value[key], depth + 1);
         }
       }
+
       walk(root, 0);
       return out;
     }
@@ -1349,48 +1341,52 @@
     }
 
     function getStandingsFromTeamData(teamData) {
-      const directCandidates = [
-        teamData?.standings,
-        teamData?.table,
-        teamData?.leagueTable,
-        teamData?.league?.standings,
-        teamData?.data?.standings,
-        teamData?.data?.table,
-        teamData?.competition?.standings
-      ];
+      if (!teamData) return [];
 
-      for (const candidate of directCandidates) {
-        if (Array.isArray(candidate) && candidate.length && looksLikeStandingRow(candidate[0])) return candidate;
-        if (candidate && Array.isArray(candidate.table) && candidate.table.length) return candidate.table;
-        if (Array.isArray(candidate?.[0]?.table) && candidate[0].table.length) return candidate[0].table;
+      if (Array.isArray(teamData.standings) && teamData.standings.length) {
+        if (Array.isArray(teamData.standings[0]?.table)) return teamData.standings[0].table;
+        if (looksLikeStandingRow(teamData.standings[0])) return teamData.standings;
       }
+
+      if (Array.isArray(teamData.table) && teamData.table.length) return teamData.table;
+      if (Array.isArray(teamData.leagueTable) && teamData.leagueTable.length) return teamData.leagueTable;
+      if (Array.isArray(teamData?.league?.standings?.[0]?.table)) return teamData.league.standings[0].table;
+      if (Array.isArray(teamData?.data?.standings?.[0]?.table)) return teamData.data.standings[0].table;
+      if (Array.isArray(teamData?.competition?.standings?.[0]?.table)) return teamData.competition.standings[0].table;
 
       const arrays = flattenArrays(teamData, 6);
       for (const arr of arrays) {
-        if (arr.length && looksLikeStandingRow(arr[0])) return arr;
-        if (arr.length && arr[0] && Array.isArray(arr[0].table) && arr[0].table.length) return arr[0].table;
+        if (!arr.length) continue;
+        if (looksLikeStandingRow(arr[0])) return arr;
+        if (Array.isArray(arr[0]?.table) && arr[0].table.length) return arr[0].table;
       }
+
       return [];
     }
 
     function getTeamStanding(teamData, standings, activeTeamId, teamName) {
       if (teamData?.standing) return teamData.standing;
-      const byStandings = (standings || []).find(row =>
+
+      const standingMatch = (standings || []).find(row =>
         String(row?.team?.id || row?.id || "") === String(activeTeamId || "") ||
         String(row?.team?.name || row?.teamName || "").toLowerCase() === String(teamName || "").toLowerCase()
       );
-      if (byStandings) return byStandings;
 
-      const stats = teamData?.stats || teamData?.summary || teamData?.tableStats || teamData?.overview;
-      if (stats && typeof stats === "object") return stats;
-      return null;
+      if (standingMatch) return standingMatch;
+
+      const fallback = teamData?.stats || teamData?.summary || teamData?.tableStats || teamData?.overview;
+      return fallback && typeof fallback === "object" ? fallback : null;
     }
 
     function selectFeaturedFixture(teamData, liveData) {
       const allFixtures = getAllFixtures(teamData).filter(item => item && item._date);
       const now = Date.now();
 
-      const liveFromTeamData = allFixtures.find(item => isLiveStatus(item._status));
+      const liveFromTeamData = allFixtures.find(item =>
+        isLiveStatus(item._status) ||
+        (item.score && (item.score.fullTime?.home != null || item.score.home != null))
+      );
+
       if (liveFromTeamData) {
         return {
           isLive: true,
@@ -1402,9 +1398,6 @@
           competition: liveFromTeamData.competition?.name || "Competition",
           venue: liveFromTeamData.venue || "",
           status: liveFromTeamData.status || "LIVE",
-          liveStatus: liveFromTeamData.status || "Live",
-          lineups: extractLineups(liveData) || extractLineups(liveFromTeamData),
-          elapsed: liveData?.fixture?.fixture?.status?.elapsed,
           homeCrest: liveFromTeamData.homeTeam?.crest || liveData?.fixture?.teams?.home?.logo || "",
           awayCrest: liveFromTeamData.awayTeam?.crest || liveData?.fixture?.teams?.away?.logo || ""
         };
@@ -1425,8 +1418,6 @@
           competition: upcoming.competition?.name || "Competition",
           venue: upcoming.venue || "",
           status: upcoming.status || "SCHEDULED",
-          liveStatus: "",
-          lineups: extractLineups(upcoming),
           homeCrest: upcoming.homeTeam?.crest || "",
           awayCrest: upcoming.awayTeam?.crest || ""
         };
@@ -1447,8 +1438,6 @@
           competition: finished.competition?.name || "Competition",
           venue: finished.venue || "",
           status: finished.status || "FINISHED",
-          liveStatus: "",
-          lineups: extractLineups(finished),
           homeCrest: finished.homeTeam?.crest || "",
           awayCrest: finished.awayTeam?.crest || ""
         };
@@ -1465,9 +1454,6 @@
           competition: liveData.fixture?.league?.name || "Competition",
           venue: liveData.fixture?.fixture?.venue?.name || "",
           status: liveData.fixture?.fixture?.status?.short || "LIVE",
-          liveStatus: liveData.fixture?.fixture?.status?.long || "Live",
-          lineups: extractLineups(liveData),
-          elapsed: liveData.fixture?.fixture?.status?.elapsed,
           homeCrest: liveData.fixture?.teams?.home?.logo || "",
           awayCrest: liveData.fixture?.teams?.away?.logo || ""
         };
@@ -1483,8 +1469,6 @@
         competition: "Competition",
         venue: "",
         status: "SCHEDULED",
-        liveStatus: "",
-        lineups: null,
         homeCrest: "",
         awayCrest: ""
       };
@@ -1499,7 +1483,6 @@
 
     function buildHeroStatus(featured, fixtureDate) {
       const status = String(featured?.status || "").toUpperCase();
-      if (featured?.elapsed) return `${featured.elapsed}'`;
       if (isLiveStatus(status)) return "LIVE";
       if (isFinishedStatus(status)) return humanReadableStatus(status);
       if (fixtureDate) return "";
@@ -1525,6 +1508,10 @@
       return ["FINISHED", "FT", "AET", "PEN"].includes(String(status || "").toUpperCase());
     }
 
+    function isLiveStatus(status) {
+      return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(String(status || "").toUpperCase());
+    }
+
     function formatHeroTime(date) {
       return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
     }
@@ -1535,80 +1522,6 @@
       }
       const initials = String(teamName || "?").split(/\s+/).map(part => part[0] || "").join("").slice(0, 3).toUpperCase();
       return `<div class="hero-crest-fallback">${escapeHtml(initials)}</div>`;
-    }
-
-    function renderLineups(featured, liveData, fixtureDate) {
-      const show = shouldShowLineups(featured, fixtureDate);
-      const lineups = featured.lineups || extractLineups(liveData);
-
-      if (!show) {
-        els.lineupsPanel.hidden = true;
-        els.lineupsPanel.innerHTML = "";
-        return;
-      }
-
-      const homePlayers = normalisePlayers(lineups?.home);
-      const awayPlayers = normalisePlayers(lineups?.away);
-
-      if (!homePlayers.length && !awayPlayers.length) {
-        els.lineupsPanel.hidden = false;
-        els.lineupsPanel.innerHTML = `<div class="lineup-note">Line-ups will appear here when your live source returns them.</div>`;
-        return;
-      }
-
-      els.lineupsPanel.hidden = false;
-      els.lineupsPanel.innerHTML = `
-        <div class="lineup-note">Line-ups shown from 30 minutes before kick-off and during the live match.</div>
-        <div class="lineup-grid">
-          <div class="lineup-card">
-            <h4>${escapeHtml(featured.homeName || "Home")} XI</h4>
-            <ol class="lineup-list">
-              ${homePlayers.map(player => `<li>${escapeHtml(player)}</li>`).join("")}
-            </ol>
-          </div>
-          <div class="lineup-card">
-            <h4>${escapeHtml(featured.awayName || "Away")} XI</h4>
-            <ol class="lineup-list">
-              ${awayPlayers.map(player => `<li>${escapeHtml(player)}</li>`).join("")}
-            </ol>
-          </div>
-        </div>
-      `;
-    }
-
-    function shouldShowLineups(featured, fixtureDate) {
-      if (featured?.isLive) return true;
-      if (!fixtureDate) return false;
-      return fixtureDate.getTime() - Date.now() <= 30 * 60 * 1000;
-    }
-
-    function extractLineups(source) {
-      if (!source || typeof source !== "object") return null;
-      const candidates = [
-        source.lineups,
-        source.lineup,
-        source.fixture?.lineups,
-        source.response?.[0]?.lineups,
-        source.response?.[0]?.lineup
-      ].filter(Boolean);
-
-      for (const candidate of candidates) {
-        if (candidate.home || candidate.away) return candidate;
-        if (Array.isArray(candidate) && candidate.length >= 2) return { home: candidate[0], away: candidate[1] };
-      }
-
-      const responseLineups = source.response?.[0]?.lineups;
-      if (Array.isArray(responseLineups)) return { home: responseLineups[0], away: responseLineups[1] };
-      return null;
-    }
-
-    function normalisePlayers(side) {
-      if (!side) return [];
-      const players = side.startXI || side.startingXI || side.players || side.starting || side.xi || [];
-      if (!Array.isArray(players)) return [];
-      return players.map(item => typeof item === "string" ? item : (item.player?.name || item.name || item.nickname || ""))
-        .filter(Boolean)
-        .slice(0, 11);
     }
 
     function getStatValue(obj, keys) {
@@ -1629,13 +1542,13 @@
 
       els.statPosition.textContent = position ? ordinal(position) : "–";
       els.statPositionSub.textContent = source?.description || "Current league position";
-
       els.statPoints.textContent = points ?? "–";
       els.statPointsSub.textContent = played ? `${played} played` : "Matches played";
     }
 
     function renderFixtures(teamData) {
       const { live, next, fixtures } = getFixtureBuckets(teamData);
+
       const combined = fixtures.sort((a, b) => {
         const aLive = isLiveStatus(a._status) ? 0 : 1;
         const bLive = isLiveStatus(b._status) ? 0 : 1;
@@ -1650,6 +1563,7 @@
         els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
         return;
       }
+
       els.fixturesPanel.innerHTML = unique.map(item => renderMatchCard(item, { mode: "fixture" })).join("");
     }
 
@@ -1772,7 +1686,7 @@
           thumb,
           url: videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`
         };
-      } catch (err) {
+      } catch {
         return null;
       }
     }
@@ -1812,12 +1726,12 @@
         return;
       }
 
-      const rows = standings.slice(0, 20).map(row => {
+      const rows = standings.slice(0, 24).map(row => {
         const position = row.position ?? row.rank ?? "–";
         const played = row.playedGames ?? row.all?.played ?? row.played ?? "–";
         const points = row.points ?? "–";
         const gd = row.goalDifference ?? row.goalsDiff ?? row.gd ?? "–";
-        const crest = row.team?.crest || row.team?.logo || row.logo || "";
+        const crest = row.team?.crest || row.team?.logo || row.logo || row.teamLogo || "";
 
         return `
           <tr class="${String(row.team?.id || row.id || "") === String(activeTeamId) ? "active-row" : ""}">
@@ -1931,10 +1845,6 @@
       return `<div class="form-strip">${chars.map(char => `<span class="form-chip ${char.toLowerCase()}">${char}</span>`).join("")}</div>`;
     }
 
-    function isLiveStatus(status) {
-      return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(String(status || "").toUpperCase());
-    }
-
     function safeScore(value) {
       return value === null || value === undefined ? "–" : String(value);
     }
@@ -1967,7 +1877,10 @@
 
     function formatShortDateTime(date) {
       return date.toLocaleString("en-GB", {
-        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
       });
     }
 
@@ -1975,20 +1888,26 @@
       const date = new Date(dateString);
       if (Number.isNaN(date.getTime())) return dateString;
       return date.toLocaleString("en-GB", {
-        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
       });
     }
 
     function formatDateOnly(date) {
       if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
       return date.toLocaleDateString("en-GB", {
-        day: "numeric", month: "short", year: "numeric"
+        day: "numeric",
+        month: "short",
+        year: "numeric"
       });
     }
 
     function formatNow() {
       return new Date().toLocaleTimeString("en-GB", {
-        hour: "2-digit", minute: "2-digit"
+        hour: "2-digit",
+        minute: "2-digit"
       });
     }
 
@@ -1999,7 +1918,7 @@
         try {
           const data = await response.json();
           detail = data?.error || JSON.stringify(data);
-        } catch (e) {}
+        } catch {}
         throw new Error(`Request failed for ${url}${detail ? `: ${detail}` : ""}`);
       }
       return response.json();
