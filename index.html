@@ -20,10 +20,8 @@
       --team-accent-2: #b9cae7;
       --team-glow: rgba(210,220,240,0.18);
     }
-
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -35,7 +33,6 @@
         linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
       padding: 10px;
     }
-
     .app {
       max-width: 1440px;
       margin: 0 auto;
@@ -45,13 +42,7 @@
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-
-    .shell {
-      padding: 12px;
-      display: grid;
-      gap: 12px;
-    }
-
+    .shell { padding: 12px; display: grid; gap: 12px; }
     .card {
       border-radius: 22px;
       border: 1px solid var(--line);
@@ -59,7 +50,6 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
       min-width: 0;
     }
-
     .topbar {
       position: sticky;
       top: 0;
@@ -70,21 +60,18 @@
       border-radius: 20px;
       padding: 10px;
     }
-
     .topbar-inner {
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: start;
       gap: 10px;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
-
     .brand-logo-wrap {
       width: 46px;
       height: 46px;
@@ -97,13 +84,7 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.22);
       flex: 0 0 auto;
     }
-
-    .brand-logo-wrap img {
-      width: 78%;
-      height: 78%;
-      object-fit: contain;
-    }
-
+    .brand-logo-wrap img { width: 78%; height: 78%; object-fit: contain; }
     .brand-fallback {
       font-weight: 900;
       color: #07111f;
@@ -113,16 +94,13 @@
       place-items: center;
       background: linear-gradient(135deg, var(--team-accent-2), var(--team-accent));
     }
-
     .brand-copy { min-width: 0; }
-
     .brand-copy h1 {
       margin: 0;
       font-size: 1rem;
       line-height: 1.05;
       letter-spacing: -0.02em;
     }
-
     .brand-copy p {
       margin: 4px 0 0;
       color: var(--muted);
@@ -131,14 +109,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .top-actions {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       gap: 6px;
     }
-
     .icon-btn {
       width: 40px;
       height: 40px;
@@ -153,9 +129,7 @@
       font: inherit;
       cursor: pointer;
     }
-
     .icon-btn:hover { border-color: var(--line-strong); }
-
     .refresh-wrap {
       display: inline-flex;
       align-items: center;
@@ -168,7 +142,6 @@
       padding: 0;
       min-height: 0;
     }
-
     .spinner {
       width: 15px;
       height: 15px;
@@ -178,15 +151,9 @@
       animation: spin 0.8s linear infinite;
       display: none;
     }
-
     .spinner.show { display: inline-block; }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     .menu-wrap { position: relative; }
-
     .menu-panel {
       position: absolute;
       right: 0;
@@ -199,9 +166,7 @@
       box-shadow: 0 22px 60px rgba(0,0,0,0.38);
       display: none;
     }
-
     .menu-panel.open { display: block; }
-
     .menu-label {
       font-size: 0.74rem;
       color: var(--muted);
@@ -209,9 +174,7 @@
       letter-spacing: 0.09em;
       margin: 4px 4px 10px;
     }
-
     .team-list { display: grid; gap: 8px; }
-
     .team-option {
       width: 100%;
       text-align: left;
@@ -224,15 +187,12 @@
       display: grid;
       gap: 4px;
     }
-
     .team-option strong { color: #fff; font-size: 0.96rem; }
     .team-option span { color: var(--muted); font-size: 0.8rem; }
-
     .team-option.active {
       background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
       border-color: rgba(255,255,255,0.16);
     }
-
     .hero {
       position: relative;
       overflow: hidden;
@@ -242,7 +202,6 @@
         linear-gradient(135deg, var(--team-primary), var(--team-secondary));
       min-height: 260px;
     }
-
     .hero::after {
       content: "";
       position: absolute;
@@ -252,7 +211,6 @@
       pointer-events: none;
       z-index: 1;
     }
-
     .hero-art {
       position: absolute;
       inset: 0;
@@ -265,7 +223,6 @@
       z-index: 0;
       pointer-events: none;
     }
-
     .hero-stage {
       position: relative;
       z-index: 2;
@@ -274,21 +231,18 @@
       align-content: center;
       min-height: 220px;
     }
-
     .hero-headline {
       text-align: center;
       color: rgba(255,255,255,0.78);
       font-size: 0.95rem;
       letter-spacing: 0.01em;
     }
-
     .hero-match {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
       gap: 18px;
     }
-
     .hero-side {
       display: flex;
       align-items: center;
@@ -296,9 +250,7 @@
       gap: 16px;
       min-width: 0;
     }
-
     .hero-side.away { justify-content: flex-start; }
-
     .hero-team {
       font-size: clamp(1.15rem, 2.5vw, 2.15rem);
       line-height: 1.06;
@@ -307,7 +259,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .hero-crest-wrap {
       width: clamp(56px, 6vw, 84px);
       height: clamp(56px, 6vw, 84px);
@@ -315,13 +266,7 @@
       place-items: center;
       flex: 0 0 auto;
     }
-
-    .hero-crest-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
+    .hero-crest-wrap img { width: 100%; height: 100%; object-fit: contain; }
     .hero-crest-fallback {
       width: 100%;
       height: 100%;
@@ -333,14 +278,12 @@
       color: #07111f;
       background: linear-gradient(135deg, var(--team-accent-2), var(--team-accent));
     }
-
     .hero-middle {
       min-width: 170px;
       display: grid;
       justify-items: center;
       gap: 10px;
     }
-
     .hero-core {
       display: flex;
       align-items: center;
@@ -348,7 +291,6 @@
       gap: 16px;
       min-height: 86px;
     }
-
     .hero-kickoff-time,
     .hero-score-big {
       font-size: clamp(3rem, 7vw, 4.4rem);
@@ -357,7 +299,6 @@
       color: #fff;
       letter-spacing: -0.04em;
     }
-
     .hero-score-divider {
       width: 3px;
       height: clamp(38px, 7vw, 56px);
@@ -365,14 +306,12 @@
       background: var(--team-accent);
       opacity: 0.92;
     }
-
     .hero-status {
       color: var(--team-accent);
       font-size: 0.92rem;
       font-weight: 700;
       min-height: 1.2em;
     }
-
     .hero-subdetail {
       text-align: center;
       color: rgba(255,255,255,0.78);
@@ -380,15 +319,8 @@
       line-height: 1.4;
       min-height: 1.4em;
     }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
+    .stats-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .stat-card { padding: 14px; }
-
     .stat-label {
       font-size: 0.72rem;
       text-transform: uppercase;
@@ -396,19 +328,8 @@
       color: var(--muted);
       margin-bottom: 10px;
     }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .stat-sub {
-      margin-top: 8px;
-      font-size: 0.84rem;
-      color: var(--muted);
-    }
-
+    .stat-value { font-size: 1.8rem; font-weight: 900; line-height: 1; }
+    .stat-sub { margin-top: 8px; font-size: 0.84rem; color: var(--muted); }
     .nav-row {
       display: flex;
       gap: 8px;
@@ -416,9 +337,7 @@
       padding-bottom: 2px;
       scrollbar-width: none;
     }
-
     .nav-row::-webkit-scrollbar { display: none; }
-
     .nav-btn {
       white-space: nowrap;
       border: 1px solid var(--line);
@@ -429,17 +348,14 @@
       font: inherit;
       cursor: pointer;
     }
-
     .nav-btn.active {
       background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
       border-color: rgba(255,255,255,0.16);
       color: #fff;
     }
-
     .content-grid { display: grid; gap: 12px; }
     .panel { padding: 14px; }
     .panel[hidden] { display: none !important; }
-
     .panel-head {
       display: flex;
       align-items: center;
@@ -447,37 +363,20 @@
       gap: 10px;
       margin-bottom: 12px;
     }
-
-    .panel-head h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .subtle {
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-
-    .match-list,
-    .news-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .match-item,
-    .news-item {
+    .panel-head h3 { margin: 0; font-size: 1rem; }
+    .subtle { color: var(--muted); font-size: 0.8rem; }
+    .match-list, .news-list { display: grid; gap: 10px; }
+    .match-item, .news-item {
       padding: 12px;
       border-radius: 18px;
       background: rgba(255,255,255,0.035);
       border: 1px solid var(--line);
     }
-
     .match-item {
       display: grid;
       grid-template-columns: 62px 1fr;
       gap: 12px;
     }
-
     .date-box {
       border-radius: 14px;
       background: rgba(255,255,255,0.05);
@@ -487,16 +386,13 @@
       color: var(--soft);
       line-height: 1.12;
     }
-
     .date-box strong {
       display: block;
       font-size: 1.08rem;
       color: #fff;
       margin-bottom: 4px;
     }
-
     .match-main { min-width: 0; }
-
     .match-competition {
       font-size: 0.73rem;
       color: var(--muted);
@@ -504,19 +400,13 @@
       letter-spacing: 0.08em;
       margin-bottom: 8px;
     }
-
-    .teams {
-      display: grid;
-      gap: 5px;
-    }
-
+    .teams { display: grid; gap: 5px; }
     .team-line {
       display: flex;
       justify-content: space-between;
       gap: 12px;
       align-items: center;
     }
-
     .team-name {
       min-width: 0;
       color: #fff;
@@ -525,13 +415,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .team-score {
       font-weight: 900;
       color: var(--team-accent);
       flex: 0 0 auto;
     }
-
     .match-side {
       margin-top: 10px;
       display: flex;
@@ -542,7 +430,6 @@
       font-size: 0.82rem;
       flex-wrap: wrap;
     }
-
     .result-media {
       margin-top: 12px;
       display: grid;
@@ -551,7 +438,6 @@
       align-items: start;
       min-width: 0;
     }
-
     .result-thumb {
       width: 120px;
       height: 68px;
@@ -561,39 +447,27 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.05);
     }
-
     .result-media-copy {
       min-width: 0;
       display: grid;
       gap: 6px;
       align-content: start;
     }
-
-    .result-video-title,
-    .result-video-title a {
+    .result-video-title, .result-video-title a {
       color: #fff;
       text-decoration: none;
       font-weight: 700;
       line-height: 1.35;
     }
-
     .result-video-title a:hover { text-decoration: underline; }
-
-    .result-video-meta {
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.4;
-    }
-
+    .result-video-meta { color: var(--muted); font-size: 0.8rem; line-height: 1.4; }
     .result-video-link {
       color: var(--team-accent);
       font-size: 0.84rem;
       font-weight: 700;
       text-decoration: none;
     }
-
     .result-video-link:hover { text-decoration: underline; }
-
     .status-pill {
       display: inline-flex;
       align-items: center;
@@ -606,19 +480,12 @@
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.05);
     }
-
     .status-live { background: rgba(255,90,110,0.16); border-color: rgba(255,90,110,0.24); }
     .status-upcoming { background: rgba(98,214,163,0.12); border-color: rgba(98,214,163,0.18); }
     .status-finished { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
-
     .table-wrap { overflow-x: auto; }
     table { width: 100%; min-width: 560px; border-collapse: collapse; }
-
-    th, td {
-      text-align: left;
-      padding: 12px 10px;
-    }
-
+    th, td { text-align: left; padding: 12px 10px; }
     th {
       color: var(--muted);
       font-size: 0.74rem;
@@ -626,24 +493,18 @@
       letter-spacing: 0.08em;
       font-weight: 700;
     }
-
     td {
       border-top: 1px solid var(--line);
       color: var(--soft);
       font-size: 0.9rem;
     }
-
-    tr.active-row td {
-      background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent);
-    }
-
+    tr.active-row td { background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent); }
     .team-cell {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
-
     .team-logo {
       width: 26px;
       height: 26px;
@@ -653,9 +514,7 @@
       padding: 2px;
       flex: 0 0 auto;
     }
-
     .form-strip { display: flex; gap: 6px; flex-wrap: wrap; }
-
     .form-chip {
       width: 24px;
       height: 24px;
@@ -666,23 +525,16 @@
       font-weight: 800;
       color: #fff;
     }
-
     .form-chip.w { background: rgba(98,214,163,0.22); color: #caffe4; }
     .form-chip.d { background: rgba(255,217,112,0.22); color: #fff0b8; }
     .form-chip.l { background: rgba(255,139,154,0.22); color: #ffd3da; }
-
-    .news-item {
-      padding: 0;
-      overflow: hidden;
-    }
-
+    .news-item { padding: 0; overflow: hidden; }
     .news-inner {
       display: grid;
       grid-template-columns: 124px 1fr;
       gap: 0;
       min-height: 100%;
     }
-
     .news-thumb {
       width: 124px;
       height: 100%;
@@ -691,31 +543,15 @@
       display: block;
       background: rgba(255,255,255,0.05);
     }
-
-    .news-content {
-      padding: 12px;
-      min-width: 0;
-    }
-
+    .news-content { padding: 12px; min-width: 0; }
     .news-title {
       font-weight: 700;
       line-height: 1.35;
       margin-bottom: 6px;
     }
-
-    .news-item a {
-      color: #fff;
-      text-decoration: none;
-    }
-
+    .news-item a { color: #fff; text-decoration: none; }
     .news-item a:hover { text-decoration: underline; }
-
-    .news-meta {
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.45;
-    }
-
+    .news-meta { color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
     .empty {
       padding: 18px;
       border-radius: 16px;
@@ -724,14 +560,7 @@
       background: rgba(255,255,255,0.03);
       border: 1px dashed rgba(255,255,255,0.10);
     }
-
-    .footer-note {
-      padding: 0 2px 2px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
-
+    .footer-note { padding: 0 2px 2px; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
     @media (min-width: 760px) {
       body { padding: 16px; }
       .shell { padding: 18px; gap: 18px; }
@@ -742,108 +571,40 @@
       .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
     }
-
     @media (max-width: 759px) {
       .topbar-inner {
         grid-template-columns: auto 1fr auto;
         align-items: start;
       }
-
-      .brand {
-        min-width: 0;
-        gap: 8px;
-      }
-
-      .brand-logo-wrap {
-        width: 40px;
-        height: 40px;
-      }
-
-      .brand-copy h1 {
-        font-size: 0.9rem;
-      }
-
-      .brand-copy p {
-        font-size: 0.72rem;
-        white-space: normal;
-        line-height: 1.2;
-      }
-
-      .top-actions {
-        gap: 4px;
-      }
-
-      .refresh-wrap {
-        font-size: 0.72rem;
-      }
-
-      .hero {
-        padding: 18px 12px 20px;
-        min-height: 250px;
-      }
-
-      .hero-match {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .hero-side,
-      .hero-side.away {
-        justify-content: center;
-        gap: 12px;
-      }
-
+      .brand { min-width: 0; gap: 8px; }
+      .brand-logo-wrap { width: 40px; height: 40px; }
+      .brand-copy h1 { font-size: 0.9rem; }
+      .brand-copy p { font-size: 0.72rem; white-space: normal; line-height: 1.2; }
+      .top-actions { gap: 4px; }
+      .refresh-wrap { font-size: 0.72rem; }
+      .hero { padding: 18px 12px 20px; min-height: 250px; }
+      .hero-match { grid-template-columns: 1fr; gap: 16px; }
+      .hero-side, .hero-side.away { justify-content: center; gap: 12px; }
       .hero-side.home { flex-direction: row; }
       .hero-side.away { flex-direction: row-reverse; }
-
       .hero-team {
         font-size: clamp(1rem, 5.2vw, 1.45rem);
         white-space: normal;
         text-align: center;
         max-width: 150px;
       }
-
-      .hero-crest-wrap {
-        width: 50px;
-        height: 50px;
-      }
-
-      .hero-middle {
-        min-width: 0;
-        gap: 8px;
-      }
-
-      .hero-core {
-        min-height: 64px;
-        gap: 12px;
-      }
-
-      .hero-kickoff-time,
-      .hero-score-big {
-        font-size: clamp(2.3rem, 12vw, 3.3rem);
-      }
-
+      .hero-crest-wrap { width: 50px; height: 50px; }
+      .hero-middle { min-width: 0; gap: 8px; }
+      .hero-core { min-height: 64px; gap: 12px; }
+      .hero-kickoff-time, .hero-score-big { font-size: clamp(2.3rem, 12vw, 3.3rem); }
       .hero-score-divider { height: 38px; }
       .hero-headline { font-size: 0.88rem; }
       .hero-status { font-size: 0.84rem; }
       .hero-subdetail { font-size: 0.86rem; }
-
-      .news-inner,
-      .result-media {
-        grid-template-columns: 1fr;
-      }
-
-      .news-thumb,
-      .result-thumb {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16 / 9;
-      }
+      .news-inner, .result-media { grid-template-columns: 1fr; }
+      .news-thumb, .result-thumb { width: 100%; height: auto; aspect-ratio: 16 / 9; }
     }
-
-    @media (min-width: 1100px) {
-      .hero-art { background-size: 30%; }
-    }
+    @media (min-width: 1100px) { .hero-art { background-size: 30%; } }
   </style>
 </head>
 <body>
@@ -861,9 +622,7 @@
               <p id="brandSubtitle">Tottenham + AFC Wimbledon</p>
             </div>
           </div>
-
           <div></div>
-
           <div class="top-actions">
             <div class="menu-wrap">
               <button class="icon-btn" id="menuButton" aria-label="Open menu" aria-expanded="false">☰</button>
@@ -897,7 +656,6 @@
           <div class="stat-value" id="statPosition">–</div>
           <div class="stat-sub" id="statPositionSub">–</div>
         </div>
-
         <div class="stat-card card">
           <div class="stat-label">Points</div>
           <div class="stat-value" id="statPoints">–</div>
@@ -1099,13 +857,8 @@
       els.menuButton.setAttribute("aria-expanded", "false");
     }
 
-    function setRefreshing(isOn) {
-      els.refreshSpinner.classList.toggle("show", isOn);
-    }
-
-    function updateRefreshLabel(text) {
-      els.refreshLabel.textContent = text;
-    }
+    function setRefreshing(isOn) { els.refreshSpinner.classList.toggle("show", isOn); }
+    function updateRefreshLabel(text) { els.refreshLabel.textContent = text; }
 
     function setupNav() {
       els.navRow.querySelectorAll(".nav-btn").forEach(btn => {
@@ -1122,9 +875,7 @@
       document.querySelectorAll(".panel.card").forEach(panel => {
         panel.hidden = panel.id !== activePanelId;
       });
-      if (!options.skipStore) {
-        localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
-      }
+      if (!options.skipStore) localStorage.setItem(STORAGE_KEYS.panel, activePanelId);
     }
 
     async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
@@ -1132,9 +883,7 @@
       setRefreshing(true);
       updateRefreshLabel("Updated…");
 
-      if (!silent && resetIfEmpty && !latestSnapshot) {
-        renderBootstrapLoading();
-      }
+      if (!silent && resetIfEmpty && !latestSnapshot) renderBootstrapLoading();
 
       try {
         const [teamDataResult, liveDataResult, newsDataResult] = await Promise.allSettled([
@@ -1155,14 +904,23 @@
         applySnapshot(latestSnapshot);
         updateRefreshLabel(`Updated ${formatNow()}`);
       } catch (error) {
-        if (!latestSnapshot) {
-          renderErrorState(error);
-        }
+        if (!latestSnapshot) renderErrorState(error);
         updateRefreshLabel("Update failed");
         console.error(error);
       } finally {
         setRefreshing(false);
       }
+    }
+
+    function renderBootstrapLoading() {
+      els.heroEyebrow.textContent = "Loading latest football data";
+      els.heroKickoffSub.textContent = "Waiting for match data…";
+      els.nextMatchPanel.innerHTML = `<div class="empty">Loading match centre…</div>`;
+      els.heroArt.style.setProperty("--hero-art", "none");
+      els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
+      els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
+      els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
+      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
     }
 
     function applySnapshot(snapshot) {
@@ -1176,22 +934,11 @@
       renderBrandLogo(teamData, standings, team);
       renderHero(team, teamData, liveData);
       renderStats(teamStanding, teamData);
-      renderFixtures(teamData);
-      renderResults(teamData);
+      renderFixtures(teamData, team);
+      renderResults(teamData, team);
       renderTable(standings, teamData.team?.id || team.teamId, team.leagueName);
       renderNews(newsData, team.newsTerms);
       setActivePanel(activePanelId, { skipStore: true });
-    }
-
-    function renderBootstrapLoading() {
-      els.heroEyebrow.textContent = "Loading latest football data";
-      els.heroKickoffSub.textContent = "Waiting for match data…";
-      els.nextMatchPanel.innerHTML = `<div class="empty">Loading match centre…</div>`;
-      els.heroArt.style.setProperty("--hero-art", "none");
-      els.fixturesPanel.innerHTML = `<div class="empty">Loading fixtures…</div>`;
-      els.resultsPanel.innerHTML = `<div class="empty">Loading results…</div>`;
-      els.tablePanel.innerHTML = `<div class="empty">Loading table…</div>`;
-      els.newsPanel.innerHTML = `<div class="empty">Loading news…</div>`;
     }
 
     function renderBrandLogo(teamData, standings, team) {
@@ -1209,58 +956,6 @@
         els.brandLogo.hidden = true;
         els.brandFallback.hidden = false;
       }
-    }
-
-    function renderHero(team, teamData, liveData) {
-      const featured = selectFeaturedFixture(teamData, liveData);
-      const fixtureDate = fixtureDateValue(featured);
-      const home = featured.homeName || "Home";
-      const away = featured.awayName || "Away";
-      const competition = featured.competition || team.leagueName;
-      const live = featured.isLive;
-      const finished = isFinishedStatus(featured.status);
-      const statusText = buildHeroStatus(featured, fixtureDate);
-      const subtitle = buildHeroSubtitle(featured, fixtureDate);
-      const dateLine = buildHeroDateLine(fixtureDate, competition);
-
-      els.heroEyebrow.textContent = dateLine;
-      els.heroKickoffSub.textContent = subtitle;
-
-      const middleMarkup = (live || finished)
-        ? `
-          <div class="hero-core">
-            <span class="hero-score-big">${safeScore(featured.homeScore)}</span>
-            <span class="hero-score-divider"></span>
-            <span class="hero-score-big">${safeScore(featured.awayScore)}</span>
-          </div>
-        `
-        : `
-          <div class="hero-core">
-            <span class="hero-kickoff-time">${fixtureDate ? formatHeroTime(fixtureDate) : "TBC"}</span>
-          </div>
-        `;
-
-      els.nextMatchPanel.innerHTML = `
-        <div class="hero-side home">
-          <div class="hero-team">${escapeHtml(home)}</div>
-          <div class="hero-crest-wrap">
-            ${renderHeroCrest(featured.homeCrest || "", home)}
-          </div>
-        </div>
-        <div class="hero-middle">
-          ${middleMarkup}
-          <div class="hero-status">${escapeHtml(statusText)}</div>
-        </div>
-        <div class="hero-side away">
-          <div class="hero-crest-wrap">
-            ${renderHeroCrest(featured.awayCrest || "", away)}
-          </div>
-          <div class="hero-team">${escapeHtml(away)}</div>
-        </div>
-      `;
-
-      const artCrest = featured.awayCrest || featured.homeCrest || teamData?.team?.crest || team.fallbackLogoUrl || "";
-      els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
     }
 
     function parseMatchDate(value) {
@@ -1284,109 +979,48 @@
     function normaliseFixture(item) {
       const date = fixtureDateValue(item);
       const status = String(item?.status || item?.fixture?.status?.short || item?.fixture?.status?.long || "").toUpperCase();
-      return {
-        ...item,
-        _date: date,
-        _ts: date ? date.getTime() : Number.POSITIVE_INFINITY,
-        _status: status
-      };
+      return { ...item, _date: date, _ts: date ? date.getTime() : Number.POSITIVE_INFINITY, _status: status };
     }
 
     function getFixtureBuckets(teamData) {
       const live = (Array.isArray(teamData?.live) ? teamData.live : []).map(normaliseFixture);
       const next = (Array.isArray(teamData?.next) ? teamData.next : []).map(normaliseFixture);
       const last = (Array.isArray(teamData?.last) ? teamData.last : []).map(normaliseFixture);
-
-      const fixtures = [...live, ...next].filter(item => item && item._date && !isFinishedStatus(item._status));
-      const results = [...last].filter(item => item && item._date);
-
-      return { live, next, last, fixtures, results };
+      return {
+        live,
+        next,
+        last,
+        fixtures: [...live, ...next].filter(item => item && item._date && !isFinishedStatus(item._status)),
+        results: [...last].filter(item => item && item._date)
+      };
     }
 
     function getAllFixtures(teamData) {
-      const buckets = getFixtureBuckets(teamData);
-      return [...buckets.live, ...buckets.next, ...buckets.last];
-    }
-
-    function flattenArrays(root, maxDepth = 6) {
-      const out = [];
-      const seen = new Set();
-
-      function walk(value, depth) {
-        if (!value || depth > maxDepth || seen.has(value)) return;
-        if (typeof value === "object") seen.add(value);
-
-        if (Array.isArray(value)) {
-          out.push(value);
-          for (const item of value) walk(item, depth + 1);
-          return;
-        }
-
-        if (typeof value === "object") {
-          for (const key of Object.keys(value)) walk(value[key], depth + 1);
-        }
-      }
-
-      walk(root, 0);
-      return out;
-    }
-
-    function looksLikeStandingRow(row) {
-      return !!(
-        row &&
-        typeof row === "object" &&
-        (row.team || row.teamName || row.position || row.rank) &&
-        (row.points !== undefined || row.playedGames !== undefined || row.all)
-      );
-    }
-
-    function getStandingsFromTeamData(teamData) {
-      if (!teamData) return [];
-
-      if (Array.isArray(teamData.standings) && teamData.standings.length) {
-        if (Array.isArray(teamData.standings[0]?.table)) return teamData.standings[0].table;
-        if (looksLikeStandingRow(teamData.standings[0])) return teamData.standings;
-      }
-
-      if (Array.isArray(teamData.table) && teamData.table.length) return teamData.table;
-      if (Array.isArray(teamData.leagueTable) && teamData.leagueTable.length) return teamData.leagueTable;
-      if (Array.isArray(teamData?.league?.standings?.[0]?.table)) return teamData.league.standings[0].table;
-      if (Array.isArray(teamData?.data?.standings?.[0]?.table)) return teamData.data.standings[0].table;
-      if (Array.isArray(teamData?.competition?.standings?.[0]?.table)) return teamData.competition.standings[0].table;
-
-      const arrays = flattenArrays(teamData, 6);
-      for (const arr of arrays) {
-        if (!arr.length) continue;
-        if (looksLikeStandingRow(arr[0])) return arr;
-        if (Array.isArray(arr[0]?.table) && arr[0].table.length) return arr[0].table;
-      }
-
-      return [];
-    }
-
-    function getTeamStanding(teamData, standings, activeTeamId, teamName) {
-      if (teamData?.standing) return teamData.standing;
-
-      const standingMatch = (standings || []).find(row =>
-        String(row?.team?.id || row?.id || "") === String(activeTeamId || "") ||
-        String(row?.team?.name || row?.teamName || "").toLowerCase() === String(teamName || "").toLowerCase()
-      );
-
-      if (standingMatch) return standingMatch;
-
-      const fallback = teamData?.stats || teamData?.summary || teamData?.tableStats || teamData?.overview;
-      return fallback && typeof fallback === "object" ? fallback : null;
+      const b = getFixtureBuckets(teamData);
+      return [...b.live, ...b.next, ...b.last];
     }
 
     function selectFeaturedFixture(teamData, liveData) {
       const allFixtures = getAllFixtures(teamData).filter(item => item && item._date);
       const now = Date.now();
 
-      const liveFromTeamData = allFixtures.find(item =>
-        isLiveStatus(item._status) ||
-        (item.score && (item.score.fullTime?.home != null || item.score.home != null))
-      );
+      if (liveData?.live && liveData?.fixture) {
+        return {
+          isLive: true,
+          homeName: liveData.fixture?.teams?.home?.name || "Home",
+          awayName: liveData.fixture?.teams?.away?.name || "Away",
+          homeScore: liveData.fixture?.goals?.home,
+          awayScore: liveData.fixture?.goals?.away,
+          utcDate: liveData.fixture?.fixture?.date || liveData.fixture?.fixture?.utcDate || null,
+          competition: liveData.fixture?.league?.name || "Competition",
+          venue: liveData.fixture?.fixture?.venue?.name || "",
+          status: liveData.fixture?.fixture?.status?.short || "LIVE",
+          homeCrest: liveData.fixture?.teams?.home?.logo || "",
+          awayCrest: liveData.fixture?.teams?.away?.logo || ""
+        };
+      }
 
+      const liveFromTeamData = allFixtures.find(item => isLiveStatus(item._status));
       if (liveFromTeamData) {
         return {
           isLive: true,
@@ -1398,13 +1032,13 @@
           competition: liveFromTeamData.competition?.name || "Competition",
           venue: liveFromTeamData.venue || "",
           status: liveFromTeamData.status || "LIVE",
-          homeCrest: liveFromTeamData.homeTeam?.crest || liveData?.fixture?.teams?.home?.logo || "",
-          awayCrest: liveFromTeamData.awayTeam?.crest || liveData?.fixture?.teams?.away?.logo || ""
+          homeCrest: liveFromTeamData.homeTeam?.crest || "",
+          awayCrest: liveFromTeamData.awayTeam?.crest || ""
         };
       }
 
       const upcoming = allFixtures
-        .filter(item => item._ts >= now - 3 * 60 * 60 * 1000 && !isFinishedStatus(item._status))
+        .filter(item => item._ts >= now && !isFinishedStatus(item._status))
         .sort((a, b) => a._ts - b._ts)[0];
 
       if (upcoming) {
@@ -1443,22 +1077,6 @@
         };
       }
 
-      if (liveData?.live && liveData?.fixture) {
-        return {
-          isLive: true,
-          homeName: liveData.fixture?.teams?.home?.name || "Home",
-          awayName: liveData.fixture?.teams?.away?.name || "Away",
-          homeScore: liveData.fixture?.goals?.home,
-          awayScore: liveData.fixture?.goals?.away,
-          utcDate: liveData.fixture?.fixture?.date || liveData.fixture?.fixture?.utcDate || null,
-          competition: liveData.fixture?.league?.name || "Competition",
-          venue: liveData.fixture?.fixture?.venue?.name || "",
-          status: liveData.fixture?.fixture?.status?.short || "LIVE",
-          homeCrest: liveData.fixture?.teams?.home?.logo || "",
-          awayCrest: liveData.fixture?.teams?.away?.logo || ""
-        };
-      }
-
       return {
         isLive: false,
         homeName: "Home",
@@ -1472,6 +1090,20 @@
         homeCrest: "",
         awayCrest: ""
       };
+    }
+
+    function isFinishedStatus(status) {
+      return ["FINISHED", "FT", "AET", "PEN"].includes(String(status || "").toUpperCase());
+    }
+    function isLiveStatus(status) {
+      return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(String(status || "").toUpperCase());
+    }
+    function humanReadableStatus(status) {
+      const s = String(status || "").toUpperCase();
+      if (s === "FINISHED") return "FT";
+      if (s === "PAUSED") return "HT";
+      if (s === "SCHEDULED" || s === "TIMED") return "";
+      return s;
     }
 
     function buildHeroDateLine(fixtureDate, competition) {
@@ -1496,32 +1128,106 @@
       return bits.join(" · ");
     }
 
-    function humanReadableStatus(status) {
-      const s = String(status || "").toUpperCase();
-      if (s === "FINISHED") return "FT";
-      if (s === "PAUSED") return "HT";
-      if (s === "SCHEDULED" || s === "TIMED") return "";
-      return s;
-    }
-
-    function isFinishedStatus(status) {
-      return ["FINISHED", "FT", "AET", "PEN"].includes(String(status || "").toUpperCase());
-    }
-
-    function isLiveStatus(status) {
-      return ["IN_PLAY", "PAUSED", "LIVE", "1H", "HT", "2H", "ET", "BT", "P", "INT"].includes(String(status || "").toUpperCase());
-    }
-
     function formatHeroTime(date) {
       return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
     }
 
     function renderHeroCrest(src, teamName) {
-      if (src) {
-        return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(teamName)} crest" loading="lazy" />`;
-      }
+      if (src) return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(teamName)} crest" loading="lazy" />`;
       const initials = String(teamName || "?").split(/\s+/).map(part => part[0] || "").join("").slice(0, 3).toUpperCase();
       return `<div class="hero-crest-fallback">${escapeHtml(initials)}</div>`;
+    }
+
+    function renderHero(team, teamData, liveData) {
+      const featured = selectFeaturedFixture(teamData, liveData);
+      const fixtureDate = fixtureDateValue(featured);
+      const competition = featured.competition || team.leagueName;
+
+      els.heroEyebrow.textContent = buildHeroDateLine(fixtureDate, competition);
+      els.heroKickoffSub.textContent = buildHeroSubtitle(featured, fixtureDate);
+
+      const middleMarkup = (featured.isLive || isFinishedStatus(featured.status))
+        ? `<div class="hero-core"><span class="hero-score-big">${safeScore(featured.homeScore)}</span><span class="hero-score-divider"></span><span class="hero-score-big">${safeScore(featured.awayScore)}</span></div>`
+        : `<div class="hero-core"><span class="hero-kickoff-time">${fixtureDate ? formatHeroTime(fixtureDate) : "TBC"}</span></div>`;
+
+      els.nextMatchPanel.innerHTML = `
+        <div class="hero-side home">
+          <div class="hero-team">${escapeHtml(featured.homeName || "Home")}</div>
+          <div class="hero-crest-wrap">${renderHeroCrest(featured.homeCrest || "", featured.homeName || "Home")}</div>
+        </div>
+        <div class="hero-middle">
+          ${middleMarkup}
+          <div class="hero-status">${escapeHtml(buildHeroStatus(featured, fixtureDate))}</div>
+        </div>
+        <div class="hero-side away">
+          <div class="hero-crest-wrap">${renderHeroCrest(featured.awayCrest || "", featured.awayName || "Away")}</div>
+          <div class="hero-team">${escapeHtml(featured.awayName || "Away")}</div>
+        </div>
+      `;
+
+      const artCrest = featured.awayCrest || featured.homeCrest || teamData?.team?.crest || team.fallbackLogoUrl || "";
+      els.heroArt.style.setProperty("--hero-art", artCrest ? `url("${escapeAttribute(artCrest)}")` : "none");
+    }
+
+    function flattenArrays(root, maxDepth = 6) {
+      const out = [];
+      const seen = new Set();
+      function walk(value, depth) {
+        if (!value || depth > maxDepth || seen.has(value)) return;
+        if (typeof value === "object") seen.add(value);
+        if (Array.isArray(value)) {
+          out.push(value);
+          for (const item of value) walk(item, depth + 1);
+          return;
+        }
+        if (typeof value === "object") {
+          for (const key of Object.keys(value)) walk(value[key], depth + 1);
+        }
+      }
+      walk(root, 0);
+      return out;
+    }
+
+    function looksLikeStandingRow(row) {
+      return !!(row && typeof row === "object" && (row.team || row.teamName || row.position || row.rank) && (row.points !== undefined || row.playedGames !== undefined || row.all));
+    }
+
+    function getStandingsFromTeamData(teamData) {
+      if (!teamData) return [];
+      const directCandidates = [
+        teamData?.standings,
+        teamData?.table,
+        teamData?.leagueTable,
+        teamData?.league?.standings,
+        teamData?.data?.standings,
+        teamData?.data?.table,
+        teamData?.competition?.standings
+      ];
+      for (const candidate of directCandidates) {
+        if (Array.isArray(candidate) && candidate.length) {
+          if (Array.isArray(candidate[0]?.table) && candidate[0].table.length) return candidate[0].table;
+          if (looksLikeStandingRow(candidate[0])) return candidate;
+        }
+        if (candidate && Array.isArray(candidate.table) && candidate.table.length) return candidate.table;
+      }
+      const arrays = flattenArrays(teamData, 6);
+      for (const arr of arrays) {
+        if (!arr.length) continue;
+        if (Array.isArray(arr[0]?.table) && arr[0].table.length) return arr[0].table;
+        if (looksLikeStandingRow(arr[0])) return arr;
+      }
+      return [];
+    }
+
+    function getTeamStanding(teamData, standings, activeTeamId, teamName) {
+      if (teamData?.standing) return teamData.standing;
+      const match = (standings || []).find(row =>
+        String(row?.team?.id || row?.id || "") === String(activeTeamId || "") ||
+        String(row?.team?.name || row?.teamName || "").toLowerCase() === String(teamName || "").toLowerCase()
+      );
+      if (match) return match;
+      const fallback = teamData?.stats || teamData?.summary || teamData?.tableStats || teamData?.overview;
+      return fallback && typeof fallback === "object" ? fallback : null;
     }
 
     function getStatValue(obj, keys) {
@@ -1535,7 +1241,6 @@
     function renderStats(teamStanding, teamData) {
       const fallback = teamData?.stats || teamData?.summary || teamData?.tableStats || {};
       const source = teamStanding || fallback;
-
       const position = getStatValue(source, ["position", "rank"]);
       const points = getStatValue(source, ["points"]);
       const played = getStatValue(source, ["playedGames", "all.played", "played"]);
@@ -1546,16 +1251,14 @@
       els.statPointsSub.textContent = played ? `${played} played` : "Matches played";
     }
 
-    function renderFixtures(teamData) {
+    function renderFixtures(teamData, team) {
       const { live, next, fixtures } = getFixtureBuckets(teamData);
-
       const combined = fixtures.sort((a, b) => {
         const aLive = isLiveStatus(a._status) ? 0 : 1;
         const bLive = isLiveStatus(b._status) ? 0 : 1;
         if (aLive !== bLive) return aLive - bLive;
         return a._ts - b._ts;
       });
-
       const unique = dedupeMatches(combined).slice(0, 8);
       els.fixturesSubtle.textContent = `${live.length} live · ${next.length} upcoming`;
 
@@ -1564,10 +1267,10 @@
         return;
       }
 
-      els.fixturesPanel.innerHTML = unique.map(item => renderMatchCard(item, { mode: "fixture" })).join("");
+      els.fixturesPanel.innerHTML = unique.map(item => renderMatchCard(item, { mode: "fixture", leagueFallback: team.leagueName })).join("");
     }
 
-    async function renderResults(teamData) {
+    async function renderResults(teamData, team) {
       const { results } = getFixtureBuckets(teamData);
       const combined = results.sort((a, b) => b._ts - a._ts);
       const unique = dedupeMatches(combined).slice(0, 8);
@@ -1578,12 +1281,12 @@
         return;
       }
 
-      els.resultsPanel.innerHTML = unique.map((item, index) => renderMatchCard(item, { mode: "result", index })).join("");
+      els.resultsPanel.innerHTML = unique.map((item, index) => renderMatchCard(item, { mode: "result", index, leagueFallback: team.leagueName })).join("");
       const subset = unique.slice(0, RESULT_VIDEO_LIMIT);
       await Promise.allSettled(subset.map((item, index) => attachResultVideo(item, index)));
     }
 
-    function buildYoutubeQuery(item) {
+    function buildYoutubeQueryDetailed(item) {
       const competition = item.competition?.name || "";
       const home = item.homeTeam?.name || "";
       const away = item.awayTeam?.name || "";
@@ -1594,10 +1297,17 @@
       return [competition, home, away, day, month, year].filter(Boolean).join(" ");
     }
 
-    function renderMatchCard(item, { mode = "fixture", index = 0 } = {}) {
+    function buildYoutubeQueryBroad(item) {
+      const competition = item.competition?.name || "";
+      const home = item.homeTeam?.name || "";
+      const away = item.awayTeam?.name || "";
+      return [competition, home, away].filter(Boolean).join(" ");
+    }
+
+    function renderMatchCard(item, { mode = "fixture", index = 0, leagueFallback = "Competition" } = {}) {
       const date = item._date || fixtureDateValue(item);
       const status = item.status || item._status || "";
-      const competition = item.competition?.name || "Competition";
+      const competition = item.competition?.name || leagueFallback || "Competition";
       const home = item.homeTeam?.name || "Home";
       const away = item.awayTeam?.name || "Away";
       const homeScore = item.score?.fullTime?.home ?? item.score?.home;
@@ -1617,9 +1327,7 @@
           <div class="result-media-copy">
             <div class="result-video-title" id="resultVideoTitle-${index}">Loading highlight…</div>
             <div class="result-video-meta" id="resultVideoMeta-${index}">Searching YouTube</div>
-            <a class="result-video-link" id="resultVideoLink-${index}" href="https://www.youtube.com/results?search_query=${encodeURIComponent(buildYoutubeQuery(item))}" target="_blank" rel="noreferrer">
-              Search YouTube
-            </a>
+            <a class="result-video-link" id="resultVideoLink-${index}" href="https://www.youtube.com/results?search_query=${encodeURIComponent(buildYoutubeQueryBroad(item))}" target="_blank" rel="noreferrer">Search YouTube</a>
           </div>
         </div>
       ` : "";
@@ -1653,12 +1361,19 @@
     }
 
     async function attachResultVideo(item, index) {
-      const query = buildYoutubeQuery(item);
-      const cacheKey = `${activeTeamKey}::${query}`;
+      const detailed = buildYoutubeQueryDetailed(item);
+      const broad = buildYoutubeQueryBroad(item);
+      const cacheKey = `${activeTeamKey}::${detailed}`;
       const cached = resultVideoCache.get(cacheKey);
-      const video = cached || await fetchTopYoutubeVideo(query);
+      const video = cached || await fetchBestYoutubeVideo(detailed, broad);
       if (video) resultVideoCache.set(cacheKey, video);
-      applyResultVideo(index, query, video);
+      applyResultVideo(index, broad, video);
+    }
+
+    async function fetchBestYoutubeVideo(detailedQuery, broadQuery) {
+      let video = await fetchTopYoutubeVideo(detailedQuery);
+      if (video) return video;
+      return fetchTopYoutubeVideo(broadQuery);
     }
 
     async function fetchTopYoutubeVideo(query) {
@@ -1672,11 +1387,7 @@
         const title = top.snippet?.title || top.title || "Play highlights";
         const channel = top.snippet?.channelTitle || top.channelTitle || "YouTube";
         const publishedAt = top.snippet?.publishedAt || top.publishedAt || "";
-        const thumb = top.snippet?.thumbnails?.medium?.url ||
-          top.snippet?.thumbnails?.high?.url ||
-          top.snippet?.thumbnails?.default?.url ||
-          top.thumbnail ||
-          "";
+        const thumb = top.snippet?.thumbnails?.medium?.url || top.snippet?.thumbnails?.high?.url || top.snippet?.thumbnails?.default?.url || top.thumbnail || "";
 
         return {
           videoId,
@@ -1691,7 +1402,7 @@
       }
     }
 
-    function applyResultVideo(index, query, video) {
+    function applyResultVideo(index, broadQuery, video) {
       const titleEl = document.getElementById(`resultVideoTitle-${index}`);
       const metaEl = document.getElementById(`resultVideoMeta-${index}`);
       const linkEl = document.getElementById(`resultVideoLink-${index}`);
@@ -1702,7 +1413,7 @@
         titleEl.textContent = "No clip found";
         metaEl.textContent = "YouTube search fallback";
         linkEl.textContent = "Search YouTube";
-        linkEl.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+        linkEl.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(broadQuery)}`;
         return;
       }
 
@@ -1720,7 +1431,6 @@
 
     function renderTable(standings, activeTeamId, leagueName) {
       els.tableSubtle.textContent = leagueName;
-
       if (!standings.length) {
         els.tablePanel.innerHTML = `<div class="empty">No standings returned.</div>`;
         return;
@@ -1768,25 +1478,19 @@
     }
 
     function extractNewsImage(item) {
-      return item?.thumbnail ||
-        item?.image ||
-        item?.enclosure?.url ||
-        item?.media?.thumbnail ||
-        item?.media?.content ||
-        item?.mediaThumbnail ||
-        item?.mediaContent ||
-        item?.imageUrl ||
-        "";
+      return item?.thumbnail || item?.image || item?.enclosure?.url || item?.media?.thumbnail || item?.media?.content || item?.mediaThumbnail || item?.mediaContent || item?.imageUrl || "";
     }
 
     function renderNews(newsData, terms) {
       const allItems = Array.isArray(newsData?.items) ? newsData.items : [];
       const loweredTerms = terms.map(t => t.toLowerCase());
 
-      const filtered = allItems.filter(item => {
+      let filtered = allItems.filter(item => {
         const text = `${item.title || ""} ${item.description || ""}`.toLowerCase();
         return loweredTerms.some(term => text.includes(term));
       }).slice(0, 8);
+
+      if (!filtered.length) filtered = allItems.slice(0, 8);
 
       if (!filtered.length) {
         els.newsPanel.innerHTML = `<div class="empty">No club-specific BBC stories found right now.</div>`;
@@ -1845,17 +1549,13 @@
       return `<div class="form-strip">${chars.map(char => `<span class="form-chip ${char.toLowerCase()}">${char}</span>`).join("")}</div>`;
     }
 
-    function safeScore(value) {
-      return value === null || value === undefined ? "–" : String(value);
-    }
-
+    function safeScore(value) { return value === null || value === undefined ? "–" : String(value); }
     function signed(value) {
       if (value === null || value === undefined || value === "") return "–";
       const n = Number(value);
       if (Number.isNaN(n)) return String(value);
       return n > 0 ? `+${n}` : `${n}`;
     }
-
     function ordinal(n) {
       const num = Number(n);
       if (!num) return "–";
@@ -1863,7 +1563,6 @@
       const v = num % 100;
       return `${num}${s[(v - 20) % 10] || s[v] || s[0]}`;
     }
-
     function relativeFromNow(date) {
       const diff = date.getTime() - Date.now();
       const abs = Math.abs(diff);
@@ -1874,41 +1573,20 @@
       if (hours < 48) return diff >= 0 ? `in ${hours}h` : `${hours}h ago`;
       return diff >= 0 ? `in ${days}d` : `${days}d ago`;
     }
-
     function formatShortDateTime(date) {
-      return date.toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+      return date.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     }
-
     function formatPubDate(dateString) {
       const date = new Date(dateString);
       if (Number.isNaN(date.getTime())) return dateString;
-      return date.toLocaleString("en-GB", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+      return date.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     }
-
     function formatDateOnly(date) {
       if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
-      return date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      });
+      return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
     }
-
     function formatNow() {
-      return new Date().toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+      return new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
     }
 
     async function fetchJson(url) {
@@ -1930,23 +1608,13 @@
     }
 
     function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+      return String(str ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
     }
-
-    function escapeAttribute(str) {
-      return escapeHtml(str);
-    }
+    function escapeAttribute(str) { return escapeHtml(str); }
 
     function startAutoRefresh() {
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-      autoRefreshTimer = setInterval(() => {
-        refreshDashboard({ silent: true });
-      }, AUTO_REFRESH_MS);
+      autoRefreshTimer = setInterval(() => { refreshDashboard({ silent: true }); }, AUTO_REFRESH_MS);
     }
 
     els.menuButton.addEventListener("click", () => {
