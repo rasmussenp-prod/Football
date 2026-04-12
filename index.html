@@ -74,7 +74,7 @@
     .topbar-inner {
       display: grid;
       grid-template-columns: auto 1fr auto;
-      align-items: center;
+      align-items: start;
       gap: 10px;
     }
 
@@ -134,8 +134,9 @@
 
     .top-actions {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
     }
 
     .status-chip,
@@ -166,6 +167,14 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      height: auto;
+      min-height: 0;
+      padding: 0;
     }
 
     .spinner {
@@ -748,12 +757,45 @@
       .brand-copy h1 { font-size: 1.2rem; }
       .brand-copy p { font-size: 0.85rem; }
       .hero { padding: 24px 20px 24px; min-height: 310px; }
-      .stats-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .content-grid { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 18px; }
       .lineup-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 759px) {
+      .topbar-inner {
+        grid-template-columns: auto 1fr auto;
+        align-items: start;
+      }
+
+      .brand {
+        min-width: 0;
+        gap: 8px;
+      }
+
+      .brand-logo-wrap {
+        width: 40px;
+        height: 40px;
+      }
+
+      .brand-copy h1 {
+        font-size: 0.9rem;
+      }
+
+      .brand-copy p {
+        font-size: 0.72rem;
+        white-space: normal;
+        line-height: 1.2;
+      }
+
+      .top-actions {
+        gap: 4px;
+      }
+
+      .refresh-wrap {
+        font-size: 0.72rem;
+      }
+
       .hero { padding: 18px 12px 20px; min-height: 250px; }
       .hero-match { grid-template-columns: 1fr; gap: 16px; }
       .hero-side,
@@ -810,19 +852,16 @@
           <div></div>
 
           <div class="top-actions">
-            <div class="status-chip refresh-wrap">
-              <span class="spinner" id="refreshSpinner"></span>
-              <span id="refreshLabel">Updated just now</span>
-            </div>
-
-            <button class="icon-btn" id="refreshButton" aria-label="Refresh">↻</button>
-
             <div class="menu-wrap">
               <button class="icon-btn" id="menuButton" aria-label="Open menu" aria-expanded="false">☰</button>
               <div class="menu-panel" id="menuPanel">
                 <div class="menu-label">Select team</div>
                 <div class="team-list" id="teamToggle"></div>
               </div>
+            </div>
+            <div class="refresh-wrap">
+              <span class="spinner" id="refreshSpinner"></span>
+              <span id="refreshLabel">Updated just now</span>
             </div>
           </div>
         </div>
@@ -850,16 +889,6 @@
           <div class="stat-label">Points</div>
           <div class="stat-value" id="statPoints">–</div>
           <div class="stat-sub" id="statPointsSub">–</div>
-        </div>
-        <div class="stat-card card">
-          <div class="stat-label">Goal difference</div>
-          <div class="stat-value" id="statGD">–</div>
-          <div class="stat-sub" id="statGDSub">–</div>
-        </div>
-        <div class="stat-card card">
-          <div class="stat-label">Record</div>
-          <div class="stat-value" id="statRecord">–</div>
-          <div class="stat-sub" id="statRecordSub">Wins / draws / losses</div>
         </div>
       </section>
 
@@ -988,7 +1017,6 @@
       teamToggle: document.getElementById("teamToggle"),
       menuButton: document.getElementById("menuButton"),
       menuPanel: document.getElementById("menuPanel"),
-      refreshButton: document.getElementById("refreshButton"),
       refreshSpinner: document.getElementById("refreshSpinner"),
       refreshLabel: document.getElementById("refreshLabel"),
       brandSubtitle: document.getElementById("brandSubtitle"),
@@ -1003,10 +1031,6 @@
       statPositionSub: document.getElementById("statPositionSub"),
       statPoints: document.getElementById("statPoints"),
       statPointsSub: document.getElementById("statPointsSub"),
-      statGD: document.getElementById("statGD"),
-      statGDSub: document.getElementById("statGDSub"),
-      statRecord: document.getElementById("statRecord"),
-      statRecordSub: document.getElementById("statRecordSub"),
       fixturesSubtle: document.getElementById("fixturesSubtle"),
       resultsSubtle: document.getElementById("resultsSubtle"),
       tableSubtle: document.getElementById("tableSubtle"),
@@ -1065,7 +1089,6 @@
 
     function setRefreshing(isOn) {
       els.refreshSpinner.classList.toggle("show", isOn);
-      els.refreshButton.disabled = isOn;
     }
 
     function updateRefreshLabel(text) {
@@ -1095,7 +1118,7 @@
     async function refreshDashboard({ silent = true, resetIfEmpty = false } = {}) {
       const team = TEAM_CONFIG[activeTeamKey];
       setRefreshing(true);
-      updateRefreshLabel("Refreshing…");
+      updateRefreshLabel("Updated…");
 
       if (!silent && resetIfEmpty && !latestSnapshot) {
         renderBootstrapLoading();
@@ -1123,7 +1146,7 @@
         if (!latestSnapshot) {
           renderErrorState(error);
         }
-        updateRefreshLabel("Refresh failed");
+        updateRefreshLabel("Updated failed");
         console.error(error);
       } finally {
         setRefreshing(false);
@@ -1602,29 +1625,13 @@
 
       const position = getStatValue(source, ["position", "rank"]);
       const points = getStatValue(source, ["points"]);
-      const gd = getStatValue(source, ["goalDifference", "goalsDiff", "gd"]);
       const played = getStatValue(source, ["playedGames", "all.played", "played"]);
-      const won = getStatValue(source, ["won", "all.win", "wins"]);
-      const draw = getStatValue(source, ["draw", "all.draw", "draws"]);
-      const lost = getStatValue(source, ["lost", "all.lose", "losses"]);
-      const gf = getStatValue(source, ["goalsFor", "all.goals.for", "goals_for", "gf"]);
-      const ga = getStatValue(source, ["goalsAgainst", "all.goals.against", "goals_against", "ga"]);
 
       els.statPosition.textContent = position ? ordinal(position) : "–";
       els.statPositionSub.textContent = source?.description || "Current league position";
 
       els.statPoints.textContent = points ?? "–";
       els.statPointsSub.textContent = played ? `${played} played` : "Matches played";
-
-      els.statGD.textContent = gd !== null && gd !== undefined ? signed(gd) : "–";
-      els.statGDSub.textContent = (gf !== null && ga !== null) ? `${gf} scored · ${ga} conceded` : "Goals for / against";
-
-      if (won !== null || draw !== null || lost !== null) {
-        els.statRecord.textContent = `${won ?? 0}-${draw ?? 0}-${lost ?? 0}`;
-      } else {
-        els.statRecord.textContent = "–";
-      }
-      els.statRecordSub.textContent = "Wins / draws / losses";
     }
 
     function renderFixtures(teamData) {
@@ -1658,7 +1665,6 @@
       }
 
       els.resultsPanel.innerHTML = unique.map((item, index) => renderMatchCard(item, { mode: "result", index })).join("");
-
       const subset = unique.slice(0, RESULT_VIDEO_LIMIT);
       await Promise.allSettled(subset.map((item, index) => attachResultVideo(item, index)));
     }
@@ -1667,7 +1673,11 @@
       const competition = item.competition?.name || "";
       const home = item.homeTeam?.name || "";
       const away = item.awayTeam?.name || "";
-      return [competition, home, away].filter(Boolean).join(" ");
+      const date = item._date || fixtureDateValue(item);
+      const year = date ? String(date.getFullYear()) : "";
+      const month = date ? date.toLocaleString("en-GB", { month: "long" }) : "";
+      const day = date ? String(date.getDate()) : "";
+      return [competition, home, away, day, month, year].filter(Boolean).join(" ");
     }
 
     function renderMatchCard(item, { mode = "fixture", index = 0 } = {}) {
@@ -1730,9 +1740,10 @@
 
     async function attachResultVideo(item, index) {
       const query = buildYoutubeQuery(item);
-      const cached = resultVideoCache.get(query);
+      const cacheKey = `${activeTeamKey}::${query}`;
+      const cached = resultVideoCache.get(cacheKey);
       const video = cached || await fetchTopYoutubeVideo(query);
-      if (video) resultVideoCache.set(query, video);
+      if (video) resultVideoCache.set(cacheKey, video);
       applyResultVideo(index, query, video);
     }
 
@@ -1776,7 +1787,7 @@
       if (!video) {
         titleEl.textContent = "No clip found";
         metaEl.textContent = "YouTube search fallback";
-        linkEl.textContent = "Search match summary";
+        linkEl.textContent = "Search YouTube";
         linkEl.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
         return;
       }
@@ -1981,11 +1992,6 @@
       });
     }
 
-    function trimText(text, max) {
-      if (!text || text.length <= max) return text;
-      return `${text.slice(0, max).trim()}…`;
-    }
-
     async function fetchJson(url) {
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) {
@@ -1997,6 +2003,11 @@
         throw new Error(`Request failed for ${url}${detail ? `: ${detail}` : ""}`);
       }
       return response.json();
+    }
+
+    function trimText(text, max) {
+      if (!text || text.length <= max) return text;
+      return `${text.slice(0, max).trim()}…`;
     }
 
     function escapeHtml(str) {
@@ -2019,7 +2030,6 @@
       }, AUTO_REFRESH_MS);
     }
 
-    els.refreshButton.addEventListener("click", () => refreshDashboard({ silent: true }));
     els.menuButton.addEventListener("click", () => {
       if (els.menuPanel.classList.contains("open")) closeMenu();
       else openMenu();
