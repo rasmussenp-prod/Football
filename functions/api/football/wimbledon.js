@@ -14,252 +14,149 @@ export async function onRequest() {
       .trim();
   }
 
-  function parseRSS(xmlText) {
+  // ✅ convert "Saturday 12 April 3:00pm" → ISO
+  function toISODate(dateStr = "", timeStr = "15:00") {
+    try {
+      const full = `${dateStr} ${timeStr}`.replace(/\./g, ":");
+      const d = new Date(full);
+      return isNaN(d) ? new Date().toISOString() : d.toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
+  }
+
+  function parseSkyMatches(html) {
     const items = [];
-    const matches = xmlText.match(/<item>([\s\S]*?)<\/item>/gi) || [];
+    const blocks = html.split(/(?=View fixture)/g);
 
-    for (const item of matches) {
-      const getTag = (tag) => {
-        const match = item.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "i"));
-        return match ? cleanText(match[1]) : "";
-      };
+    for (const block of blocks) {
+      if (!block.includes("AFC Wimbledon")) continue;
 
-      const thumbMatch =
-        item.match(/<media:thumbnail[^>]*url="([^"]+)"/i) ||
-        item.match(/<media:content[^>]*url="([^"]+)"/i) ||
-        item.match(/<enclosure[^>]*url="([^"]+)"/i);
+      const dateMatch = block.match(/([A-Za-z]+ \d{1,2} [A-Za-z]+)/);
+      const date = dateMatch ? dateMatch[1] : "";
 
-      items.push({
-        title: getTag("title"),
-        link: getTag("link"),
-        description: getTag("description"),
-        pubDate: getTag("pubDate"),
-        thumbnail: thumbMatch ? thumbMatch[1] : ""
-      });
-    }
+      const resultMatch =
+        block.match(/(.+?) (\d+) AFC Wimbledon (\d+)/) ||
+        block.match(/AFC Wimbledon (\d+) (.+?) (\d+)/);
 
-    return items;
-  }
+      if (resultMatch) {
+        let home, away, hs, as;
 
-  function filterWimbledonNews(items) {
-    const terms = ["afc wimbledon", "wimbledon", "dons", "plough lane"];
-    const filtered = items.filter((item) => {
-      const text = `${item.title} ${item.description}`.toLowerCase();
-      return terms.some((term) => text.includes(term));
-    });
-    return filtered.length ? filtered : items;
-  }
-
-  function normaliseTeamName(name = "") {
-    return cleanText(name)
-      .toLowerCase()
-      .replace(/^afc\s+/, "")
-      .replace(/\s+fc$/i, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function parseSkyLeagueOneTable(html) {
-    const start = html.indexOf("Sky Bet League One Table");
-    if (start === -1) return [];
-
-    const endCandidates = [
-      html.indexOf("##### Key", start),
-      html.indexOf("Promotion:", start),
-      html.indexOf("Partners", start),
-      html.indexOf("Watch Sky Sports", start)
-    ].filter((n) => n !== -1);
-
-    const end = endCandidates.length ? Math.min(...endCandidates) : start + 40000;
-    const section = html.slice(start, end);
-
-    const rows = [];
-    const rowRegex = /(\d+)\s+(?:Image\s+)?([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
-
-    let match;
-    while ((match = rowRegex.exec(section)) !== null) {
-      const position = Number(match[1]);
-      const teamName = cleanText(match[2]);
-      const playedGames = Number(match[3]);
-      const won = Number(match[4]);
-      const draw = Number(match[5]);
-      const lost = Number(match[6]);
-      const goalsFor = Number(match[7]);
-      const goalsAgainst = Number(match[8]);
-      const goalDifference = Number(match[9]);
-      const points = Number(match[10]);
-
-      if (
-        !Number.isNaN(position) &&
-        !Number.isNaN(playedGames) &&
-        !Number.isNaN(points) &&
-        teamName
-      ) {
-        rows.push({
-          position,
-          team: {
-            id: null,
-            name: teamName,
-            crest: ""
-          },
-          playedGames,
-          won,
-          draw,
-          lost,
-          goalsFor,
-          goalsAgainst,
-          goalDifference,
-          points,
-          form: ""
-        });
-      }
-    }
-
-    return rows;
-  }
-
-  function parseSkyWimbledonMatches(html) {
-    const fixtures = [];
-    const sections = html.split(/(?=###\s+Sky Bet League One)/g);
-
-    for (const section of sections) {
-      if (!section.includes("AFC Wimbledon")) continue;
-
-      const dateHeaderMatch = section.match(/##\s+([A-Za-z]+\s+\d{1,2}[a-z]{0,2}\s+[A-Za-z]+)/i);
-      const sectionDateLabel = dateHeaderMatch ? cleanText(dateHeaderMatch[1]) : "";
-
-      const fixtureMatch =
-        section.match(/View fixture\s+(.+?)\s+(\d+)\s+AFC Wimbledon\s+(\d+)\s+FT/i) ||
-        section.match(/View fixture\s+AFC Wimbledon\s+(\d+)\s+(.+?)\s+(\d+)\s+FT/i) ||
-        section.match(/([A-Za-z0-9 .'\-&]+)\s+(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i) ||
-        section.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+)\s+(\d+)\.\s*Full time\./i);
-
-      const upcomingMatch =
-        section.match(/View fixture\s+AFC Wimbledon are scheduled to play\s+(.+?)\s+\.\s+(\d{1,2}\.\d{2}[ap]m)/i) ||
-        section.match(/View fixture\s+(.+?)\s+are scheduled to play\s+AFC Wimbledon\s+\.\s+(\d{1,2}\.\d{2}[ap]m)/i) ||
-        section.match(/AFC Wimbledon vs (.+?)\. Kick-off at (\d{1,2}:\d{2}[ap]m)/i) ||
-        section.match(/(.+?) vs AFC Wimbledon\. Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
-
-      if (fixtureMatch) {
-        let homeTeam = "";
-        let awayTeam = "";
-        let homeScore = null;
-        let awayScore = null;
-
-        if (fixtureMatch[0].includes("View fixture") && fixtureMatch[0].includes("AFC Wimbledon")) {
-          if (/View fixture\s+(.+?)\s+(\d+)\s+AFC Wimbledon\s+(\d+)\s+FT/i.test(fixtureMatch[0])) {
-            homeTeam = cleanText(fixtureMatch[1]);
-            homeScore = Number(fixtureMatch[2]);
-            awayTeam = "AFC Wimbledon";
-            awayScore = Number(fixtureMatch[3]);
-          } else {
-            homeTeam = "AFC Wimbledon";
-            homeScore = Number(fixtureMatch[1]);
-            awayTeam = cleanText(fixtureMatch[2]);
-            awayScore = Number(fixtureMatch[3]);
-          }
+        if (resultMatch[0].startsWith("AFC Wimbledon")) {
+          home = "AFC Wimbledon";
+          hs = Number(resultMatch[1]);
+          away = resultMatch[2];
+          as = Number(resultMatch[3]);
         } else {
-          if (fixtureMatch[0].startsWith("AFC Wimbledon")) {
-            homeTeam = "AFC Wimbledon";
-            homeScore = Number(fixtureMatch[1]);
-            awayTeam = cleanText(fixtureMatch[2]);
-            awayScore = Number(fixtureMatch[3]);
-          } else {
-            homeTeam = cleanText(fixtureMatch[1]);
-            homeScore = Number(fixtureMatch[2]);
-            awayTeam = "AFC Wimbledon";
-            awayScore = Number(fixtureMatch[3]);
-          }
+          home = resultMatch[1];
+          hs = Number(resultMatch[2]);
+          away = "AFC Wimbledon";
+          as = Number(resultMatch[3]);
         }
 
-        fixtures.push({
-          id: `res-${sectionDateLabel}-${homeTeam}-${awayTeam}`,
-          utcDate: sectionDateLabel || null,
+        items.push({
+          id: `${home}-${away}-${date}`,
+          utcDate: toISODate(date, "15:00"),
           status: "FINISHED",
-          venue: "",
           competition: { name: "League One" },
-          homeTeam: { id: null, name: homeTeam, crest: "" },
-          awayTeam: { id: null, name: awayTeam, crest: "" },
+          homeTeam: { name: home, crest: "" },
+          awayTeam: { name: away, crest: "" },
           score: {
-            home: homeScore,
-            away: awayScore,
-            fullTime: { home: homeScore, away: awayScore }
+            home: hs,
+            away: as,
+            fullTime: { home: hs, away: as }
           }
         });
 
         continue;
       }
 
-      if (upcomingMatch) {
-        let homeTeam = "";
-        let awayTeam = "";
-        let kickOff = cleanText(upcomingMatch[2] || "");
+      const upcomingMatch =
+        block.match(/AFC Wimbledon are scheduled to play (.+?) .*?(\d{1,2}[:.]\d{2}[ap]m)/i) ||
+        block.match(/(.+?) are scheduled to play AFC Wimbledon .*?(\d{1,2}[:.]\d{2}[ap]m)/i);
 
-        if (upcomingMatch[0].includes("AFC Wimbledon are scheduled to play")) {
-          homeTeam = "AFC Wimbledon";
-          awayTeam = cleanText(upcomingMatch[1]);
-        } else if (upcomingMatch[0].includes("scheduled to play AFC Wimbledon")) {
-          homeTeam = cleanText(upcomingMatch[1]);
-          awayTeam = "AFC Wimbledon";
-        } else if (upcomingMatch[0].startsWith("AFC Wimbledon vs")) {
-          homeTeam = "AFC Wimbledon";
-          awayTeam = cleanText(upcomingMatch[1]);
-        } else {
-          homeTeam = cleanText(upcomingMatch[1]);
-          awayTeam = "AFC Wimbledon";
+      if (upcomingMatch) {
+        let home = "AFC Wimbledon";
+        let away = upcomingMatch[1];
+        let time = upcomingMatch[2];
+
+        if (block.includes("play AFC Wimbledon")) {
+          home = upcomingMatch[1];
+          away = "AFC Wimbledon";
         }
 
-        fixtures.push({
-          id: `fix-${sectionDateLabel}-${homeTeam}-${awayTeam}`,
-          utcDate: sectionDateLabel || null,
+        items.push({
+          id: `${home}-${away}-${date}`,
+          utcDate: toISODate(date, time),
           status: "SCHEDULED",
-          venue: "",
           competition: { name: "League One" },
-          homeTeam: { id: null, name: homeTeam, crest: "" },
-          awayTeam: { id: null, name: awayTeam, crest: "" },
+          homeTeam: { name: home, crest: "" },
+          awayTeam: { name: away, crest: "" },
           score: {
             home: null,
             away: null,
             fullTime: { home: null, away: null }
-          },
-          kickOff
+          }
         });
       }
     }
 
-    return fixtures;
+    return items;
+  }
+
+  function parseTable(html) {
+    const rows = [];
+    const start = html.indexOf("Sky Bet League One Table");
+    if (start === -1) return [];
+
+    const section = html.slice(start, start + 30000);
+
+    const regex = /(\d+)\s+([A-Za-z .'-]+)\s+(\d+)\s+(\d+)/g;
+
+    let m;
+    while ((m = regex.exec(section))) {
+      rows.push({
+        position: Number(m[1]),
+        team: { name: m[2], crest: "" },
+        playedGames: Number(m[3]),
+        points: Number(m[4])
+      });
+    }
+
+    return rows;
+  }
+
+  function parseRSS(xml) {
+    return (xml.match(/<item>([\s\S]*?)<\/item>/g) || []).map(item => ({
+      title: cleanText(item.match(/<title>(.*?)<\/title>/)?.[1] || ""),
+      link: cleanText(item.match(/<link>(.*?)<\/link>/)?.[1] || ""),
+      description: cleanText(item.match(/<description>(.*?)<\/description>/)?.[1] || ""),
+      thumbnail: item.match(/url="([^"]+)"/)?.[1] || ""
+    }));
   }
 
   try {
-    const [scoresFixturesRes, tableRes, rssRes] = await Promise.all([
+    const [matchesRes, tableRes, rssRes] = await Promise.all([
       fetch("https://www.skysports.com/afc-wimbledon-scores-fixtures"),
       fetch("https://www.skysports.com/league-1-table"),
       fetch("https://feeds.bbci.co.uk/sport/football/rss.xml")
     ]);
 
-    if (!scoresFixturesRes.ok) throw new Error(`Scores/fixtures request failed: ${scoresFixturesRes.status}`);
-    if (!tableRes.ok) throw new Error(`League One table request failed: ${tableRes.status}`);
-    if (!rssRes.ok) throw new Error(`RSS request failed: ${rssRes.status}`);
-
-    const scoresFixturesHtml = await scoresFixturesRes.text();
+    const matchesHtml = await matchesRes.text();
     const tableHtml = await tableRes.text();
     const rssText = await rssRes.text();
 
-    const parsedMatches = parseSkyWimbledonMatches(scoresFixturesHtml);
-    const standings = parseSkyLeagueOneTable(tableHtml);
+    const matches = parseSkyMatches(matchesHtml);
+    const standings = parseTable(tableHtml);
 
-    const next = parsedMatches.filter((m) => m.status === "SCHEDULED").slice(0, 8);
-    const last = parsedMatches.filter((m) => m.status === "FINISHED").slice(0, 8);
+    const next = matches.filter(m => m.status === "SCHEDULED").slice(0, 6);
+    const last = matches.filter(m => m.status === "FINISHED").slice(0, 6);
 
-    const teamRow =
-      standings.find((row) =>
-        ["wimbledon", "afc wimbledon"].includes(normaliseTeamName(row.team?.name))
-      ) || null;
+    const teamRow = standings.find(r =>
+      r.team.name.toLowerCase().includes("wimbledon")
+    );
 
-    const rssItems = parseRSS(rssText);
-    const news = filterWimbledonNews(rssItems).slice(0, 8);
-
-    const payload = {
+    return new Response(JSON.stringify({
       team: {
         id: TEAM_ID,
         name: "AFC Wimbledon",
@@ -271,32 +168,19 @@ export async function onRequest() {
       last,
       standings,
       stats: {
-        position: teamRow?.position ?? null,
-        points: teamRow?.points ?? null,
-        played: teamRow?.playedGames ?? null
+        position: teamRow?.position || null,
+        points: teamRow?.points || null,
+        played: teamRow?.playedGames || null
       },
-      news
-    };
-
-    return new Response(JSON.stringify(payload), {
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "no-store"
-      }
+      news: parseRSS(rssText).slice(0, 6)
+    }), {
+      headers: { "Content-Type": "application/json" }
     });
+
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: "Could not load Wimbledon data",
-        detail: error.message
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "no-store"
-        }
-      }
-    );
+    return new Response(JSON.stringify({
+      error: "Wimbledon failed",
+      detail: error.message
+    }), { status: 500 });
   }
 }
