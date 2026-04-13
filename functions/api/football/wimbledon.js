@@ -63,7 +63,7 @@ export async function onRequest(context) {
       status: match.status,
       venue: match.venue || "",
       competition: {
-        name: match.competition?.name || ""
+        name: match.competition?.name || "League One"
       },
       homeTeam: {
         id: match.homeTeam?.id,
@@ -88,15 +88,12 @@ export async function onRequest(context) {
 
   function parseSkySportsLeagueOneTable(html) {
     const rows = [];
-
-    // Limit parsing to the League One section where possible
     const sectionMatch =
       html.match(/Sky Bet League One[\s\S]*?(?:View full Sky Bet League One table|Sky Bet League Two|<\/table>)/i) ||
       html.match(/League One[\s\S]*?(?:League Two|<\/table>)/i);
 
     const section = sectionMatch ? sectionMatch[0] : html;
 
-    // Row pattern from rendered table-like text in Sky Sports pages
     const rowRegex =
       /(\d+)\s+Image\s+([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
 
@@ -134,19 +131,16 @@ export async function onRequest(context) {
   }
 
   try {
-    const [teamRes, matchesRes, skyTableRes, rssRes] = await Promise.all([
-      fetch(`${BASE}/teams/${TEAM_ID}`, { headers }),
+    const [matchesRes, skyTableRes, rssRes] = await Promise.all([
       fetch(`${BASE}/teams/${TEAM_ID}/matches?status=SCHEDULED,FINISHED`, { headers }),
       fetch("https://www.skysports.com/football/tables"),
       fetch("https://feeds.bbci.co.uk/sport/football/rss.xml")
     ]);
 
-    if (!teamRes.ok) throw new Error(`Team request failed: ${teamRes.status}`);
     if (!matchesRes.ok) throw new Error(`Matches request failed: ${matchesRes.status}`);
     if (!skyTableRes.ok) throw new Error(`Sky table request failed: ${skyTableRes.status}`);
     if (!rssRes.ok) throw new Error(`RSS request failed: ${rssRes.status}`);
 
-    const teamJson = await teamRes.json();
     const matchesJson = await matchesRes.json();
     const skyTableHtml = await skyTableRes.text();
     const rssText = await rssRes.text();
@@ -174,26 +168,21 @@ export async function onRequest(context) {
 
     const standings = parseSkySportsLeagueOneTable(skyTableHtml);
 
-    const teamNameCandidates = [
-      teamJson?.name || "",
-      teamJson?.shortName || "",
-      "AFC Wimbledon",
-      "Wimbledon"
-    ].map(normaliseTeamName);
-
     const teamRow =
-      standings.find((row) => teamNameCandidates.includes(normaliseTeamName(row.team?.name))) || null;
+      standings.find((row) =>
+        ["wimbledon", "afc wimbledon"].includes(normaliseTeamName(row.team?.name))
+      ) || null;
 
     const rssItems = parseRSS(rssText);
     const news = filterWimbledonNews(rssItems).slice(0, 8);
 
     const payload = {
       team: {
-        id: teamJson?.id || TEAM_ID,
-        name: teamJson?.name || "AFC Wimbledon",
-        shortName: teamJson?.shortName || "Wimbledon",
-        tla: teamJson?.tla || "AWF",
-        crest: teamJson?.crest || ""
+        id: TEAM_ID,
+        name: "AFC Wimbledon",
+        shortName: "Wimbledon",
+        tla: "AWF",
+        crest: ""
       },
       next: upcoming,
       last: finished,
