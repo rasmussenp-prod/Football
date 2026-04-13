@@ -88,34 +88,50 @@ export async function onRequest(context) {
 
   function parseSkySportsLeagueOneTable(html) {
     const rows = [];
-    const sectionMatch =
-      html.match(/Sky Bet League One[\s\S]*?(?:View full Sky Bet League One table|Sky Bet League Two|<\/table>)/i) ||
-      html.match(/League One[\s\S]*?(?:League Two|<\/table>)/i);
+    const rowMatches = html.match(/<tr[\s\S]*?<\/tr>/gi) || [];
 
-    const section = sectionMatch ? sectionMatch[0] : html;
+    for (const row of rowMatches) {
+      const cols = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((c) =>
+        cleanText(c[1].replace(/<[^>]+>/g, ""))
+      );
 
-    const rowRegex =
-      /(\d+)\s+Image\s+([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
+      // Expected columns:
+      // Pos | Team | P | W | D | L | F | A | GD | Pts
+      if (cols.length >= 10) {
+        const position = Number(cols[0]);
+        const playedGames = Number(cols[2]);
+        const won = Number(cols[3]);
+        const draw = Number(cols[4]);
+        const lost = Number(cols[5]);
+        const goalsFor = Number(cols[6]);
+        const goalsAgainst = Number(cols[7]);
+        const goalDifference = Number(cols[8]);
+        const points = Number(cols[9]);
 
-    let match;
-    while ((match = rowRegex.exec(section)) !== null) {
-      rows.push({
-        position: Number(match[1]),
-        team: {
-          id: null,
-          name: cleanText(match[2]),
-          crest: ""
-        },
-        playedGames: Number(match[3]),
-        won: Number(match[4]),
-        draw: Number(match[5]),
-        lost: Number(match[6]),
-        goalsFor: Number(match[7]),
-        goalsAgainst: Number(match[8]),
-        goalDifference: Number(match[9]),
-        points: Number(match[10]),
-        form: ""
-      });
+        if (
+          !Number.isNaN(position) &&
+          !Number.isNaN(playedGames) &&
+          !Number.isNaN(points)
+        ) {
+          rows.push({
+            position,
+            team: {
+              id: null,
+              name: cols[1],
+              crest: ""
+            },
+            playedGames,
+            won,
+            draw,
+            lost,
+            goalsFor,
+            goalsAgainst,
+            goalDifference,
+            points,
+            form: ""
+          });
+        }
+      }
     }
 
     return rows;
@@ -133,7 +149,7 @@ export async function onRequest(context) {
   try {
     const [matchesRes, skyTableRes, rssRes] = await Promise.all([
       fetch(`${BASE}/teams/${TEAM_ID}/matches?status=SCHEDULED,FINISHED`, { headers }),
-      fetch("https://www.skysports.com/football/tables"),
+      fetch("https://www.skysports.com/league-1-table"),
       fetch("https://feeds.bbci.co.uk/sport/football/rss.xml")
     ]);
 
