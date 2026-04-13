@@ -1,11 +1,5 @@
-export async function onRequest(context) {
-  const API_KEY = context.env.FOOTBALL_DATA_KEY;
-  const BASE = "https://api.football-data.org/v4";
+export async function onRequest() {
   const TEAM_ID = 1044;
-
-  const headers = {
-    "X-Auth-Token": API_KEY
-  };
 
   function cleanText(value = "") {
     return String(value)
@@ -56,36 +50,6 @@ export async function onRequest(context) {
     return filtered.length ? filtered : items;
   }
 
-  function formatMatch(match) {
-    return {
-      id: match.id,
-      utcDate: match.utcDate,
-      status: match.status,
-      venue: match.venue || "",
-      competition: {
-        name: match.competition?.name || "League One"
-      },
-      homeTeam: {
-        id: match.homeTeam?.id,
-        name: match.homeTeam?.name || "",
-        crest: match.homeTeam?.crest || ""
-      },
-      awayTeam: {
-        id: match.awayTeam?.id,
-        name: match.awayTeam?.name || "",
-        crest: match.awayTeam?.crest || ""
-      },
-      score: {
-        home: match.score?.fullTime?.home ?? null,
-        away: match.score?.fullTime?.away ?? null,
-        fullTime: {
-          home: match.score?.fullTime?.home ?? null,
-          away: match.score?.fullTime?.away ?? null
-        }
-      }
-    };
-  }
-
   function normaliseTeamName(name = "") {
     return cleanText(name)
       .toLowerCase()
@@ -95,31 +59,27 @@ export async function onRequest(context) {
       .trim();
   }
 
-  function parseSkySportsLeagueOneTable(html) {
+  function parseSkyLeagueOneTable(html) {
     const start = html.indexOf("Sky Bet League One Table");
     if (start === -1) return [];
 
     const endCandidates = [
       html.indexOf("##### Key", start),
       html.indexOf("Promotion:", start),
-      html.indexOf("Partners", start)
+      html.indexOf("Partners", start),
+      html.indexOf("Watch Sky Sports", start)
     ].filter((n) => n !== -1);
 
-    const end = endCandidates.length ? Math.min(...endCandidates) : start + 30000;
+    const end = endCandidates.length ? Math.min(...endCandidates) : start + 40000;
     const section = html.slice(start, end);
 
     const rows = [];
-    const rowRegex = /(\d+)\s+(?:【\d+†Image†www\.skysports\.com】\s+|Image\s+)(.+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
+    const rowRegex = /(\d+)\s+(?:Image\s+)?([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
 
     let match;
     while ((match = rowRegex.exec(section)) !== null) {
-      const teamNameRaw = match[2]
-        .replace(/【\d+†/g, "")
-        .replace(/】/g, "")
-        .replace(/†www\.skysports\.com/g, "")
-        .trim();
-
       const position = Number(match[1]);
+      const teamName = cleanText(match[2]);
       const playedGames = Number(match[3]);
       const won = Number(match[4]);
       const draw = Number(match[5]);
@@ -132,13 +92,14 @@ export async function onRequest(context) {
       if (
         !Number.isNaN(position) &&
         !Number.isNaN(playedGames) &&
-        !Number.isNaN(points)
+        !Number.isNaN(points) &&
+        teamName
       ) {
         rows.push({
           position,
           team: {
             id: null,
-            name: cleanText(teamNameRaw),
+            name: teamName,
             crest: ""
           },
           playedGames,
@@ -157,43 +118,138 @@ export async function onRequest(context) {
     return rows;
   }
 
+  function parseSkyWimbledonMatches(html) {
+    const fixtures = [];
+    const sections = html.split(/(?=###\s+Sky Bet League One)/g);
+
+    for (const section of sections) {
+      if (!section.includes("AFC Wimbledon")) continue;
+
+      const dateHeaderMatch = section.match(/##\s+([A-Za-z]+\s+\d{1,2}[a-z]{0,2}\s+[A-Za-z]+)/i);
+      const sectionDateLabel = dateHeaderMatch ? cleanText(dateHeaderMatch[1]) : "";
+
+      const fixtureMatch =
+        section.match(/View fixture\s+(.+?)\s+(\d+)\s+AFC Wimbledon\s+(\d+)\s+FT/i) ||
+        section.match(/View fixture\s+AFC Wimbledon\s+(\d+)\s+(.+?)\s+(\d+)\s+FT/i) ||
+        section.match(/([A-Za-z0-9 .'\-&]+)\s+(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i) ||
+        section.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+)\s+(\d+)\.\s*Full time\./i);
+
+      const upcomingMatch =
+        section.match(/View fixture\s+AFC Wimbledon are scheduled to play\s+(.+?)\s+\.\s+(\d{1,2}\.\d{2}[ap]m)/i) ||
+        section.match(/View fixture\s+(.+?)\s+are scheduled to play\s+AFC Wimbledon\s+\.\s+(\d{1,2}\.\d{2}[ap]m)/i) ||
+        section.match(/AFC Wimbledon vs (.+?)\. Kick-off at (\d{1,2}:\d{2}[ap]m)/i) ||
+        section.match(/(.+?) vs AFC Wimbledon\. Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+
+      if (fixtureMatch) {
+        let homeTeam = "";
+        let awayTeam = "";
+        let homeScore = null;
+        let awayScore = null;
+
+        if (fixtureMatch[0].includes("View fixture") && fixtureMatch[0].includes("AFC Wimbledon")) {
+          if (/View fixture\s+(.+?)\s+(\d+)\s+AFC Wimbledon\s+(\d+)\s+FT/i.test(fixtureMatch[0])) {
+            homeTeam = cleanText(fixtureMatch[1]);
+            homeScore = Number(fixtureMatch[2]);
+            awayTeam = "AFC Wimbledon";
+            awayScore = Number(fixtureMatch[3]);
+          } else {
+            homeTeam = "AFC Wimbledon";
+            homeScore = Number(fixtureMatch[1]);
+            awayTeam = cleanText(fixtureMatch[2]);
+            awayScore = Number(fixtureMatch[3]);
+          }
+        } else {
+          if (fixtureMatch[0].startsWith("AFC Wimbledon")) {
+            homeTeam = "AFC Wimbledon";
+            homeScore = Number(fixtureMatch[1]);
+            awayTeam = cleanText(fixtureMatch[2]);
+            awayScore = Number(fixtureMatch[3]);
+          } else {
+            homeTeam = cleanText(fixtureMatch[1]);
+            homeScore = Number(fixtureMatch[2]);
+            awayTeam = "AFC Wimbledon";
+            awayScore = Number(fixtureMatch[3]);
+          }
+        }
+
+        fixtures.push({
+          id: `res-${sectionDateLabel}-${homeTeam}-${awayTeam}`,
+          utcDate: sectionDateLabel || null,
+          status: "FINISHED",
+          venue: "",
+          competition: { name: "League One" },
+          homeTeam: { id: null, name: homeTeam, crest: "" },
+          awayTeam: { id: null, name: awayTeam, crest: "" },
+          score: {
+            home: homeScore,
+            away: awayScore,
+            fullTime: { home: homeScore, away: awayScore }
+          }
+        });
+
+        continue;
+      }
+
+      if (upcomingMatch) {
+        let homeTeam = "";
+        let awayTeam = "";
+        let kickOff = cleanText(upcomingMatch[2] || "");
+
+        if (upcomingMatch[0].includes("AFC Wimbledon are scheduled to play")) {
+          homeTeam = "AFC Wimbledon";
+          awayTeam = cleanText(upcomingMatch[1]);
+        } else if (upcomingMatch[0].includes("scheduled to play AFC Wimbledon")) {
+          homeTeam = cleanText(upcomingMatch[1]);
+          awayTeam = "AFC Wimbledon";
+        } else if (upcomingMatch[0].startsWith("AFC Wimbledon vs")) {
+          homeTeam = "AFC Wimbledon";
+          awayTeam = cleanText(upcomingMatch[1]);
+        } else {
+          homeTeam = cleanText(upcomingMatch[1]);
+          awayTeam = "AFC Wimbledon";
+        }
+
+        fixtures.push({
+          id: `fix-${sectionDateLabel}-${homeTeam}-${awayTeam}`,
+          utcDate: sectionDateLabel || null,
+          status: "SCHEDULED",
+          venue: "",
+          competition: { name: "League One" },
+          homeTeam: { id: null, name: homeTeam, crest: "" },
+          awayTeam: { id: null, name: awayTeam, crest: "" },
+          score: {
+            home: null,
+            away: null,
+            fullTime: { home: null, away: null }
+          },
+          kickOff
+        });
+      }
+    }
+
+    return fixtures;
+  }
+
   try {
-    const [matchesRes, skyTableRes, rssRes] = await Promise.all([
-      fetch(`${BASE}/teams/${TEAM_ID}/matches?status=SCHEDULED,FINISHED`, { headers }),
+    const [scoresFixturesRes, tableRes, rssRes] = await Promise.all([
+      fetch("https://www.skysports.com/afc-wimbledon-scores-fixtures"),
       fetch("https://www.skysports.com/league-1-table"),
       fetch("https://feeds.bbci.co.uk/sport/football/rss.xml")
     ]);
 
-    if (!matchesRes.ok) throw new Error(`Matches request failed: ${matchesRes.status}`);
-    if (!skyTableRes.ok) throw new Error(`Sky table request failed: ${skyTableRes.status}`);
+    if (!scoresFixturesRes.ok) throw new Error(`Scores/fixtures request failed: ${scoresFixturesRes.status}`);
+    if (!tableRes.ok) throw new Error(`League One table request failed: ${tableRes.status}`);
     if (!rssRes.ok) throw new Error(`RSS request failed: ${rssRes.status}`);
 
-    const matchesJson = await matchesRes.json();
-    const skyTableHtml = await skyTableRes.text();
+    const scoresFixturesHtml = await scoresFixturesRes.text();
+    const tableHtml = await tableRes.text();
     const rssText = await rssRes.text();
 
-    const allMatches = Array.isArray(matchesJson.matches) ? matchesJson.matches : [];
-    const now = Date.now();
+    const parsedMatches = parseSkyWimbledonMatches(scoresFixturesHtml);
+    const standings = parseSkyLeagueOneTable(tableHtml);
 
-    const upcoming = allMatches
-      .filter((m) => {
-        const t = new Date(m.utcDate).getTime();
-        return !Number.isNaN(t) && t >= now;
-      })
-      .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))
-      .slice(0, 8)
-      .map(formatMatch);
-
-    const finished = allMatches
-      .filter((m) => {
-        const t = new Date(m.utcDate).getTime();
-        return !Number.isNaN(t) && t < now;
-      })
-      .sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate))
-      .slice(0, 8)
-      .map(formatMatch);
-
-    const standings = parseSkySportsLeagueOneTable(skyTableHtml);
+    const next = parsedMatches.filter((m) => m.status === "SCHEDULED").slice(0, 8);
+    const last = parsedMatches.filter((m) => m.status === "FINISHED").slice(0, 8);
 
     const teamRow =
       standings.find((row) =>
@@ -211,8 +267,8 @@ export async function onRequest(context) {
         tla: "AWF",
         crest: ""
       },
-      next: upcoming,
-      last: finished,
+      next,
+      last,
       standings,
       stats: {
         position: teamRow?.position ?? null,
