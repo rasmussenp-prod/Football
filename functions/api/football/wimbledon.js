@@ -86,57 +86,6 @@ export async function onRequest(context) {
     };
   }
 
-  function parseSkySportsLeagueOneTable(html) {
-    const rows = [];
-    const rowMatches = html.match(/<tr[\s\S]*?<\/tr>/gi) || [];
-
-    for (const row of rowMatches) {
-      const cols = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((c) =>
-        cleanText(c[1].replace(/<[^>]+>/g, ""))
-      );
-
-      // Expected columns:
-      // Pos | Team | P | W | D | L | F | A | GD | Pts
-      if (cols.length >= 10) {
-        const position = Number(cols[0]);
-        const playedGames = Number(cols[2]);
-        const won = Number(cols[3]);
-        const draw = Number(cols[4]);
-        const lost = Number(cols[5]);
-        const goalsFor = Number(cols[6]);
-        const goalsAgainst = Number(cols[7]);
-        const goalDifference = Number(cols[8]);
-        const points = Number(cols[9]);
-
-        if (
-          !Number.isNaN(position) &&
-          !Number.isNaN(playedGames) &&
-          !Number.isNaN(points)
-        ) {
-          rows.push({
-            position,
-            team: {
-              id: null,
-              name: cols[1],
-              crest: ""
-            },
-            playedGames,
-            won,
-            draw,
-            lost,
-            goalsFor,
-            goalsAgainst,
-            goalDifference,
-            points,
-            form: ""
-          });
-        }
-      }
-    }
-
-    return rows;
-  }
-
   function normaliseTeamName(name = "") {
     return cleanText(name)
       .toLowerCase()
@@ -144,6 +93,68 @@ export async function onRequest(context) {
       .replace(/\s+fc$/i, "")
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function parseSkySportsLeagueOneTable(html) {
+    const start = html.indexOf("Sky Bet League One Table");
+    if (start === -1) return [];
+
+    const endCandidates = [
+      html.indexOf("##### Key", start),
+      html.indexOf("Promotion:", start),
+      html.indexOf("Partners", start)
+    ].filter((n) => n !== -1);
+
+    const end = endCandidates.length ? Math.min(...endCandidates) : start + 30000;
+    const section = html.slice(start, end);
+
+    const rows = [];
+    const rowRegex = /(\d+)\s+(?:【\d+†Image†www\.skysports\.com】\s+|Image\s+)(.+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
+
+    let match;
+    while ((match = rowRegex.exec(section)) !== null) {
+      const teamNameRaw = match[2]
+        .replace(/【\d+†/g, "")
+        .replace(/】/g, "")
+        .replace(/†www\.skysports\.com/g, "")
+        .trim();
+
+      const position = Number(match[1]);
+      const playedGames = Number(match[3]);
+      const won = Number(match[4]);
+      const draw = Number(match[5]);
+      const lost = Number(match[6]);
+      const goalsFor = Number(match[7]);
+      const goalsAgainst = Number(match[8]);
+      const goalDifference = Number(match[9]);
+      const points = Number(match[10]);
+
+      if (
+        !Number.isNaN(position) &&
+        !Number.isNaN(playedGames) &&
+        !Number.isNaN(points)
+      ) {
+        rows.push({
+          position,
+          team: {
+            id: null,
+            name: cleanText(teamNameRaw),
+            crest: ""
+          },
+          playedGames,
+          won,
+          draw,
+          lost,
+          goalsFor,
+          goalsAgainst,
+          goalDifference,
+          points,
+          form: ""
+        });
+      }
+    }
+
+    return rows;
   }
 
   try {
