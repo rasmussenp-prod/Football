@@ -151,8 +151,6 @@
       font: inherit;
     }
 
-    .icon-btn:hover { border-color: var(--line-strong); }
-
     .updated-label {
       font-size: 0.75rem;
       font-style: italic;
@@ -226,18 +224,6 @@
         linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 35%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.82) 100%);
       pointer-events: none;
       z-index: 1;
-    }
-
-    .hero-art {
-      position: absolute;
-      inset: 0;
-      background-image: var(--hero-art, none);
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: 40%;
-      opacity: 0.08;
-      z-index: 0;
-      pointer-events: none;
     }
 
     .hero-stage {
@@ -420,24 +406,12 @@
       margin-bottom: 12px;
     }
 
-    .panel-head h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
+    .panel-head h3 { margin: 0; font-size: 1rem; }
+    .subtle { color: var(--muted); font-size: 0.8rem; }
 
-    .subtle {
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
+    .match-list, .news-list { display: grid; gap: 10px; }
 
-    .match-list,
-    .news-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .match-item,
-    .news-item {
+    .match-item, .news-item {
       padding: 12px;
       border-radius: 18px;
       background: rgba(255,255,255,0.035);
@@ -543,10 +517,7 @@
     .table-wrap { overflow-x: auto; }
     table { width: 100%; min-width: 560px; border-collapse: collapse; }
 
-    th, td {
-      text-align: left;
-      padding: 12px 10px;
-    }
+    th, td { text-align: left; padding: 12px 10px; }
 
     th {
       color: var(--muted);
@@ -723,13 +694,12 @@
                 <div class="team-list" id="teamToggle"></div>
               </div>
             </div>
-            <div class="updated-label" id="updatedLabel">Updated just now</div>
+            <div class="updated-label" id="updatedLabel">Loaded</div>
           </div>
         </div>
       </header>
 
       <section class="hero card">
-        <div class="hero-art" id="heroArt"></div>
         <div class="hero-stage">
           <div class="hero-headline" id="heroEyebrow">Loading latest football data</div>
           <div class="hero-match" id="heroMatch">
@@ -797,8 +767,6 @@
   </div>
 
   <script>
-    const AUTO_REFRESH_MS = 0;
-
     const TEAM_CONFIG = {
       tottenham: {
         key: "tottenham",
@@ -825,8 +793,6 @@
 
     let activeTeamKey = localStorage.getItem(STORAGE_KEYS.team) || "tottenham";
     let activePanelId = localStorage.getItem(STORAGE_KEYS.panel) || "fixturesPanelCard";
-    let autoRefreshTimer = null;
-    let latestSnapshot = null;
 
     const els = {
       teamToggle: document.getElementById("teamToggle"),
@@ -839,7 +805,6 @@
       heroEyebrow: document.getElementById("heroEyebrow"),
       heroMatch: document.getElementById("heroMatch"),
       heroSubdetail: document.getElementById("heroSubdetail"),
-      heroArt: document.getElementById("heroArt"),
       statPosition: document.getElementById("statPosition"),
       statPositionSub: document.getElementById("statPositionSub"),
       statPoints: document.getElementById("statPoints"),
@@ -853,6 +818,15 @@
       newsPanel: document.getElementById("newsPanel"),
       newsSubtle: document.getElementById("newsSubtle")
     };
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
 
     function applyTheme() {
       const team = TEAM_CONFIG[activeTeamKey];
@@ -884,7 +858,7 @@
           applyTheme();
           renderTeamButtons();
           closeMenu();
-          await loadDashboard({ initial: false });
+          await loadDashboard();
         });
       });
     }
@@ -932,218 +906,38 @@
       return response.json();
     }
 
-    async function loadDashboard({ initial = false } = {}) {
-      const team = TEAM_CONFIG[activeTeamKey];
-      els.updatedLabel.textContent = initial ? "Loading…" : "Updating…";
-
-      const [teamDataResult, liveDataResult, newsDataResult] = await Promise.allSettled([
-        fetchJson(`/api/football/team?team=${team.key}`),
-        fetchJson(`/api/football/live?team=${team.teamId}&season=2025`),
-        fetchJson(`/api/news/bbc-football?team=${team.key}`)
-      ]);
-
-      const teamData = teamDataResult.status === "fulfilled" ? teamDataResult.value : latestSnapshot?.teamData;
-      const liveData = liveDataResult.status === "fulfilled" ? liveDataResult.value : latestSnapshot?.liveData || {};
-      const newsData = newsDataResult.status === "fulfilled" ? newsDataResult.value : latestSnapshot?.newsData || {};
-
-      if (!teamData) {
-        els.updatedLabel.textContent = "Update failed";
-        return;
-      }
-
-      latestSnapshot = { teamData, liveData, newsData };
-
-      try {
-        renderBrand(teamData, team);
-        renderHero(teamData, liveData, team);
-        renderStats(teamData, team);
-        renderFixtures(teamData, team);
-        renderResults(teamData, team);
-        renderTable(teamData, team);
-        renderNews(teamData, newsData, team);
-        els.updatedLabel.textContent = `Updated ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
-      } catch (error) {
-        console.error(error);
-        els.updatedLabel.textContent = "Update failed";
-      }
-    }
-
-    function renderBrand(data, team) {
-      const crest =
-        data?.team?.crest ||
-        data?.team?.logo ||
-        data?.crest ||
-        data?.standings?.find?.(r => String(r?.team?.id || r?.id || "") === String(team.teamId))?.team?.crest ||
-        "";
-
-      if (crest) {
-        els.brandLogo.src = crest;
-        els.brandLogo.hidden = false;
-        els.brandFallback.hidden = true;
-      } else {
-        els.brandLogo.hidden = true;
-        els.brandFallback.hidden = false;
-      }
-    }
-
-    function getDateValue(item) {
-      const raw = item?.utcDate || item?.date || item?.fixture?.date || item?.kickoff || item?.kickOff || null;
+    function parseMatchDate(raw) {
       if (!raw) return null;
       const d = new Date(raw);
       return Number.isNaN(d.getTime()) ? null : d;
     }
 
-    function isLiveMatchStatus(status) {
-      const s = String(status || "").toUpperCase();
-      return ["IN_PLAY", "LIVE", "PAUSED", "1H", "HT", "2H", "ET", "P"].includes(s);
+    function safeScore(value) {
+      return value === null || value === undefined ? "–" : String(value);
     }
 
-    function pickHeroFixture(data, liveData, team) {
-      if (liveData?.live && liveData?.fixture) {
-        return {
-          mode: "live",
-          competition: liveData.fixture?.league?.name || team.leagueName,
-          date: liveData.fixture?.fixture?.date || null,
-          homeName: liveData.fixture?.teams?.home?.name || "Home",
-          awayName: liveData.fixture?.teams?.away?.name || "Away",
-          homeScore: liveData.fixture?.goals?.home,
-          awayScore: liveData.fixture?.goals?.away,
-          homeCrest: liveData.fixture?.teams?.home?.logo || "",
-          awayCrest: liveData.fixture?.teams?.away?.logo || "",
-          statusText: liveData.fixture?.fixture?.status?.long || "LIVE",
-          venue: liveData.fixture?.fixture?.venue?.name || ""
-        };
-      }
-
-      const nextMatches = Array.isArray(data?.next) ? data.next : [];
-      const liveMatches = nextMatches.filter(match => isLiveMatchStatus(match?.status));
-
-      if (liveMatches.length) {
-        const live = liveMatches[0];
-        return {
-          mode: "live",
-          competition: live?.competition?.name || team.leagueName,
-          date: live?.utcDate || live?.date || null,
-          homeName: live?.homeTeam?.name || "Home",
-          awayName: live?.awayTeam?.name || "Away",
-          homeScore: live?.score?.fullTime?.home ?? live?.score?.home ?? null,
-          awayScore: live?.score?.fullTime?.away ?? live?.score?.away ?? null,
-          homeCrest: live?.homeTeam?.crest || "",
-          awayCrest: live?.awayTeam?.crest || "",
-          statusText: live?.status || "LIVE",
-          venue: live?.venue || ""
-        };
-      }
-
-      const upcoming = nextMatches
-        .map(match => ({ ...match, _dateValue: getDateValue(match) }))
-        .filter(match => match._dateValue && match._dateValue.getTime() >= Date.now())
-        .sort((a, b) => a._dateValue - b._dateValue)[0];
-
-      if (upcoming) {
-        return {
-          mode: "next",
-          competition: upcoming?.competition?.name || team.leagueName,
-          date: upcoming?.utcDate || upcoming?.date || null,
-          homeName: upcoming?.homeTeam?.name || "Home",
-          awayName: upcoming?.awayTeam?.name || "Away",
-          homeScore: null,
-          awayScore: null,
-          homeCrest: upcoming?.homeTeam?.crest || "",
-          awayCrest: upcoming?.awayTeam?.crest || "",
-          statusText: "",
-          venue: upcoming?.venue || ""
-        };
-      }
-
-      const last = Array.isArray(data?.last) ? data.last[0] : null;
-      if (last) {
-        return {
-          mode: "result",
-          competition: last?.competition?.name || team.leagueName,
-          date: last?.utcDate || last?.date || null,
-          homeName: last?.homeTeam?.name || "Home",
-          awayName: last?.awayTeam?.name || "Away",
-          homeScore: last?.score?.fullTime?.home ?? last?.score?.home ?? null,
-          awayScore: last?.score?.fullTime?.away ?? last?.score?.away ?? null,
-          homeCrest: last?.homeTeam?.crest || "",
-          awayCrest: last?.awayTeam?.crest || "",
-          statusText: "FT",
-          venue: last?.venue || ""
-        };
-      }
-
-      return null;
+    function ordinal(n) {
+      const num = Number(n);
+      if (!num) return "–";
+      const s = ["th", "st", "nd", "rd"];
+      const v = num % 100;
+      return `${num}${s[(v - 20) % 10] || s[v] || s[0]}`;
     }
 
-    function renderHero(data, liveData, team) {
-      const fixture = pickHeroFixture(data, liveData, team);
-
-      if (!fixture) {
-        els.heroEyebrow.textContent = team.leagueName;
-        els.heroMatch.innerHTML = `<div class="empty">No match data available</div>`;
-        els.heroSubdetail.textContent = "";
-        return;
-      }
-
-      const date = fixture.date ? new Date(fixture.date) : null;
-      const dateLabel = date ? date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "Date TBC";
-      els.heroEyebrow.textContent = `${dateLabel} · ${fixture.competition || team.leagueName}`;
-
-      const middleMarkup = fixture.mode === "live" || fixture.mode === "result"
-        ? `<div class="hero-core"><span class="hero-score-big">${safeScore(fixture.homeScore)}</span><span class="hero-score-divider"></span><span class="hero-score-big">${safeScore(fixture.awayScore)}</span></div>`
-        : `<div class="hero-core"><span class="hero-kickoff-time">${date ? date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "TBC"}</span></div>`;
-
-      els.heroMatch.innerHTML = `
-        <div class="hero-side home">
-          <div class="hero-team">${escapeHtml(fixture.homeName)}</div>
-          <div class="hero-crest-wrap">${renderCrest(fixture.homeCrest, fixture.homeName)}</div>
-        </div>
-        <div class="hero-middle">
-          ${middleMarkup}
-          <div class="hero-status">${escapeHtml(fixture.mode === "next" ? "" : fixture.statusText || "")}</div>
-        </div>
-        <div class="hero-side away">
-          <div class="hero-crest-wrap">${renderCrest(fixture.awayCrest, fixture.awayName)}</div>
-          <div class="hero-team">${escapeHtml(fixture.awayName)}</div>
-        </div>
-      `;
-
-      if (fixture.mode === "next" && date) {
-        els.heroSubdetail.textContent = `${relativeFromNow(date)}${fixture.venue ? ` · Venue: ${fixture.venue}` : ""}`;
-      } else {
-        els.heroSubdetail.textContent = fixture.venue ? `Venue: ${fixture.venue}` : "";
-      }
-
-      const art = fixture.awayCrest || fixture.homeCrest || "";
-      els.heroArt.style.setProperty("--hero-art", art ? `url("${escapeHtml(art)}")` : "none");
+    function relativeFromNow(date) {
+      const diff = date.getTime() - Date.now();
+      const mins = Math.round(Math.abs(diff) / 60000);
+      const hours = Math.round(Math.abs(diff) / 3600000);
+      const days = Math.round(Math.abs(diff) / 86400000);
+      if (mins < 60) return diff >= 0 ? `in ${mins}m` : `${mins}m ago`;
+      if (hours < 48) return diff >= 0 ? `in ${hours}h` : `${hours}h ago`;
+      return diff >= 0 ? `in ${days}d` : `${days}d ago`;
     }
 
-    function renderStats(data, team) {
-      const stats = data?.stats || {};
-      const standings = Array.isArray(data?.standings) ? data.standings : [];
-      const row = standings.find(r => String(r?.team?.id || r?.id || "") === String(team.teamId));
-
-      const position = stats.position ?? row?.position ?? row?.rank ?? null;
-      const points = stats.points ?? row?.points ?? null;
-      const played = stats.played ?? row?.playedGames ?? row?.all?.played ?? null;
-
-      els.statPosition.textContent = position ? ordinal(position) : "–";
-      els.statPositionSub.textContent = position ? `Current ${team.leagueName} position` : "League position unavailable";
-      els.statPoints.textContent = points ?? "–";
-      els.statPointsSub.textContent = played ? `${played} played` : "Points unavailable";
-    }
-
-    function renderFixtures(data, team) {
-      const fixtures = Array.isArray(data?.next) ? data.next : [];
-      els.fixturesSubtle.textContent = `${fixtures.length} upcoming`;
-
-      if (!fixtures.length) {
-        els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
-        return;
-      }
-
-      els.fixturesPanel.innerHTML = fixtures.slice(0, 8).map(match => renderMatchCard(match, "fixture", team)).join("");
+    function renderCrest(src, teamName) {
+      if (src) return `<img src="${escapeHtml(src)}" alt="${escapeHtml(teamName)} crest" loading="lazy" />`;
+      const initials = String(teamName || "?").split(/\s+/).map(p => p[0] || "").join("").slice(0, 3).toUpperCase();
+      return `<div class="hero-crest-fallback">${escapeHtml(initials)}</div>`;
     }
 
     function getHighlightsLink(match) {
@@ -1154,20 +948,88 @@
       return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
     }
 
-    function renderResults(data, team) {
-      const results = Array.isArray(data?.last) ? data.last : [];
-      els.resultsSubtle.textContent = `${results.length} recent`;
+    function pickHeroFixture(data, team) {
+      const live = Array.isArray(data?.next)
+        ? data.next.find(m => ["IN_PLAY", "LIVE", "PAUSED", "1H", "HT", "2H", "ET", "P"].includes(String(m?.status || "").toUpperCase()))
+        : null;
+      if (live) return { mode: "live", fixture: live };
 
-      if (!results.length) {
-        els.resultsPanel.innerHTML = `<div class="empty">No recent results returned.</div>`;
+      const upcoming = Array.isArray(data?.next)
+        ? data.next
+            .map(m => ({ ...m, _date: parseMatchDate(m?.utcDate || m?.date) }))
+            .filter(m => m._date && m._date.getTime() >= Date.now())
+            .sort((a, b) => a._date - b._date)[0]
+        : null;
+      if (upcoming) return { mode: "next", fixture: upcoming };
+
+      const last = Array.isArray(data?.last) ? data.last[0] : null;
+      if (last) return { mode: "result", fixture: last };
+
+      return null;
+    }
+
+    function renderHero(data, team) {
+      const selected = pickHeroFixture(data, team);
+
+      if (!selected) {
+        els.heroEyebrow.textContent = team.leagueName;
+        els.heroMatch.innerHTML = `<div class="empty">No match data available</div>`;
+        els.heroSubdetail.textContent = "";
         return;
       }
 
-      els.resultsPanel.innerHTML = results.slice(0, 8).map(match => renderMatchCard(match, "result", team)).join("");
+      const fixture = selected.fixture;
+      const mode = selected.mode;
+      const date = parseMatchDate(fixture?.utcDate || fixture?.date);
+      const competition = fixture?.competition?.name || team.leagueName;
+
+      els.heroEyebrow.textContent = `${date ? date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" }) : "Date TBC"} · ${competition}`;
+
+      const middleMarkup = mode === "live" || mode === "result"
+        ? `<div class="hero-core"><span class="hero-score-big">${safeScore(fixture?.score?.fullTime?.home ?? fixture?.score?.home)}</span><span class="hero-score-divider"></span><span class="hero-score-big">${safeScore(fixture?.score?.fullTime?.away ?? fixture?.score?.away)}</span></div>`
+        : `<div class="hero-core"><span class="hero-kickoff-time">${date ? date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "TBC"}</span></div>`;
+
+      els.heroMatch.innerHTML = `
+        <div class="hero-side home">
+          <div class="hero-team">${escapeHtml(fixture?.homeTeam?.name || "Home")}</div>
+          <div class="hero-crest-wrap">${renderCrest(fixture?.homeTeam?.crest || "", fixture?.homeTeam?.name || "Home")}</div>
+        </div>
+        <div class="hero-middle">
+          ${middleMarkup}
+          <div class="hero-status">${escapeHtml(mode === "next" ? "" : (fixture?.status || "FT"))}</div>
+        </div>
+        <div class="hero-side away">
+          <div class="hero-crest-wrap">${renderCrest(fixture?.awayTeam?.crest || "", fixture?.awayTeam?.name || "Away")}</div>
+          <div class="hero-team">${escapeHtml(fixture?.awayTeam?.name || "Away")}</div>
+        </div>
+      `;
+
+      els.heroSubdetail.textContent =
+        mode === "next" && date
+          ? `${relativeFromNow(date)}${fixture?.venue ? ` · Venue: ${fixture.venue}` : ""}`
+          : (fixture?.venue ? `Venue: ${fixture.venue}` : "");
+    }
+
+    function renderStats(data, team) {
+      const stats = data?.stats || {};
+      const standings = Array.isArray(data?.standings) ? data.standings : [];
+      const row = standings.find(r =>
+        String(r?.team?.id || "") === String(team.teamId) ||
+        String(r?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase()
+      );
+
+      const position = stats.position ?? row?.position ?? null;
+      const points = stats.points ?? row?.points ?? null;
+      const played = stats.played ?? row?.playedGames ?? null;
+
+      els.statPosition.textContent = position ? ordinal(position) : "–";
+      els.statPositionSub.textContent = position ? `Current ${team.leagueName} position` : "League position unavailable";
+      els.statPoints.textContent = points ?? "–";
+      els.statPointsSub.textContent = played ? `${played} played` : "Points unavailable";
     }
 
     function renderMatchCard(match, mode, team) {
-      const date = match?.utcDate || match?.date ? new Date(match?.utcDate || match?.date) : null;
+      const date = parseMatchDate(match?.utcDate || match?.date);
       const competition = match?.competition?.name || team.leagueName;
       const home = match?.homeTeam?.name || "Home";
       const away = match?.awayTeam?.name || "Away";
@@ -1203,6 +1065,30 @@
       `;
     }
 
+    function renderFixtures(data, team) {
+      const fixtures = Array.isArray(data?.next) ? data.next : [];
+      els.fixturesSubtle.textContent = `${fixtures.length} upcoming`;
+
+      if (!fixtures.length) {
+        els.fixturesPanel.innerHTML = `<div class="empty">No fixtures returned.</div>`;
+        return;
+      }
+
+      els.fixturesPanel.innerHTML = fixtures.slice(0, 8).map(match => renderMatchCard(match, "fixture", team)).join("");
+    }
+
+    function renderResults(data, team) {
+      const results = Array.isArray(data?.last) ? data.last : [];
+      els.resultsSubtle.textContent = `${results.length} recent`;
+
+      if (!results.length) {
+        els.resultsPanel.innerHTML = `<div class="empty">No recent results returned.</div>`;
+        return;
+      }
+
+      els.resultsPanel.innerHTML = results.slice(0, 8).map(match => renderMatchCard(match, "result", team)).join("");
+    }
+
     function renderTable(data, team) {
       const standings = Array.isArray(data?.standings) ? data.standings : [];
       els.tableSubtle.textContent = team.leagueName;
@@ -1224,12 +1110,16 @@
           </thead>
           <tbody>
             ${standings.map(row => {
-              const isActive = String(row?.team?.id || row?.id || "") === String(team.teamId);
-              const crest = row?.team?.crest || row?.team?.logo || row?.logo || row?.teamLogo || "";
+              const isActive =
+                String(row?.team?.id || "") === String(team.teamId) ||
+                String(row?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase();
+
+              const crest = row?.team?.crest || row?.team?.logo || row?.logo || "";
               const teamName = row?.team?.name || row?.teamName || "Team";
               const played = row?.playedGames ?? row?.all?.played ?? row?.played ?? "–";
               const points = row?.points ?? "–";
               const pos = row?.position ?? row?.rank ?? "–";
+
               return `
                 <tr class="${isActive ? "active-row" : ""}">
                   <td>${pos}</td>
@@ -1249,21 +1139,8 @@
       `;
     }
 
-    function renderNews(data, newsResponse, team) {
-      const endpointNews = Array.isArray(data?.news) ? data.news : [];
-      const rssNews = Array.isArray(newsResponse?.items) ? newsResponse.items : [];
-      const baseItems = endpointNews.length ? endpointNews : rssNews;
-
-      const filters = team.key === "wimbledon"
-        ? ["afc wimbledon", "wimbledon", "dons", "plough lane"]
-        : ["tottenham", "spurs", "tottenham hotspur"];
-
-      const filtered = baseItems.filter(item => {
-        const text = `${item?.title || ""} ${item?.description || ""}`.toLowerCase();
-        return filters.some(term => text.includes(term));
-      });
-
-      const items = filtered.length ? filtered : baseItems.slice(0, 8);
+    function renderNews(data, team) {
+      const items = Array.isArray(data?.news) ? data.news : [];
       els.newsSubtle.textContent = team.key === "wimbledon" ? "Latest club news" : "Latest stories";
 
       if (!items.length) {
@@ -1277,6 +1154,7 @@
         const link = item?.link || "#";
         const description = item?.description || "";
         const pubDate = item?.pubDate || "";
+
         return `
           <article class="news-item">
             <div class="news-inner">
@@ -1286,8 +1164,7 @@
                   <a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a>
                 </div>
                 <div class="news-meta">
-                  ${escapeHtml(pubDate ? formatPubDate(pubDate) : "No date")} ·
-                  ${escapeHtml(trimText(description, 160))}
+                  ${escapeHtml(pubDate || "No date")} · ${escapeHtml(String(description).slice(0, 160))}
                 </div>
               </div>
             </div>
@@ -1296,50 +1173,45 @@
       }).join("");
     }
 
-    function renderCrest(src, teamName) {
-      if (src) return `<img src="${escapeHtml(src)}" alt="${escapeHtml(teamName)} crest" loading="lazy" />`;
-      const initials = String(teamName || "?").split(/\s+/).map(p => p[0] || "").join("").slice(0, 3).toUpperCase();
-      return `<div class="hero-crest-fallback">${escapeHtml(initials)}</div>`;
+    async function loadDashboard() {
+      const team = TEAM_CONFIG[activeTeamKey];
+      els.updatedLabel.textContent = "Loading…";
+
+      try {
+        const data = await fetchJson(`/api/football/team?team=${team.key}`);
+        renderBrand(data, team);
+        renderHero(data, team);
+        renderStats(data, team);
+        renderFixtures(data, team);
+        renderResults(data, team);
+        renderTable(data, team);
+        renderNews(data, team);
+
+        els.updatedLabel.textContent = `Loaded ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+      } catch (error) {
+        console.error(error);
+        els.updatedLabel.textContent = "Load failed";
+        els.heroEyebrow.textContent = "Dashboard error";
+        els.heroMatch.innerHTML = `<div class="empty">${escapeHtml(error.message || "Could not load dashboard")}</div>`;
+        els.heroSubdetail.textContent = "";
+      }
     }
 
-    function safeScore(value) { return value === null || value === undefined ? "–" : String(value); }
+    function renderBrand(data, team) {
+      const crest =
+        data?.team?.crest ||
+        data?.team?.logo ||
+        data?.crest ||
+        "";
 
-    function ordinal(n) {
-      const num = Number(n);
-      if (!num) return "–";
-      const s = ["th", "st", "nd", "rd"];
-      const v = num % 100;
-      return `${num}${s[(v - 20) % 10] || s[v] || s[0]}`;
-    }
-
-    function relativeFromNow(date) {
-      const diff = date.getTime() - Date.now();
-      const mins = Math.round(Math.abs(diff) / 60000);
-      const hours = Math.round(Math.abs(diff) / 3600000);
-      const days = Math.round(Math.abs(diff) / 86400000);
-      if (mins < 60) return diff >= 0 ? `in ${mins}m` : `${mins}m ago`;
-      if (hours < 48) return diff >= 0 ? `in ${hours}h` : `${hours}h ago`;
-      return diff >= 0 ? `in ${days}d` : `${days}d ago`;
-    }
-
-    function formatPubDate(dateString) {
-      const date = new Date(dateString);
-      if (Number.isNaN(date.getTime())) return dateString;
-      return date.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-    }
-
-    function trimText(text, max) {
-      if (!text || text.length <= max) return text;
-      return `${text.slice(0, max).trim()}…`;
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
+      if (crest) {
+        els.brandLogo.src = crest;
+        els.brandLogo.hidden = false;
+        els.brandFallback.hidden = true;
+      } else {
+        els.brandLogo.hidden = true;
+        els.brandFallback.hidden = false;
+      }
     }
 
     els.menuButton.addEventListener("click", () => {
@@ -1355,18 +1227,10 @@
       if (event.key === "Escape") closeMenu();
     });
 
-    function startAutoRefresh() {
-      if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-      }
-    }
-
     applyTheme();
     renderTeamButtons();
     setupNav();
-    loadDashboard({ initial: true });
-    startAutoRefresh();
+    loadDashboard();
   </script>
 </body>
 </html>
