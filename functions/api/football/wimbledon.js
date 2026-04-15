@@ -102,10 +102,10 @@ export async function onRequest() {
       if (mer === "am" && hours === 12) hours = 0;
     }
 
-    let d = new Date(Date.UTC(year, month, day, hours, minutes, 0));
+    let d = new Date(year, month, day, hours, minutes, 0);
 
     if (d.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 180) {
-      d = new Date(Date.UTC(year + 1, month, day, hours, minutes, 0));
+    d = new Date(year + 1, month, day, hours, minutes, 0);
     }
 
     return d.toISOString();
