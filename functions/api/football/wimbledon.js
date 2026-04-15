@@ -14,6 +14,17 @@ export async function onRequest() {
       .trim();
   }
 
+  function stripHtmlToText(html = "") {
+    return cleanText(
+      String(html)
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+    );
+  }
+
   function parseRSS(xmlText) {
     const items = [];
     const matches = xmlText.match(/<item>([\s\S]*?)<\/item>/gi) || [];
@@ -43,17 +54,26 @@ export async function onRequest() {
 
   function filterWimbledonNews(items) {
     const terms = ["afc wimbledon", "wimbledon", "dons", "plough lane"];
-    const filtered = items.filter((item) => {
+    return items.filter((item) => {
       const text = `${item.title} ${item.description}`.toLowerCase();
       return terms.some((term) => text.includes(term));
     });
-    return filtered.length ? filtered : items.slice(0, 8);
   }
 
   function monthIndex(name = "") {
     const months = {
-      january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
-      july: 6, august: 7, september: 8, october: 9, november: 10, december: 11
+      january: 0,
+      february: 1,
+      march: 2,
+      april: 3,
+      may: 4,
+      june: 5,
+      july: 6,
+      august: 7,
+      september: 8,
+      october: 9,
+      november: 10,
+      december: 11
     };
     return months[String(name).toLowerCase()] ?? 0;
   }
@@ -83,65 +103,115 @@ export async function onRequest() {
     }
 
     let d = new Date(Date.UTC(year, month, day, hours, minutes, 0));
+
     if (d.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 180) {
       d = new Date(Date.UTC(year + 1, month, day, hours, minutes, 0));
     }
+
     return d.toISOString();
   }
 
+  function normaliseTeamName(name = "") {
+    return cleanText(name)
+      .toLowerCase()
+      .replace(/^afc\s+/, "")
+      .replace(/\s+fc$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function parseSkyLeagueOneTable(html) {
-    const start = html.indexOf("Sky Bet League One Table");
+    const text = stripHtmlToText(html);
+    const start = text.indexOf("Sky Bet League One Table");
     if (start === -1) return [];
 
-    const section = html.slice(start, start + 12000);
+    const section = text.slice(start, start + 12000);
     const rows = [];
-    const rowRegex =
-      /(\d+)\s+【\d+†Image†www\.skysports\.com】\s+(?:【\d+†\s*)?([A-Za-z0-9 .'\-&]+?)(?:\s*】)?\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
 
-    let match;
-    while ((match = rowRegex.exec(section)) !== null) {
-      const position = Number(match[1]);
-      const teamName = cleanText(match[2]);
-      const playedGames = Number(match[3]);
-      const won = Number(match[4]);
-      const draw = Number(match[5]);
-      const lost = Number(match[6]);
-      const goalsFor = Number(match[7]);
-      const goalsAgainst = Number(match[8]);
-      const goalDifference = Number(match[9]);
-      const points = Number(match[10]);
+    const knownTeams = [
+      "Lincoln City",
+      "Cardiff City",
+      "Blackpool",
+      "Bolton Wanderers",
+      "Barnsley",
+      "Reading",
+      "Huddersfield Town",
+      "AFC Wimbledon",
+      "Stockport County",
+      "Luton Town",
+      "Burton Albion",
+      "Wigan Athletic",
+      "Plymouth Argyle",
+      "Charlton Athletic",
+      "Peterborough United",
+      "Wycombe Wanderers",
+      "Port Vale",
+      "Leyton Orient",
+      "Bristol Rovers",
+      "Rotherham United",
+      "Northampton Town",
+      "Exeter City",
+      "Mansfield Town",
+      "Stevenage",
+      "Shrewsbury Town",
+      "Cambridge United",
+      "Wrexham",
+      "Crawley Town",
+      "Birmingham City",
+      "Blackburn Rovers"
+    ];
 
-      if (
-        !Number.isNaN(position) &&
-        !Number.isNaN(playedGames) &&
-        !Number.isNaN(points) &&
-        teamName &&
-        teamName.toLowerCase() !== "jan"
-      ) {
-        rows.push({
-          position,
-          team: {
-            id: null,
-            name: teamName,
-            crest: ""
-          },
-          playedGames,
-          won,
-          draw,
-          lost,
-          goalsFor,
-          goalsAgainst,
-          goalDifference,
-          points,
-          form: ""
-        });
+    for (const teamName of knownTeams) {
+      const escapedTeam = teamName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const rowRegex = new RegExp(
+        `(\\d+)\\s+${escapedTeam}\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+([+-]?\\d+)\\s+(\\d+)`,
+        "i"
+      );
+      const match = section.match(rowRegex);
+
+      if (match) {
+        const position = Number(match[1]);
+        const playedGames = Number(match[2]);
+        const won = Number(match[3]);
+        const draw = Number(match[4]);
+        const lost = Number(match[5]);
+        const goalsFor = Number(match[6]);
+        const goalsAgainst = Number(match[7]);
+        const goalDifference = Number(match[8]);
+        const points = Number(match[9]);
+
+        if (
+          !Number.isNaN(position) &&
+          !Number.isNaN(playedGames) &&
+          !Number.isNaN(points)
+        ) {
+          rows.push({
+            position,
+            team: {
+              id: null,
+              name: teamName,
+              crest: ""
+            },
+            playedGames,
+            won,
+            draw,
+            lost,
+            goalsFor,
+            goalsAgainst,
+            goalDifference,
+            points,
+            form: ""
+          });
+        }
       }
     }
 
+    rows.sort((a, b) => a.position - b.position);
     return rows;
   }
 
   function parseSkyWimbledonMatches(html) {
+    const text = stripHtmlToText(html);
     const next = [];
     const last = [];
 
@@ -149,16 +219,17 @@ export async function onRequest() {
       /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+[\s\S]*?(?=(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+|$)/gi;
 
     let block;
-    while ((block = dateBlockRegex.exec(html)) !== null) {
-      const text = block[0];
-      const dateMatch = text.match(
+    while ((block = dateBlockRegex.exec(text)) !== null) {
+      const chunk = block[0];
+      const dateMatch = chunk.match(
         /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i
       );
       const currentDate = dateMatch ? cleanText(dateMatch[0]) : "";
-      if (!text.includes("Sky Bet League One")) continue;
-      if (!text.includes("AFC Wimbledon")) continue;
 
-      let m = text.match(/([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
+      if (!chunk.includes("AFC Wimbledon")) continue;
+      if (!chunk.includes("Sky Bet League One")) continue;
+
+      let m = chunk.match(/([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
           id: `res-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
@@ -177,7 +248,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = text.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
+      m = chunk.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
           id: `res-${currentDate}-AFC Wimbledon-${cleanText(m[2])}`,
@@ -196,7 +267,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = text.match(/AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = chunk.match(/AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
           id: `fix-${currentDate}-AFC Wimbledon-${cleanText(m[1])}`,
@@ -215,7 +286,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = text.match(/([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = chunk.match(/([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
           id: `fix-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
@@ -235,15 +306,6 @@ export async function onRequest() {
     }
 
     return { next: next.slice(0, 8), last: last.slice(0, 8) };
-  }
-
-  function normaliseTeamName(name = "") {
-    return cleanText(name)
-      .toLowerCase()
-      .replace(/^afc\s+/, "")
-      .replace(/\s+fc$/i, "")
-      .replace(/\s+/g, " ")
-      .trim();
   }
 
   try {
