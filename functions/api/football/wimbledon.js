@@ -93,9 +93,10 @@ export async function onRequest() {
     const start = html.indexOf("Sky Bet League One Table");
     if (start === -1) return [];
 
-    const section = html.slice(start, start + 15000);
+    const section = html.slice(start, start + 12000);
     const rows = [];
-    const rowRegex = /(\d+)\s+(?:【\d+†Image†www\.skysports\.com】\s+)?([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
+    const rowRegex =
+      /(\d+)\s+【\d+†Image†www\.skysports\.com】\s+(?:【\d+†\s*)?([A-Za-z0-9 .'\-&]+?)(?:\s*】)?\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
 
     let match;
     while ((match = rowRegex.exec(section)) !== null) {
@@ -143,15 +144,21 @@ export async function onRequest() {
   function parseSkyWimbledonMatches(html) {
     const next = [];
     const last = [];
-    const lines = html.split("\n").map(cleanText).filter(Boolean);
-    let currentDate = "";
 
-    for (const line of lines) {
-      if (/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i.test(line)) {
-        currentDate = line.match(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i)?.[0] || currentDate;
-      }
+    const dateBlockRegex =
+      /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+[\s\S]*?(?=(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+|$)/gi;
 
-      let m = line.match(/^([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
+    let block;
+    while ((block = dateBlockRegex.exec(html)) !== null) {
+      const text = block[0];
+      const dateMatch = text.match(
+        /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i
+      );
+      const currentDate = dateMatch ? cleanText(dateMatch[0]) : "";
+      if (!text.includes("Sky Bet League One")) continue;
+      if (!text.includes("AFC Wimbledon")) continue;
+
+      let m = text.match(/([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
           id: `res-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
@@ -170,7 +177,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = line.match(/^AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
+      m = text.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
           id: `res-${currentDate}-AFC Wimbledon-${cleanText(m[2])}`,
@@ -189,7 +196,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = line.match(/^AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = text.match(/AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
           id: `fix-${currentDate}-AFC Wimbledon-${cleanText(m[1])}`,
@@ -208,7 +215,7 @@ export async function onRequest() {
         continue;
       }
 
-      m = line.match(/^([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = text.match(/([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
           id: `fix-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
