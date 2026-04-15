@@ -79,37 +79,67 @@ export async function onRequest() {
   }
 
   function toIsoFromUkLabel(dateLabel = "", timeLabel = "15:00") {
-    const m = String(dateLabel).match(
-      /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)/i
-    );
-    if (!m) return null;
+  const m = String(dateLabel).match(
+    /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)/i
+  );
+  if (!m) return null;
 
-    const day = Number(m[2]);
-    const month = monthIndex(m[3]);
-    const now = new Date();
-    let year = now.getUTCFullYear();
+  const day = Number(m[2]);
+  const month = monthIndex(m[3]);
+  const now = new Date();
+  let year = now.getUTCFullYear();
 
-    let hours = 15;
-    let minutes = 0;
+  let hours = 15;
+  let minutes = 0;
 
-    const t = String(timeLabel).trim().toLowerCase().replace(/\./g, ":");
-    const tm = t.match(/(\d{1,2}):(\d{2})(am|pm)?/i);
-    if (tm) {
-      hours = Number(tm[1]);
-      minutes = Number(tm[2]);
-      const mer = tm[3];
-      if (mer === "pm" && hours < 12) hours += 12;
-      if (mer === "am" && hours === 12) hours = 0;
-    }
-
-    let d = new Date(year, month, day, hours, minutes, 0);
-
-    if (d.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 180) {
-    d = new Date(year + 1, month, day, hours, minutes, 0);
-    }
-
-    return d.toISOString();
+  const t = String(timeLabel).trim().toLowerCase().replace(/\./g, ":");
+  const tm = t.match(/(\d{1,2}):(\d{2})(am|pm)?/i);
+  if (tm) {
+    hours = Number(tm[1]);
+    minutes = Number(tm[2]);
+    const mer = tm[3];
+    if (mer === "pm" && hours < 12) hours += 12;
+    if (mer === "am" && hours === 12) hours = 0;
   }
+
+  function londonLocalToUtc(y, mo, d, h, mi) {
+    // Start by pretending the London clock time is UTC
+    const guess = new Date(Date.UTC(y, mo, d, h, mi, 0));
+
+    // Work out what London local time that UTC moment corresponds to
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(guess);
+
+    const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+    const londonYear = Number(map.year);
+    const londonMonth = Number(map.month) - 1;
+    const londonDay = Number(map.day);
+    const londonHour = Number(map.hour);
+    const londonMinute = Number(map.minute);
+
+    // Difference between desired London local time and what the guess gives
+    const desiredMinutes = Date.UTC(y, mo, d, h, mi);
+    const actualMinutes = Date.UTC(londonYear, londonMonth, londonDay, londonHour, londonMinute);
+
+    const diffMs = desiredMinutes - actualMinutes;
+    return new Date(guess.getTime() + diffMs);
+  }
+
+  let d = londonLocalToUtc(year, month, day, hours, minutes);
+
+  if (d.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 180) {
+    d = londonLocalToUtc(year + 1, month, day, hours, minutes);
+  }
+
+  return d.toISOString();
+}
 
   function normaliseTeamName(name = "") {
     return cleanText(name)
