@@ -47,18 +47,7 @@ export async function onRequest() {
       const text = `${item.title} ${item.description}`.toLowerCase();
       return terms.some((term) => text.includes(term));
     });
-
-    // fallback so the UI does not go blank
     return filtered.length ? filtered : items.slice(0, 8);
-  }
-
-  function normaliseTeamName(name = "") {
-    return cleanText(name)
-      .toLowerCase()
-      .replace(/^afc\s+/, "")
-      .replace(/\s+fc$/i, "")
-      .replace(/\s+/g, " ")
-      .trim();
   }
 
   function monthIndex(name = "") {
@@ -70,7 +59,6 @@ export async function onRequest() {
   }
 
   function toIsoFromUkLabel(dateLabel = "", timeLabel = "15:00") {
-    // "Wednesday 15th April" + "7:45pm"
     const m = String(dateLabel).match(
       /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)/i
     );
@@ -95,12 +83,9 @@ export async function onRequest() {
     }
 
     let d = new Date(Date.UTC(year, month, day, hours, minutes, 0));
-
-    // If parsed date is more than ~6 months in the past, push to next year
     if (d.getTime() < now.getTime() - 1000 * 60 * 60 * 24 * 180) {
       d = new Date(Date.UTC(year + 1, month, day, hours, minutes, 0));
     }
-
     return d.toISOString();
   }
 
@@ -108,11 +93,9 @@ export async function onRequest() {
     const start = html.indexOf("Sky Bet League One Table");
     if (start === -1) return [];
 
-    const section = html.slice(start, start + 12000);
+    const section = html.slice(start, start + 15000);
     const rows = [];
-
-    const rowRegex =
-      /(\d+)\s+【\d+†Image†www\.skysports\.com】\s+【\d+†\s*([^】]+?)\s*】\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
+    const rowRegex = /(\d+)\s+(?:【\d+†Image†www\.skysports\.com】\s+)?([A-Za-z0-9 .'\-&]+?)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([+-]?\d+)\s+(\d+)/g;
 
     let match;
     while ((match = rowRegex.exec(section)) !== null) {
@@ -131,7 +114,8 @@ export async function onRequest() {
         !Number.isNaN(position) &&
         !Number.isNaN(playedGames) &&
         !Number.isNaN(points) &&
-        teamName
+        teamName &&
+        teamName.toLowerCase() !== "jan"
       ) {
         rows.push({
           position,
@@ -159,25 +143,19 @@ export async function onRequest() {
   function parseSkyWimbledonMatches(html) {
     const next = [];
     const last = [];
+    const lines = html.split("\n").map(cleanText).filter(Boolean);
+    let currentDate = "";
 
-    // Match date headings followed by League One fixture/result blocks
-    const blockRegex =
-      /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+[\s\S]*?###\s+[\s\S]*?(?=(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+|$)/gi;
+    for (const line of lines) {
+      if (/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i.test(line)) {
+        currentDate = line.match(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i)?.[0] || currentDate;
+      }
 
-    let blockMatch;
-    while ((blockMatch = blockRegex.exec(html)) !== null) {
-      const block = blockMatch[0];
-      const dateMatch = block.match(
-        /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]+/i
-      );
-      const dateLabel = dateMatch ? cleanText(dateMatch[0]) : "";
-
-      // Results
-      let m = block.match(/([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
+      let m = line.match(/^([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*AFC Wimbledon,\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
-          id: `res-${dateLabel}-${cleanText(m[1])}-AFC Wimbledon`,
-          utcDate: toIsoFromUkLabel(dateLabel, "15:00"),
+          id: `res-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
+          utcDate: toIsoFromUkLabel(currentDate, "15:00"),
           status: "FINISHED",
           venue: "",
           competition: { name: "League One" },
@@ -192,11 +170,11 @@ export async function onRequest() {
         continue;
       }
 
-      m = block.match(/AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
+      m = line.match(/^AFC Wimbledon,\s*(\d+)\.\s*([A-Za-z0-9 .'\-&]+),\s*(\d+)\.\s*Full time\./i);
       if (m) {
         last.push({
-          id: `res-${dateLabel}-AFC Wimbledon-${cleanText(m[2])}`,
-          utcDate: toIsoFromUkLabel(dateLabel, "15:00"),
+          id: `res-${currentDate}-AFC Wimbledon-${cleanText(m[2])}`,
+          utcDate: toIsoFromUkLabel(currentDate, "15:00"),
           status: "FINISHED",
           venue: "",
           competition: { name: "League One" },
@@ -211,12 +189,11 @@ export async function onRequest() {
         continue;
       }
 
-      // Fixtures
-      m = block.match(/AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = line.match(/^AFC Wimbledon vs ([A-Za-z0-9 .'\-&]+)\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
-          id: `fix-${dateLabel}-AFC Wimbledon-${cleanText(m[1])}`,
-          utcDate: toIsoFromUkLabel(dateLabel, m[2]),
+          id: `fix-${currentDate}-AFC Wimbledon-${cleanText(m[1])}`,
+          utcDate: toIsoFromUkLabel(currentDate, m[2]),
           status: "SCHEDULED",
           venue: "",
           competition: { name: "League One" },
@@ -231,11 +208,11 @@ export async function onRequest() {
         continue;
       }
 
-      m = block.match(/([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
+      m = line.match(/^([A-Za-z0-9 .'\-&]+) vs AFC Wimbledon\.\s*Kick-off at (\d{1,2}:\d{2}[ap]m)/i);
       if (m) {
         next.push({
-          id: `fix-${dateLabel}-${cleanText(m[1])}-AFC Wimbledon`,
-          utcDate: toIsoFromUkLabel(dateLabel, m[2]),
+          id: `fix-${currentDate}-${cleanText(m[1])}-AFC Wimbledon`,
+          utcDate: toIsoFromUkLabel(currentDate, m[2]),
           status: "SCHEDULED",
           venue: "",
           competition: { name: "League One" },
@@ -250,7 +227,16 @@ export async function onRequest() {
       }
     }
 
-    return { next, last };
+    return { next: next.slice(0, 8), last: last.slice(0, 8) };
+  }
+
+  function normaliseTeamName(name = "") {
+    return cleanText(name)
+      .toLowerCase()
+      .replace(/^afc\s+/, "")
+      .replace(/\s+fc$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   try {
@@ -270,16 +256,14 @@ export async function onRequest() {
 
     const parsedMatches = parseSkyWimbledonMatches(scoresFixturesHtml);
     const standings = parseSkyLeagueOneTable(tableHtml);
-
     const teamRow =
       standings.find((row) =>
         ["wimbledon", "afc wimbledon"].includes(normaliseTeamName(row.team?.name))
       ) || null;
 
-    const rssItems = parseRSS(rssText);
-    const news = filterWimbledonNews(rssItems).slice(0, 8);
+    const news = filterWimbledonNews(parseRSS(rssText)).slice(0, 8);
 
-    const payload = {
+    return new Response(JSON.stringify({
       team: {
         id: TEAM_ID,
         name: "AFC Wimbledon",
@@ -287,36 +271,32 @@ export async function onRequest() {
         tla: "AWF",
         crest: ""
       },
-      next: parsedMatches.next.slice(0, 8),
-      last: parsedMatches.last.slice(0, 8),
+      next: parsedMatches.next,
+      last: parsedMatches.last,
       standings,
       stats: {
         position: teamRow?.position ?? null,
         points: teamRow?.points ?? null,
-        played: teamRow?.playedGames ?? null
+        played: teamRow?.playedGames ?? null,
+        playedGames: teamRow?.playedGames ?? null
       },
       news
-    };
-
-    return new Response(JSON.stringify(payload), {
+    }), {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "no-store"
       }
     });
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: "Could not load Wimbledon data",
-        detail: error.message
-      }),
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Cache-Control": "no-store"
-        }
+    return new Response(JSON.stringify({
+      error: "Could not load Wimbledon data",
+      detail: error.message
+    }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
       }
-    );
+    });
   }
 }

@@ -694,7 +694,7 @@
                 <div class="team-list" id="teamToggle"></div>
               </div>
             </div>
-            <div class="updated-label" id="updatedLabel">Loaded</div>
+            <div class="updated-label" id="updatedLabel">Loading…</div>
           </div>
         </div>
       </header>
@@ -774,6 +774,7 @@
         shortName: "Spurs",
         teamId: 73,
         leagueName: "Premier League",
+        newsTerms: ["tottenham", "spurs", "tottenham hotspur"],
         colours: { primary: "#111d45", secondary: "#0a1430", accent: "#ffffff", accent2: "#b9cae7" }
       },
       wimbledon: {
@@ -782,6 +783,7 @@
         shortName: "Wimbledon",
         teamId: 1044,
         leagueName: "League One",
+        newsTerms: ["afc wimbledon", "wimbledon", "dons", "plough lane"],
         colours: { primary: "#0054b8", secondary: "#003378", accent: "#ffd447", accent2: "#ffe483" }
       }
     };
@@ -1020,7 +1022,7 @@
 
       const position = stats.position ?? row?.position ?? null;
       const points = stats.points ?? row?.points ?? null;
-      const played = stats.played ?? row?.playedGames ?? null;
+      const played = stats.played ?? stats.playedGames ?? row?.playedGames ?? null;
 
       els.statPosition.textContent = position ? ordinal(position) : "–";
       els.statPositionSub.textContent = position ? `Current ${team.leagueName} position` : "League position unavailable";
@@ -1139,8 +1141,8 @@
       `;
     }
 
-    function renderNews(data, team) {
-      const items = Array.isArray(data?.news) ? data.news : [];
+    function renderNews(newsPayload, team) {
+      const items = Array.isArray(newsPayload?.items) ? newsPayload.items : [];
       els.newsSubtle.textContent = team.key === "wimbledon" ? "Latest club news" : "Latest stories";
 
       if (!items.length) {
@@ -1148,7 +1150,14 @@
         return;
       }
 
-      els.newsPanel.innerHTML = items.slice(0, 8).map(item => {
+      const filtered = items.filter(item => {
+        const text = `${item?.title || ""} ${item?.description || ""}`.toLowerCase();
+        return team.newsTerms.some(term => text.includes(term));
+      });
+
+      const chosen = (filtered.length ? filtered : items).slice(0, 8);
+
+      els.newsPanel.innerHTML = chosen.map(item => {
         const image = item?.thumbnail || item?.image || item?.enclosure?.url || item?.imageUrl || "";
         const title = item?.title || "Untitled story";
         const link = item?.link || "#";
@@ -1178,14 +1187,22 @@
       els.updatedLabel.textContent = "Loading…";
 
       try {
-        const data = await fetchJson(`/api/football/team?team=${team.key}`);
-        renderBrand(data, team);
-        renderHero(data, team);
-        renderStats(data, team);
-        renderFixtures(data, team);
-        renderResults(data, team);
-        renderTable(data, team);
-        renderNews(data, team);
+        const [teamData, newsData] = await Promise.all([
+          fetchJson(`/api/football/team?team=${team.key}`),
+          fetchJson(`/api/news/bbc-football?team=${team.key}`).catch(() => ({ items: [] }))
+        ]);
+
+        renderBrand(teamData, team);
+        renderHero(teamData, team);
+        renderStats(teamData, team);
+        renderFixtures(teamData, team);
+        renderResults(teamData, team);
+        renderTable(teamData, team);
+
+        const preferredNews = Array.isArray(teamData?.news) && teamData.news.length
+          ? { items: teamData.news }
+          : newsData;
+        renderNews(preferredNews, team);
 
         els.updatedLabel.textContent = `Loaded ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
       } catch (error) {
