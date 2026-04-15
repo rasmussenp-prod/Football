@@ -134,21 +134,36 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
+    .team-switch {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .team-pill {
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.04);
       color: var(--soft);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+      border-radius: 999px;
+      padding: 10px 14px;
       font: inherit;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .team-pill.active {
+      background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+      border-color: rgba(255,255,255,0.18);
+      color: #fff;
+    }
+
+    .team-pill:hover {
+      border-color: var(--line-strong);
     }
 
     .updated-label {
@@ -156,54 +171,6 @@
       font-style: italic;
       color: var(--muted);
       text-align: right;
-    }
-
-    .menu-wrap { position: relative; }
-
-    .menu-panel {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 8px);
-      width: min(280px, calc(100vw - 36px));
-      padding: 10px;
-      border-radius: 18px;
-      border: 1px solid var(--line-strong);
-      background: rgba(10,18,31,0.98);
-      box-shadow: 0 22px 60px rgba(0,0,0,0.38);
-      display: none;
-    }
-
-    .menu-panel.open { display: block; }
-
-    .menu-label {
-      font-size: 0.74rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      margin: 4px 4px 10px;
-    }
-
-    .team-list { display: grid; gap: 8px; }
-
-    .team-option {
-      width: 100%;
-      text-align: left;
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      color: var(--soft);
-      cursor: pointer;
-      display: grid;
-      gap: 4px;
-    }
-
-    .team-option strong { color: #fff; font-size: 0.96rem; }
-    .team-option span { color: var(--muted); font-size: 0.8rem; }
-
-    .team-option.active {
-      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
-      border-color: rgba(255,255,255,0.16);
     }
 
     .hero {
@@ -620,6 +587,11 @@
     }
 
     @media (max-width: 759px) {
+      .topbar-inner {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
       .brand { min-width: 0; gap: 8px; }
       .brand-logo-wrap { width: 40px; height: 40px; }
       .brand-copy h1 { font-size: 0.9rem; }
@@ -628,37 +600,65 @@
         white-space: normal;
         line-height: 1.2;
       }
-      .updated-label { font-size: 0.72rem; }
+
+      .top-actions {
+        align-items: stretch;
+      }
+
+      .team-switch {
+        justify-content: stretch;
+      }
+
+      .team-pill {
+        flex: 1 1 0;
+        text-align: center;
+        padding: 10px 12px;
+        font-size: 0.8rem;
+      }
+
+      .updated-label {
+        font-size: 0.72rem;
+        text-align: right;
+      }
+
       .hero {
         padding: 18px 12px 20px;
         min-height: 250px;
       }
+
       .hero-match {
         grid-template-columns: 1fr;
         gap: 16px;
       }
+
       .hero-side,
       .hero-side.away {
         justify-content: center;
         gap: 12px;
       }
+
       .hero-side.home { flex-direction: row; }
       .hero-side.away { flex-direction: row-reverse; }
+
       .hero-team {
         font-size: clamp(1rem, 5.2vw, 1.45rem);
         white-space: normal;
         text-align: center;
         max-width: 150px;
       }
+
       .hero-crest-wrap { width: 50px; height: 50px; }
       .hero-middle { min-width: 0; gap: 8px; }
       .hero-core { min-height: 64px; gap: 12px; }
+
       .hero-kickoff-time,
       .hero-score-big { font-size: clamp(2.3rem, 12vw, 3.3rem); }
+
       .hero-score-divider { height: 38px; }
       .hero-headline { font-size: 0.88rem; }
       .hero-status { font-size: 0.84rem; }
       .hero-subdetail { font-size: 0.86rem; }
+
       .news-inner { grid-template-columns: 1fr; }
       .news-thumb {
         width: 100%;
@@ -687,13 +687,7 @@
           <div></div>
 
           <div class="top-actions">
-            <div class="menu-wrap">
-              <button class="icon-btn" id="menuButton" aria-label="Open menu" aria-expanded="false">☰</button>
-              <div class="menu-panel" id="menuPanel">
-                <div class="menu-label">Select team</div>
-                <div class="team-list" id="teamToggle"></div>
-              </div>
-            </div>
+            <div class="team-switch" id="teamToggle"></div>
             <div class="updated-label" id="updatedLabel">Loading…</div>
           </div>
         </div>
@@ -779,7 +773,7 @@
       },
       wimbledon: {
         key: "wimbledon",
-        name: "AFC Wimbledon",
+        name: "Wimbledon",
         shortName: "Wimbledon",
         teamId: 1044,
         leagueName: "League One",
@@ -798,8 +792,6 @@
 
     const els = {
       teamToggle: document.getElementById("teamToggle"),
-      menuButton: document.getElementById("menuButton"),
-      menuPanel: document.getElementById("menuPanel"),
       updatedLabel: document.getElementById("updatedLabel"),
       brandSubtitle: document.getElementById("brandSubtitle"),
       brandLogo: document.getElementById("brandLogo"),
@@ -842,37 +834,23 @@
 
     function renderTeamButtons() {
       els.teamToggle.innerHTML = Object.values(TEAM_CONFIG).map(team => `
-        <button class="team-option ${team.key === activeTeamKey ? "active" : ""}" data-team="${team.key}">
-          <strong>${escapeHtml(team.name)}</strong>
-          <span>${escapeHtml(team.leagueName)}</span>
+        <button class="team-pill ${team.key === activeTeamKey ? "active" : ""}" data-team="${team.key}">
+          ${escapeHtml(team.name)}
         </button>
       `).join("");
 
-      els.teamToggle.querySelectorAll(".team-option").forEach(button => {
+      els.teamToggle.querySelectorAll(".team-pill").forEach(button => {
         button.addEventListener("click", async () => {
           const nextTeam = button.dataset.team;
-          if (!nextTeam || nextTeam === activeTeamKey) {
-            closeMenu();
-            return;
-          }
+          if (!nextTeam || nextTeam === activeTeamKey) return;
+
           activeTeamKey = nextTeam;
           localStorage.setItem(STORAGE_KEYS.team, activeTeamKey);
           applyTheme();
           renderTeamButtons();
-          closeMenu();
           await loadDashboard();
         });
       });
-    }
-
-    function openMenu() {
-      els.menuPanel.classList.add("open");
-      els.menuButton.setAttribute("aria-expanded", "true");
-    }
-
-    function closeMenu() {
-      els.menuPanel.classList.remove("open");
-      els.menuButton.setAttribute("aria-expanded", "false");
     }
 
     function setupNav() {
@@ -1017,7 +995,8 @@
       const standings = Array.isArray(data?.standings) ? data.standings : [];
       const row = standings.find(r =>
         String(r?.team?.id || "") === String(team.teamId) ||
-        String(r?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase()
+        String(r?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase() ||
+        (team.key === "wimbledon" && String(r?.team?.name || "").toLowerCase() === "afc wimbledon")
       );
 
       const position = stats.position ?? row?.position ?? null;
@@ -1114,7 +1093,8 @@
             ${standings.map(row => {
               const isActive =
                 String(row?.team?.id || "") === String(team.teamId) ||
-                String(row?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase();
+                String(row?.team?.name || "").toLowerCase() === String(team.name || "").toLowerCase() ||
+                (team.key === "wimbledon" && String(row?.team?.name || "").toLowerCase() === "afc wimbledon");
 
               const crest = row?.team?.crest || row?.team?.logo || row?.logo || "";
               const teamName = row?.team?.name || row?.teamName || "Team";
@@ -1230,19 +1210,6 @@
         els.brandFallback.hidden = false;
       }
     }
-
-    els.menuButton.addEventListener("click", () => {
-      if (els.menuPanel.classList.contains("open")) closeMenu();
-      else openMenu();
-    });
-
-    document.addEventListener("click", (event) => {
-      if (!event.target.closest(".menu-wrap")) closeMenu();
-    });
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") closeMenu();
-    });
 
     applyTheme();
     renderTeamButtons();
